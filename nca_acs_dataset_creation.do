@@ -154,13 +154,51 @@ drop _merge
 save "nca_acs.dta", replace 
 
 
+
+* IMPOSING EXCLUSION RESTRICTIONS
+
+	* Drop people who are not employed. 
+
+keep if empstat == 1
+
+save "nca_acs.dta", replace 
 	
-* CREATE SUM STATS
+	
+	
+* CREATING SOME RELEVANT VARIABLES
 clear all 
 
 use nca_acs_p2, clear 
 
+	* Create young adult indicator 
+gen young_adult = (age >= 16 & age <= 21)
+label variable young_adult "young adult indicator"
 
+	* Create older adult indicator 
+gen older_adult = (age >= 50 & age <= 64)
+label variable older_adult "older adult indicator"
+
+	* Create no high school degree indicator 
+gen no_high_school = inrange(educd, 0, 61)
+label variable no_high_school "no high school indicator"
+
+	* Create high school degree indicator
+gen high_school = inrange(educd, 62, 64)
+label variable high_school "high school degree indicator"
+
+	* Create some college indicator 
+gen some_college = inrange(educd, 65, 100)
+label variable some_college "some college indicator" 
+
+	* Create a bachelor's degree or higher indicator 
+gen college = inrange(educd, 101, 116)
+label variable college "bachelor's degree or higher indicator"
+
+	* Create an indicator specifically for black
+gen black = (race == 2)
+label variable black "black indicator"
+
+save "nca_acs.dta", replace 
 
 
 
