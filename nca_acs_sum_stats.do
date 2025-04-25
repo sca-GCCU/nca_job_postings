@@ -4,55 +4,52 @@ log using "nca_acs_sum_stats.log", replace
 
 use "nca_acs.dta", clear 
 
-* WITHOUT USING ESTAB
-
-	* The two edits described below are not "saved" into the dataset, they are
-		* temporary.
-
-	* Ever treated indicator created
-collapse (max) ever_treated=treated_eff, by(statefip)
-merge 1:m statefip using "nca_acs.dta"
-drop _merge 
-		
-		* I think "ban" can work as my ever treated variable I created. 
-
-	* Recode sex 
+* Recode sex 
 replace sex = 0 if sex == 2
-codebook sex 
 label define sex_label 0 "female" 1 "male"
 label values sex sex_label
 
-	* Generate results for balance table 
-summarize age young_adult older_adult no_high_school high_school ///
-	some_college college employment_nsa income_pcap hpi sex black ///
-	if ever_treated == 1
-	
-summarize age young_adult older_adult no_high_school high_school ///
-	some_college college employment_nsa income_pcap hpi sex black ///
-	if ever_treated == 0 
-	
-local myvars age young_adult older_adult no_high_school high_school ///
-	some_college college employment_nsa income_pcap hpi sex black
-	
-foreach v of local myvars {
-	di "ttest for `v'"
-	ttest `v', by(ever_treated) reverse 
-}
 
-	* Create simple mean diff table 
-summarize age young_adult older_adult no_high_school high_school ///
-	some_college college if treated_eff == 0 & ever_treated == 1
+* BALANCE TABLE 
+
+local balance_var age young_adult earlyc_adult mlc_adult older_adult ///
+	no_high_school high_school some_college college ///
+	employment_nsa income_pcap hpi sex black
 	
-summarize age young_adult older_adult no_high_school high_school ///
-	some_college college if treated_eff == 1 & ever_treated == 1
+quietly estpost tabstat `balance_var' [fw=perwt], by(ban) ///
+	statistics(mean sd) columns(statistics) listwise 
 
-local depvar age young_adult older_adult no_high_school high_school ///
-	some_college college
+esttab . using balance_table.tex, main(mean) aux(sd) nostar unstack ///
+	nonote label compress booktabs replace  
 
-foreach v of local depvar {
-	di "ttest for `v'"
-	ttest `v', by(treated_eff) reverse 
-}
+	// Add count separately 
+
+qui summarize `balance_var' if ban == 0
+di "The number of control observations is: " r(N)
+qui summarize `balance_var' if ban == 1 
+di "The number of treated observations is: " r(N)
+
+	// Note ttest won't let me use frequency weights, so I'm not doing it 
+	
+
+* PRE AND POST TABLE  
+
+local out_var age young_adult earlyc_adult mlc_adult older_adult ///
+	no_high_school high_school some_college college
+	
+quietly estpost tabstat `out_var' if ban == 1 [fw=perwt], by(treated_eff) ///
+	statistics(mean sd) columns(statistics) listwise 
+	
+esttab . using pre_post_table.tex, main(mean) aux(sd) nostar unstack ///
+	nonote label compress booktabs replace  
+	
+	// Add count separately 
+
+qui summarize `out_var' if ban == 1 & treated_eff == 0
+di "The number of pre-treatment observations is: " r(N)
+qui summarize `out_var' if ban == 1 & treated_eff == 1
+di "The number of post-treatment observations is: " r(N)
+
 
 
 

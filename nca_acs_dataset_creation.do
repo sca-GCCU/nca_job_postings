@@ -1,6 +1,6 @@
 cd "C:\Users\scana\OneDrive\Documents\nca_job_postings\data"
 
-log using "acs_nca_analysis.log", replace 
+log using "nca_acs_dataset.log", replace 
 
 
 
@@ -15,13 +15,10 @@ drop _merge
 	* Generating treatment variables
 gen treated_eff = (year >= year_eff_ban) if ban == 1
 gen treated_enact = (year >= year_enact_ban) if ban == 1
-label variable treated_eff "Date-effective treatment indicator"
-label variable treated_enact "Date-enacted treatment indicator"
 
 	* Save new panel dataset 
 save nca_laws_panel, replace 
 use nca_laws_panel, clear 
-
 
 	* Merge nca laws dataset with ACS dataset 
 use "acs_2001-23.dta", clear 
@@ -38,9 +35,21 @@ drop full_ban year_full_ban month_full_ban
 replace treated_eff = 0 if missing(treated_eff)
 replace treated_enact = 0 if missing(treated_enact)
 
+	* Relabel some variables 
+label variable ban "treatment group indicator"
+label variable year_enact_ban "year ban enacted"
+label variable month_enact_ban "month ban enacted"
+label variable year_eff_ban "year ban effective"
+label variable month_eff_ban "month ban effective"
+label variable hw_ban "high-wage ban indicator"
+label variable ban_coverage "coverage description"
+label variable multi_leg "multiple legislation indicator"
+label variable multi_leg_year "year of additional legislation"
+label variable treated_eff "date-effective treatment indicator"
+label variable treated_enact "date-enacted treatment indicator"
+
 	* Save new panel dataset 
 save "nca_acs_no_controls.dta", replace 
-use "nca_acs_no_controls.dta", clear 
 
 
 
@@ -58,8 +67,20 @@ drop full_ban year_full_ban month_full_ban
 replace treated_eff = 0 if missing(treated_eff)
 replace treated_enact = 0 if missing(treated_enact)
 
+label variable ban "treatment group indicator" 
+	// Add labels for values of ban at some point. 
+label variable year_enact_ban "year ban enacted"
+label variable month_enact_ban "month ban enacted"
+label variable year_eff_ban "year ban effective"
+label variable month_eff_ban "month ban effective"
+label variable hw_ban "high-wage ban indicator"
+label variable ban_coverage "coverage description"
+label variable multi_leg "multiple legislation indicator"
+label variable multi_leg_year "year of additional legislation"
+label variable treated_eff "date-effective treatment indicator"
+label variable treated_enact "date-enacted treatment indicator"
+
 save "nca_acs_soc_no_controls.dta", replace 
-use "nca_acs_soc_no_controls.dta", clear 
 
 	* Might be irrelevant since I can't seem to match this up with the OES
 	* occupation codes properly. Could try merging again, and only use the 
@@ -69,7 +90,7 @@ use "nca_acs_soc_no_controls.dta", clear
 		
 * PREP COVARIATES
 
-	* BLS employment 
+	* (1) BLS employment 
 clear all
 
 //import data 
@@ -82,7 +103,7 @@ drop if year < 2001 | year > 2023
 
 save "bls_emp.dta", replace 
 
-	* BEA per capita personal income 
+	* (2) BEA per capita personal income 
 clear all 
 
 //import data 
@@ -103,7 +124,7 @@ replace statefip = statefip/1000
 
 save "bea_inc.dta", replace 
 
-	* FHFA Housing Price Index (HPI)
+	* (3) FHFA Housing Price Index (HPI)
 clear all 
 
 //import data 
@@ -151,13 +172,17 @@ merge m:1 statefip year using "fhfa_hpi2.dta"
 drop if _merge == 2 //dropping full-ban values  
 drop _merge 
 
+	* Label covariates
+label variable employment_nsa "not-seasonally-adjusted employment rate"
+label variable employment_sa "seasonally-adjusted employment rate"
+label variable income_pcap "income per-capita"
+label variable hpi "housing price index"
+
 save "nca_acs.dta", replace 
 
 
 
-* IMPOSING EXCLUSION RESTRICTIONS
-
-	* Drop people who are not employed. 
+* DROP ANYONE WHO IS NOT EMPLOYED
 
 keep if empstat == 1
 
@@ -168,15 +193,23 @@ save "nca_acs.dta", replace
 * CREATING SOME RELEVANT VARIABLES
 clear all 
 
-use nca_acs_p2, clear 
+use "nca_acs.dta", clear 
 
-	* Create young adult indicator 
+	* Create high-school/non-college aged adult indicator 
 gen young_adult = (age >= 16 & age <= 21)
-label variable young_adult "young adult indicator"
+label variable young_adult "non-college aged indicator"
 
-	* Create older adult indicator 
+	* Create early-career aged adult indicator 
+gen earlyc_adult = (age > 21 & age <= 34)
+label variable earlyc_adult "early-career aged adult indicator"
+
+	* Create mid-late-career aged adult indicator 
+gen mlc_adult = (age > 34 & age < 50)
+label variable mlc_adult "mid- to late-career aged adult indicator"
+
+	* Create near-retirement adult indicator 
 gen older_adult = (age >= 50 & age <= 64)
-label variable older_adult "older adult indicator"
+label variable older_adult "near-retirement aged adult indicator"
 
 	* Create no high school degree indicator 
 gen no_high_school = inrange(educd, 0, 61)
