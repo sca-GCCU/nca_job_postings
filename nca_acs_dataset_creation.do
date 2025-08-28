@@ -1,4 +1,4 @@
-cd "C:\Users\scana\OneDrive\Documents\nca_job_postings\data"
+cd "C:\Users\scana\OneDrive\Documents\research\projects\nca_job_postings\data"
 
 log using "nca_acs_dataset.log", replace 
 
@@ -82,12 +82,7 @@ label variable treated_enact "date-enacted treatment indicator"
 
 save "nca_acs_soc_no_controls.dta", replace 
 
-	* Might be irrelevant since I can't seem to match this up with the OES
-	* occupation codes properly. Could try merging again, and only use the 
-	* successful matches. 
-		
-		
-		
+	
 * PREP COVARIATES
 
 	* (1) BLS employment 
@@ -230,6 +225,49 @@ label variable college "bachelor's degree or higher indicator"
 	* Create an indicator specifically for black
 gen black = (race == 2)
 label variable black "black indicator"
+
+	* Create years of schooling variable 
+gen yrschool = .
+		* No schooling
+replace yrschool = 0 if inlist(educd, 0, 1, 2, 11, 12)
+		* Grade 1-4
+replace yrschool = 4 if educd == 10
+replace yrschool = 4 if educd == 13
+replace yrschool = 1 if educd == 14
+replace yrschool = 2 if educd == 15
+replace yrschool = 3 if educd == 16
+replace yrschool = 4 if educd == 17
+		* Grade 5-8
+replace yrschool = 8 if educd == 20
+replace yrschool = 6 if educd == 21
+replace yrschool = 5 if educd == 22
+replace yrschool = 6 if educd == 23
+replace yrschool = 8 if educd == 24
+replace yrschool = 7 if educd == 25
+replace yrschool = 8 if educd == 26
+		* High school 
+replace yrschool = 9 if educd == 30
+replace yrschool = 10 if educd == 40
+replace yrschool = 11 if educd == 50 
+replace yrschool = 12 if educd == 60
+replace yrschool = 12 if inrange(educd, 61, 64)
+		* College 
+replace yrschool = 13 if inlist(educd, 65, 70)
+replace yrschool = 16 if educd == 71 // top-code
+replace yrschool = 14 if educd == 80
+replace yrschool = 14 if inlist(educd, 81, 82, 83)
+replace yrschool = 15 if educd == 90
+replace yrschool = 16 if inlist(educd, 100, 101)
+		* Graduate 
+replace yrschool = 18 if educd == 110 // 5+
+replace yrschool = 18 if educd == 111 // 6
+replace yrschool = 19 if educd == 112 // 7 
+replace yrschool = 20 if educd == 113 // 8+
+replace yrschool = 18 if educd == 114
+replace yrschool = 19 if educd == 115 // professional degree beyond bachelors 
+replace yrschool = 20 if educd == 116 // doctoral 
+label variable yrschool "potential experience"
+
 
 save "nca_acs.dta", replace 
 
