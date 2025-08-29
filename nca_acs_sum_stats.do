@@ -1,6 +1,9 @@
-cd "C:\Users\scana\OneDrive\Documents\nca_job_postings\data"
+cd "C:\Users\scana\OneDrive\Documents\research\projects\nca_job_postings\data"
 
 log using "nca_acs_sum_stats.log", replace 
+
+
+* SUMMARY STATISTICS WITH NON-SOC CODE DATA
 
 use "nca_acs.dta", clear 
 
@@ -49,6 +52,23 @@ qui summarize `out_var' if ban == 1 & treated_eff == 0
 di "The number of pre-treatment observations is: " r(N)
 qui summarize `out_var' if ban == 1 & treated_eff == 1
 di "The number of post-treatment observations is: " r(N)
+
+
+* SUMMARY STATISTICS WITH SOC CODE DATA 
+clear all 
+
+use "nca_acs_soc.dta", clear 
+
+* Recode sex 
+replace sex = 0 if sex == 2
+label define sex_label 0 "female" 1 "male"
+label values sex sex_label
+
+* BALANCE TABLE 
+
+local balance_var age young_adult earlyc_adult mlc_adult older_adult ///
+	no_high_school high_school some_college college ///
+	employment_nsa income_pcap hpi sex black
 
 
 

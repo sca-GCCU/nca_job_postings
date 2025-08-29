@@ -1,4 +1,4 @@
-cd "C:\Users\scana\OneDrive\Documents\nca_job_postings\data"
+cd "C:\Users\scana\OneDrive\Documents\research\projects\nca_job_postings\data"
 
 log using "oes_groups.log", replace 
 

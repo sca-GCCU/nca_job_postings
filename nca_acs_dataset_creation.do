@@ -417,6 +417,8 @@ label define socmaj_names ///
 
 label values socmaj socmaj_names
 
+label variable socmaj "major, 2-digit soc code"
+
 save "nca_acs_soc.dta", replace 
 
 
