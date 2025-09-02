@@ -55,9 +55,12 @@ qui summarize `out_var' if ban == 1 & treated_eff == 1
 di "The number of post-treatment observations is: " r(N)
 
 
+******************************************************
 
 
-* SUMMARY STATISTICS WITH SOC CODE DATA (NO WEIGHTS)
+* SUMMARY STATISTICS WITH SOC CODE DATA 
+
+* BALANCE TABLE 
 clear all 
 
 use "nca_acs_soc.dta", clear 
@@ -67,26 +70,62 @@ replace sex = 0 if sex == 2
 label define sex_label 0 "female" 1 "male"
 label values sex sex_label
 
-* BALANCE TABLE 
-gen ban_rev = 1 - ban // Ensure proper direction of difference 
+* Recale to account for pooling 23 years 
+gen perwt_pool = perwt/23
 
+qui summ perwt_pool, meanonly
+gen double perwt_norm = perwt_pool/r(mean) 
+
+* Weighted means and SD by ban
 local balance_var age young_adult earlyc_adult mlc_adult older_adult ///
-	yrschool incwage ///
-	no_high_school high_school some_college college ///
+	yrschool incwage no_high_school high_school some_college college ///
 	employment_nsa income_pcap hpi sex black
 
-tabstat `balance_var', by(ban) statistics(mean sd) columns(statistics) ///
-    longstub varwidth(18) format(%9.3f)
+eststo clear 
 	
-estpost ttest `balance_var', by(ban_rev) unequal // Welch two-sample t-test
+quietly estpost summarize `balance_var' if ban==0 [aweight=perwt_norm], listwise
+eststo control 
 
-esttab ., ///
-    cells("mu_2(fmt(%9.3f)) mu_1(fmt(%9.3f)) b(fmt(%9.3f)) se(fmt(%9.3f))") ///
-    unstack
+quietly estpost summarize `balance_var' if ban==1 [aweight=perwt_norm], listwise
+eststo treated 
 
-drop ban_rev 
+* Welch unequal-variance t-tests
+quietly estpost ttest `balance_var', by(ban) unequal 
+eststo diff 
 
-tab ban
+* Export table - DIFFERENCE 
+esttab control treated diff using "balance_soc_table.tex", ///
+    replace label compress nonote ///
+    mlabels("Control" "Treated" "Control - Treated") ///
+    cells( (mean(fmt(%9.3f))) ///
+		   (sd(par fmt(%9.3f))) ///
+           (b(fmt(%9.3f))) ///
+		   (se(par fmt(%9.3f))) ) ///
+	title("Balance Table (ACS pooled, weights normalized; Welch t-test)")
+	
+	// Note: Delete observations in difference column. The number is different 
+	// from the sum of the obs in the Control and Treated columns because those
+	// columns only use observations for which none of the variables is missing.
+
+* Export table - P-VALUE 
+esttab control treated diff using "balance_soc_table_pv.tex", ///
+    replace label compress nonote ///
+    mlabels("Control" "Treated" "Welch p-value") ///
+    cells( ///
+        "mean(fmt(%9.3f))" ///   // Control
+        "sd(par fmt(%9.3f))" ///   // Treated
+        "p(fmt(%9.3g))" ) ///                       // Welch two-sided p-value in diff
+    title("Balance Table (ACS pooled, weights normalized; Welch t-test)")
+
+	
+* SAMPLE COMPOSITION
+* By year effective 
+tab year_eff_ban
+	
+* By year enacted 
+tab year_enact_ban
+
+	// Note: Need to create Latex tables from these outputs. 
 
 
 * PRE AND POST TABLE - EXCLUDING RIGHT NOW  
