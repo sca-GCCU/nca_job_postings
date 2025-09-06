@@ -52,7 +52,7 @@ save "nca_acs_no_controls.dta", replace
 
 
 
-* MERGE ACS AND NONCOMPETE BAN DATA (SOC code version)
+* MERGE ACS AND NONCOMPETE BAN DATA (SOC VERSION)
 clear all 
 
 use "acs_2001-23_v2.dta", clear 
@@ -422,6 +422,52 @@ label variable socmaj "major, 2-digit soc code"
 save "nca_acs_soc.dta", replace 
 
 
+* RESTRICTIONS TO ACCOUNT FOR INDUSTRY/OCCUPATION BANS (SOC VERSION)
+
+* NOTE: 
+* - Sales occupations (SOC-2: 41) already dropped. 
+* - Office and Administrative Support occupations (SOC-2: 43) already dropped 
+
+* Broadcast  
+
+use "nca_acs_soc.dta", clear 
+
+gen broadcast = inlist(occsoc, "272012", "273010", "273011", "273020") ///
+	| inlist(occsoc, "273023", "273041", "273043", "274010", "2740XX",  ///
+	"274030", "274099")
+
+// INCLUDES: Producers and Directors; Announcers; Broadcast Announcers And Radio 
+// Disc Jockeys; News Analysts, Reporters and Correspondents; News Analysts, 
+// Reporters, And Journalists; Editors; Writers and Authors; Broadcast and sound 
+// engineering technicians and radio operators; Broadcast and Sound Engineering 
+// Technicians and Radio Operators, and Media and Communication Equipment 
+// Workers, All Other; Other Media And Communication Equipment Workers; 
+// Television, Video, and Motion Picture Camera Operators and Editors; Media 
+// and Communication Equipment Workers, All Other
+
+drop if broadcast == 1
+
+drop broadcast
+
+* Health   
+
+drop if socmaj == 29 | socmaj == 31
+
+// NOTE: Drop socmaj 29 and 31 to account for healthcare industry bans
+
+* High Tech
+ 
+drop if statefip == 15 
+
+// Note: Drop Hawaii to account for its tech industry ban
+
+* Motor Vehicle Industry 
+
+drop if statefip == 30
+
+// Note: Drop Montana to account for motor vehicle industry ban
+
+save "nca_acs_soc.dta", replace 
 
 
 
