@@ -14,16 +14,7 @@ library(tidyverse)
 library(haven)
 library(lubridate)
 
-# 1. Convert NCA laws file and drop variables I don't need
-
-# Load dta files 
-
-#nca_laws_panel <- read_dta("nca_laws_panel.dta")
-
-# Drop variables I don't need 
-
-#nca_laws_panel %>%
-#  select(statefip, state, year, full_ban, ban, year_eff_ban, month_eff_ban, hw_ban)
+# TREATMENT DATA PREP 
 
 state_data <- tribble(
   ~state_abb, ~statefip,
@@ -47,35 +38,89 @@ state_date_panel <- expand_grid(state_data, months_data) %>%
 
 nca_laws <- read_dta("nca_laws_gks.dta")
 
-# NEXT STEP: Merge nca_laws to state_date_panel. Define treatment variables. 
+treatment_panel <- state_date_panel %>%
+  left_join(nca_laws, by = "statefip")
+
+# Creating treatment dummies (which I may not need)
+treatment_panel <- treatment_panel %>%
+  mutate(
+    panel_date = make_date(year, month, 1L),
+    eff_date = make_date(year_eff_ban, month_eff_ban, 1L), 
+    enact_date = make_date(year_enact_ban, month_enact_ban, 1L)
+  ) %>%
+  mutate(
+    treated_eff = if_else(!is.na(eff_date) & panel_date >= eff_date, 1L, 0L),
+    treated_enact = if_else(!is.na(enact_date) & panel_date >= enact_date, 1L, 0L)
+  )
+
+# Creating unified time index (tname) and group variable (gname) for CS DID
+treatment_panel <- treatment_panel %>%
+  mutate(
+    time_id = year*12L + month,
+    gvar_eff = if_else(!is.na(year_eff_ban) & !is.na(month_eff_ban),
+                       year_eff_ban*12L + month_eff_ban, 0L),
+    gvar_enact = if_else(!is.na(year_enact_ban) & !is.na(month_enact_ban),
+                         year_enact_ban*12L + month_enact_ban, 0L)
+  )
+
+# Creating year-month variable for merging to Lightcast 
+treatment_panel <- treatment_panel %>%
+  mutate(year_month = sprintf("%04d-%02d", year, month))
+
+# Dropping variables I don't need 
+treatment_panel <- treatment_panel %>%
+  rename(ever_treated = ban) %>%
+  select(statefip, state, year_month, time_id, gvar_eff, ever_treated, 
+         full_ban, hw_ban, treated_eff) # Note: Excluding enact var for now. 
+  
+# Save to CSV
+write.csv(treatment_panel, "lightcast_treatment_panel.csv")
 
 
-# Convert to CSV
+# COVARIATE DATA PREP
 
-write.csv(nca_laws_panel, "nca_laws_panel.csv")
-
-# NOTE: Pretty sure these datasets have the wrong date range, since I have to 
-# go from 2010 to 2015.
-
-# 2. Convert BLS Employment data 
-
-#bls_emp <- read_dta("bls_emp.dta")
-
-#bls_emp %>%
-#  select(-employment_nsa)
-
-#write.csv(bls_emp, "bls_emp.csv")
+# 1. BLS Employment data 
 
 bls_emp_2025 <- read_excel("bls_employment_2025.xlsx")
+
+bls_emp_2025 <- bls_emp_2025 %>%
+  filter(!(state %in% c("Los Angeles County", "New York city"))) %>%
+  filter(year >= 2010) %>%
+  mutate(year_month = sprintf("%04d-%02d", year, month))
+
+bls_emp_2025 <- bls_emp_2025 %>%
+  select(statefip, state, year_month, employment_sa)
 
 write.csv(bls_emp_2025, "bls_emp_2025.csv")
 
 
-# 3. Convert FHFA HPI data
+# 2. FHFA HPI data
 
-fhfa_hpi1 <- read_dta("fhfa_hpi1.dta")
+# NOTE: Switch to seasonally-adjusted purchase-only HPI. 
+# Need to do in Stata too. 
 
-fhfa_hpi1 %>% glimpse()
+hpi_po_state <- read_excel("hpi_po_state.xlsx")
+
+hpi_po_state <- hpi_po_state %>%
+  left_join(state_data, by = c("state" = "state_abb"))
+
+hpi_po_state <- hpi_po_state %>%
+  tidyr::uncount(weights = 3, .id = "m_in_qtr") %>%
+  mutate(
+    month = (qtr - 1)*3 + m_in_qtr,
+    date = make_date(yr, month, 1)
+  ) %>%
+  select(statefip, yr, qtr, month, date, index_sa) %>% glimpse()
+
+hpi_po_state <- hpi_po_state %>%
+  filter(yr >= 2010) %>%
+  mutate(year_month = sprintf("%04d-%02d", yr, month)) %>%
+  select(statefip, year_month, index_sa)
+
+write.csv(hpi_po_state, "hpi_po_state.csv")
+
+# 3. BEA Income Data 
+
 
 
 
