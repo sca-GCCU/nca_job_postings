@@ -83,15 +83,13 @@ write.csv(treatment_panel, "lightcast_treatment_panel.csv")
 
 bls_emp_2025 <- read_excel("bls_employment_2025.xlsx")
 
-bls_emp_2025 <- bls_emp_2025 %>%
+lightcast_bls_emp <- bls_emp_2025 %>%
   filter(!(state %in% c("Los Angeles County", "New York city"))) %>%
   filter(year >= 2010) %>%
-  mutate(year_month = sprintf("%04d-%02d", year, month))
-
-bls_emp_2025 <- bls_emp_2025 %>%
+  mutate(year_month = sprintf("%04d-%02d", year, month)) %>%
   select(statefip, state, year_month, employment_sa)
 
-write.csv(bls_emp_2025, "bls_emp_2025.csv")
+write.csv(lightcast_bls_emp, "lightcast_bls_emp.csv")
 
 
 # 2. FHFA HPI data
@@ -101,28 +99,57 @@ write.csv(bls_emp_2025, "bls_emp_2025.csv")
 
 hpi_po_state <- read_excel("hpi_po_state.xlsx")
 
-hpi_po_state <- hpi_po_state %>%
-  left_join(state_data, by = c("state" = "state_abb"))
-
-hpi_po_state <- hpi_po_state %>%
+lightcast_hpi <- hpi_po_state %>%
+  left_join(state_data, by = c("state" = "state_abb")) %>%
   tidyr::uncount(weights = 3, .id = "m_in_qtr") %>%
   mutate(
     month = (qtr - 1)*3 + m_in_qtr,
     date = make_date(yr, month, 1)
   ) %>%
-  select(statefip, yr, qtr, month, date, index_sa) %>% glimpse()
-
-hpi_po_state <- hpi_po_state %>%
   filter(yr >= 2010) %>%
   mutate(year_month = sprintf("%04d-%02d", yr, month)) %>%
   select(statefip, year_month, index_sa)
 
-write.csv(hpi_po_state, "hpi_po_state.csv")
+write.csv(lightcast_hpi, "lightcast_hpi.csv")
 
 # 3. BEA Income Data 
 
+# NOTE: Revise this here. 
 
+bea_income_2025 <- read_csv(
+  "bea_income_2025_clean.csv", 
+  skip = 3,
+  na = c("", "NA", "(NA)", "-", "."),
+  show_col_types = FALSE) 
 
+lightcast_bea_income <- bea_income_2025 %>%
+  select(GeoFips, GeoName, starts_with("20")) %>%
+  filter(GeoFips != "00000" & GeoFips < 9100) %>% 
+  pivot_longer(
+    cols = starts_with("20"),
+    names_to = "yq",
+    values_to = "pinc_per_capita"
+    ) %>%
+  separate(yq, into = c("year", "qtr_chr"), sep = ":", remove = TRUE) %>%
+  mutate(
+    year = as.integer(year),
+    qtr = as.integer(str_remove(qtr_chr, "^Q")),
+    statefip = as.integer(str_sub(GeoFips, 1, 2)),
+    state = str_squish(str_remove(GeoName, "\\s*\\*$"))
+  ) %>%
+  tidyr::uncount(weights = 3, .id = "m_in_qtr") %>%
+  mutate(
+    # map Q1..Q4 to months 1,4,7,10 and offset by 0/1/2 for each month in quarter
+    month = (qtr - 1) * 3 + m_in_qtr,
+    date  = as.Date(sprintf("%d-%02d-01", year, month)),
+    year_month = sprintf("%04d-%02d", year, month)
+  ) %>%
+  select(statefip, state, year_month, pinc_per_capita) %>%
+  arrange(statefip, year_month)
+
+write.csv(lightcast_bea_income, "lightcast_bea_income.csv")  
+
+# MERGE TOGETHER COVARIATES INTO ONE FILE 
 
 
 
