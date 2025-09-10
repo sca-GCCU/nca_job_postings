@@ -13,6 +13,7 @@ library(readxl)
 library(tidyverse)
 library(haven)
 library(lubridate)
+library(purrr)
 
 # TREATMENT DATA PREP 
 
@@ -151,8 +152,18 @@ write.csv(lightcast_bea_income, "lightcast_bea_income.csv")
 
 # MERGE TOGETHER COVARIATES INTO ONE FILE 
 
-
-
+lightcast_covariates <- list(
+  lightcast_bea_income, lightcast_bls_emp, lightcast_hpi
+  ) %>%
+  reduce(inner_join, by = c("year_month", "statefip")) %>%
+  rename(
+    state = state.x, 
+    hpi_sa = index_sa,
+    inc_pcap = pinc_per_capita
+    ) %>%
+  select(-state.y)
+  
+write.csv(lightcast_covariates, "lightcast_covariates.csv")
 
 
 
