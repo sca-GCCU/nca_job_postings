@@ -43,6 +43,7 @@ treatment_panel <- state_date_panel %>%
   left_join(nca_laws, by = "statefip")
 
 # Creating treatment dummies (which I may not need)
+
 treatment_panel <- treatment_panel %>%
   mutate(
     panel_date = make_date(year, month, 1L),
@@ -55,6 +56,7 @@ treatment_panel <- treatment_panel %>%
   )
 
 # Creating unified time index (tname) and group variable (gname) for CS DID
+
 treatment_panel <- treatment_panel %>%
   mutate(
     time_id = year*12L + month,
@@ -65,16 +67,19 @@ treatment_panel <- treatment_panel %>%
   )
 
 # Creating year-month variable for merging to Lightcast 
+
 treatment_panel <- treatment_panel %>%
   mutate(year_month = sprintf("%04d-%02d", year, month))
 
 # Dropping variables I don't need 
+
 treatment_panel <- treatment_panel %>%
   rename(ever_treated = ban) %>%
   select(statefip, state, year_month, time_id, gvar_eff, ever_treated, 
          full_ban, hw_ban, treated_eff) # Note: Excluding enact var for now. 
   
 # Save to CSV
+
 write.csv(treatment_panel, "lightcast_treatment_panel.csv")
 
 
