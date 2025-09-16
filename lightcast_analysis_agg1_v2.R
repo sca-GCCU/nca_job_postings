@@ -60,7 +60,12 @@ occ_listings <- occ_listings %>%
   rename("state" = "state_name.y") %>%
   relocate(state, .after = statefip) %>%
   select(-state_name.x)
-  
+
+# State-Occupation IDs
+
+occ_listings <- occ_listings %>%
+  mutate(occ_state_id = as.integer(interaction(soc_3, statefip, drop = TRUE)))
+
 # 2. Treatment Panel 
 
 treatment_panel <- read.csv("lightcast_treatment_panel.csv")
@@ -184,11 +189,6 @@ balance_table <- by_group %>%
 # DID CODE --------------------------------------------------------------------- 
 
 # General Set-up --------------------------------------------------------------- 
-
-# State-Occ IDs
-
-occ_listings_inc_ban <- occ_listings_inc_ban %>%
-  mutate(occ_state_id = as.integer(interaction(soc_3, statefip, drop = TRUE)))
 
 # Outcome Var Vector 
 
@@ -430,20 +430,40 @@ run_did_for_y_hw <- function(yvar,
     ggtitle(paste0(yvar, " - event study")) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
   
+  ## ---- NEW: carry per-(g,t) sample sizes from did into the tidy table ----
+  gt_n <- if (!is.null(gt$n)) gt$n else rep(NA_real_, length(gt$att))  
+  
   # Tidy-ish tables to be bound across outcomes 
   gt_df <- tibble(
     y = yvar,
     group = gt$group,
     t = gt$t,
     att = gt$att,
-    se = gt$se
+    se = gt$se,
+    n = gt_n
   )
   
+  ## ---- NEW: put run-size summaries into the simple table -----------------
+  # distinct units (ids) in this run with non-missing outcome
+  n_units_panel <- data %>%
+    filter(!is.na(.data[[yvar]])) %>%      # keep only rows with non-missing outcome
+    distinct(!!sym(idname)) %>%            # !! unquotes the symbol made from the string
+    nrow()                                 # count distinct ids
+  
+  # number of (g,t) cells that actually have an ATT estimate
+  n_gt_cells <- sum(!is.na(gt$att))
+  
+  # total unit-periods used across cells (if att_gt stored 'n')
+  n_unit_periods_used <- if (!is.null(gt$n)) sum(gt$n, na.rm = TRUE) else NA_real_
+    
   simple_df <- tibble(
     y = yvar, 
     overall_att = agg_simple$overall.att,
     overall_se = agg_simple$overall.se,
-    overall_p = agg_simple$overall.p
+    overall_p = agg_simple$overall.p,
+    n_units_panel        = n_units_panel,        # distinct ids in this run
+    n_gt_cells           = n_gt_cells,           # number of ATT(g,t) cells
+    n_unit_periods_used  = n_unit_periods_used   # total “n” summed over cells
   )
   
   event_df <- get_event_df(agg_event) %>%
@@ -467,13 +487,13 @@ did_results_hw <- outcomes %>%
     warning("Failed for ", .x, ": ", e$message); NULL
   }))
 
-# IV) Combing tidy tables across outcomes for (for export/reporting)
+# IV) Combing tidy tables across outcomes (for inspection in R)
 
-hw_gt_all <- bind_rows(map(did_results_hw, ~ .x$tables$gt))
+gt_all <- bind_rows(map(did_results_hw, ~ .x$tables$gt))
 simple_all <- bind_rows(map(did_results_hw, ~.x$tables$simple))
 event_all <- bind_rows(map(did_results_hw, ~ .x$tables$event))
 
-# V) Saving the Results (NOTE: This function works for HW and LW)
+# V) Saving the Results (NOTE: THIS FUNCTION WORKS FOR HW AND LW BAN ANALYSIS)
 
 save_did_bundle <- function(did_list,
                             tag,
@@ -491,11 +511,11 @@ save_did_bundle <- function(did_list,
   did_list_clean <- purrr::compact(did_list)
   
   # C) Bind tidy tables defensively (use rlang::`%||%` and coerce NULL->empty tibble)
-  hw_gt_all <- dplyr::bind_rows(purrr::map(did_list_clean, ~ rlang::`%||%`(.x$tables$gt,     NULL)))
+  gt_all <- dplyr::bind_rows(purrr::map(did_list_clean, ~ rlang::`%||%`(.x$tables$gt,     NULL)))
   simple_all <- dplyr::bind_rows(purrr::map(did_list_clean, ~ rlang::`%||%`(.x$tables$simple, NULL)))
   event_all  <- dplyr::bind_rows(purrr::map(did_list_clean, ~ rlang::`%||%`(.x$tables$event,  NULL)))
   
-  if (is.null(hw_gt_all))   hw_gt_all   <- tibble::tibble()
+  if (is.null(gt_all))   gt_all   <- tibble::tibble()
   if (is.null(simple_all))  simple_all  <- tibble::tibble()
   if (is.null(event_all))   event_all   <- tibble::tibble()
   
@@ -520,7 +540,7 @@ save_did_bundle <- function(did_list,
   
   # F) Save objects + tables
   saveRDS(did_list_clean, file = file.path(obj_dir, paste0(tag, "_did_results.rds")))
-  if (nrow(hw_gt_all)  > 0) readr::write_csv(hw_gt_all,  file.path(table_dir, paste0(tag, "_did_group_time_all_outcomes.csv")))
+  if (nrow(gt_all)  > 0) readr::write_csv(gt_all,  file.path(table_dir, paste0(tag, "_did_group_time_all_outcomes.csv")))
   if (nrow(simple_all) > 0) readr::write_csv(simple_all, file.path(table_dir, paste0(tag, "_did_simple_agg_all_outcomes.csv")))
   if (nrow(event_all)  > 0) readr::write_csv(event_all,  file.path(table_dir, paste0(tag, "_did_event_study_all_outcomes.csv")))
   
@@ -535,7 +555,7 @@ save_did_bundle <- function(did_list,
   
   invisible(list(
     results = did_list_clean,
-    tables  = list(gt = hw_gt_all, simple = simple_all, event = event_all),
+    tables  = list(gt = gt_all, simple = simple_all, event = event_all),
     dirs    = list(results_dir = results_dir, plot_dir = plot_dir, table_dir = table_dir, obj_dir = obj_dir)
   ))
 }
@@ -548,85 +568,139 @@ save_did_bundle(did_results_hw, tag = "hw")
 
 # 3. UNCONDITIONAL, LW BANS ----------------------------------------------------
 
-#-----------------------BAN-TYPE ANALYSIS---------------------------------------
+# I) Filter the data 
 
+occ_listings_lw <- occ_listings_inc_ban %>%
+  filter(is.na(hw_ban) | hw_ban == 0)
 
+# Tabulate LW groups only 
 
-run_stratum <- function(tag, keep_val,
-                        data_all    = occ_listings_merged,
-                        outcome_vars = outcomes,  # <— renamed to avoid self-reference
-                        base_dir    = "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings") {
+#occ_listings_lw %>%
+#  count(gvar_eff, name = "count")
+
+#occ_listings_lw %>%
+#  filter(gvar_eff == time_id) %>% # i.e., only obs when treatment occurs 
+#  distinct(gvar_eff, year_month) %>%
+#  arrange(gvar_eff)
+
+# II) Subsets for LW ban group-time plots 
+
+subset1_lw <- c("24205", "24226", "24237")
+subset2_lw <- c("24238", "24241", "24247")
+subset3_lw <- c("24262")
+
+# III) New did running function for LW ban
+
+run_did_for_y_lw <- function(yvar,
+                             data = occ_listings_lw,
+                             tname = "time_id",
+                             idname = "occ_state_id",
+                             gname = "gvar_eff",
+                             clust = "statefip",
+                             allow_unbalanced_panel = FALSE, 
+                             min_e = -36, max_e = 36) {
+  message("Running LW-ban DID for outcome: ", yvar)
   
-  message("=== Running stratum: ", tag, " (treated: hw_ban == ", keep_val, 
-          " | controls: hw_ban == NA) ===")
+  # A) Group-time ATTs 
+  gt <- att_gt(
+    yname = yvar,
+    tname = tname,
+    idname = idname,
+    gname = gname, 
+    data = data, 
+    panel = TRUE,
+    allow_unbalanced_panel = allow_unbalanced_panel,
+    bstrap = TRUE,
+    cband = TRUE,
+    clustervars = clust
+  )
   
-  # Keep treated of this stratum + ALL no-ban states as controls
-  dat <- data_all %>%
-    dplyr::filter(is.na(hw_ban) | hw_ban == keep_val) %>%
-    dplyr::mutate(occ_state_id = as.integer(interaction(soc_3, statefip, drop = TRUE)))
+  # B) Group time plots 
+  p_gt_1 <- ggdid(gt, group = subset1_lw, title = paste0(yvar, " - subset 1 group-time plot")) +
+    guides(x = guide_axis(check.overlap = TRUE)) + 
+    theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
   
-  n_states <- dplyr::n_distinct(dat$statefip)
-  n_units  <- dplyr::n_distinct(dat$occ_state_id)
-  message("   states: ", n_states, " | units: ", n_units, " | rows: ", nrow(dat))
+  p_gt_2 <- ggdid(gt, group = subset2_lw, title = paste0(yvar, " - subset 2 group-time plot")) +
+    guides(x = guide_axis(check.overlap = TRUE)) + 
+    theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
   
-  # Run DID across outcomes
-  did_results <- outcome_vars %>%
-    purrr::set_names() %>%
-    purrr::map(~ tryCatch(
-      run_did_for_y(.x, data = dat),
-      error = function(e) { warning("Failed for ", .x, ": ", e$message); NULL }
-    ))
+  p_gt_3 <- ggdid(gt, group = subset3_lw, title = paste0(yvar, " - subset 3 group-time plot")) +
+    guides(x = guide_axis(check.overlap = TRUE)) + 
+    theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
   
-  # Bind tidy tables
-  gt_all     <- dplyr::bind_rows(purrr::map(did_results, ~ if (!is.null(.x)) .x$tables$gt     else NULL))
-  simple_all <- dplyr::bind_rows(purrr::map(did_results, ~ if (!is.null(.x)) .x$tables$simple else NULL))
-  event_all  <- dplyr::bind_rows(purrr::map(did_results, ~ if (!is.null(.x)) .x$tables$event  else NULL))
+  # C) Simple Aggregation 
+  agg_simple <- aggte(gt, type = "simple")
   
-  # Per-stratum dirs
-  results_dir <- file.path(base_dir, "results", tag)
-  plot_dir    <- file.path(results_dir, "plots")
-  table_dir   <- file.path(results_dir, "tables")
-  obj_dir     <- file.path(results_dir, "objects")
-  for (d in c(plot_dir, table_dir, obj_dir)) if (!dir.exists(d)) dir.create(d, recursive = TRUE)
+  # D) Event study aggregation + plot 
+  agg_event <- aggte(gt, type = "dynamic", min_e = min_e, max_e = max_e)
+  p_event <- ggdid(agg_event, xgap = 2) + 
+    ggtitle(paste0(yvar, " - event study")) + 
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
   
-  # Plot saver
-  save_plot_strat <- function(p, file, pname,
-                              width = 7, height_default = 4.5, height_tall = 13.5, dpi = 300) {
-    height <- if (grepl("^gt_", pname)) height_tall else height_default
-    p <- p + theme(plot.margin = margin(t = 12, r = 8, b = 12, l = 8))
-    ggplot2::ggsave(filename = file, plot = p, path = plot_dir,
-                    width = width, height = height, dpi = dpi, units = "in")
-  }
+  # Carry per-(g,t) sample sizes into the tidy table 
+  gt_n <- if(!is.null(gt$n)) gt$n else rep(NA_real_, length(gt$att))
   
-  # Save plots
-  purrr::iwalk(did_results, function(res, yname) {
-    if (is.null(res)) return(invisible(NULL))
-    purrr::iwalk(res$plots, function(p, pname) {
-      fname <- paste0(tag, "_", yname, "_", pname, ".png")
-      save_plot_strat(p, file = fname, pname = pname)
-    })
-  })
+  gt_df <- tibble(
+    y = yvar, 
+    group = gt$group, 
+    t = gt$t,
+    att = gt$att, 
+    se = gt$se, 
+    n = gt_n
+  )
   
-  # Save objects + tables
-  saveRDS(did_results, file = file.path(obj_dir, paste0(tag, "_did_results.rds")))
-  if (nrow(gt_all)     > 0) readr::write_csv(gt_all,     file.path(table_dir, paste0(tag, "_did_group_time_all_outcomes.csv")))
-  if (nrow(simple_all) > 0) readr::write_csv(simple_all, file.path(table_dir, paste0(tag, "_did_simple_agg_all_outcomes.csv")))
-  if (nrow(event_all)  > 0) readr::write_csv(event_all,  file.path(table_dir, paste0(tag, "_did_event_study_all_outcomes.csv")))
+  # distinct units (ids) in this run with non-missing outcome
+  n_units_panel <- data %>%
+    filter(!is.na(.data[[yvar]])) %>%      # keep only rows with non-missing outcome
+    distinct(!!sym(idname)) %>%            # !! unquotes the symbol made from the string
+    nrow()                                 # count distinct ids
   
-  invisible(list(data = dat,
-                 results = did_results,
-                 tables = list(gt = gt_all, simple = simple_all, event = event_all),
-                 dirs = list(results_dir = results_dir, plot_dir = plot_dir, table_dir = table_dir, obj_dir = obj_dir)))
+  # number of (g,t) cells that actually have an ATT estimate
+  n_gt_cells <- sum(!is.na(gt$att))
+  
+  # total unit-periods used across cells (if att_gt stored 'n')
+  n_unit_periods_used <- if (!is.null(gt$n)) sum(gt$n, na.rm = TRUE) else NA_real_
+  
+  simple_df <- tibble(
+    y = yvar,
+    overall_att = agg_simple$overall.att,
+    overall_se = agg_simple$overall.se, 
+    overall_p = agg_simple$overall.p,
+    n_units_panel = n_units_panel,
+    n_gt_cells = n_gt_cells,
+    n_unit_periods_used = n_unit_periods_used
+  )
+  
+  event_df <- get_event_df(agg_event) %>%
+    mutate(y = yvar, .before = 1)
+  
+  list(
+    y = yvar,
+    gt = gt, 
+    agg_simple = agg_simple,
+    agg_event = agg_event,
+    plots = list(gt_1 = p_gt_1, gt_2 = p_gt_2, gt_3 = p_gt_3, event = p_event),
+    tables = list(gt = gt_df, simple = simple_df, event = event_df)
+  )
 }
 
+# IV) Run across all outcomes (with error-robust mapping)
 
-# Run once per strata 
+did_results_lw <- outcomes %>%
+  set_names() %>%
+  map(~ tryCatch(run_did_for_y_lw(.x), error = function(e){
+    warning("Failed for ", .x, ": ", e$message); NULL
+  }))
 
-# High-wage ban stratum: treated = hw_ban==1; controls = no-ban (NA)
-out_hw <- run_stratum(tag = "hw", keep_val = 1)
+# V) Combining tidy tables across outcomes (for inspection in R)
 
-# Low-wage ban stratum: treated = hw_ban==0; controls = no-ban (NA)
-out_lw <- run_stratum(tag = "lw", keep_val = 0)
+gt_all <- bind_rows(map(did_results_lw, ~ .x$tables$gt))
+simple_all <- bind_rows(map(did_results_lw, ~ .x$tables$simple))
+event_all <- bind_rows(map(did_results_lw, ~ .x$tables$event))
+
+# VI) Running the "Save" Function 
+
+save_did_bundle(did_results_lw, tag = "lw") 
 
 
 
