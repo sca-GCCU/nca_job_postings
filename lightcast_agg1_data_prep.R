@@ -1,12 +1,8 @@
-# Clear everything in the environment 
+# PREAMBLE ---------------------------------------------------------------------
 
 rm(list = ls())
 
-# Change directory to the directory where my data is stored
-
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data")
-
-# Load packages 
 
 library(readr)
 library(readxl)
@@ -15,7 +11,7 @@ library(haven)
 library(lubridate)
 library(purrr)
 
-# TREATMENT DATA PREP 
+# TREATMENT DATA PREP ----------------------------------------------------------
 
 state_data <- tribble(
   ~state_abb, ~statefip,
@@ -83,7 +79,7 @@ treatment_panel <- treatment_panel %>%
 write.csv(treatment_panel, "lightcast_treatment_panel.csv")
 
 
-# COVARIATE DATA PREP
+# COVARIATE DATA PREP ----------------------------------------------------------
 
 # 1. BLS Employment data 
 
@@ -124,7 +120,7 @@ write.csv(lightcast_hpi, "lightcast_hpi.csv")
 
 bea_income_2025 <- read_csv(
   "bea_income_2025_clean.csv", 
-  skip = 3,
+  #skip = 3,
   na = c("", "NA", "(NA)", "-", "."),
   show_col_types = FALSE) 
 
@@ -155,7 +151,7 @@ lightcast_bea_income <- bea_income_2025 %>%
 
 write.csv(lightcast_bea_income, "lightcast_bea_income.csv")  
 
-# MERGE TOGETHER COVARIATES INTO ONE FILE 
+# MERGE TOGETHER COVARIATES INTO ONE FILE --------------------------------------
 
 lightcast_covariates <- list(
   lightcast_bea_income, lightcast_bls_emp, lightcast_hpi

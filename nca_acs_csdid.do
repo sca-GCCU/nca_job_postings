@@ -15,9 +15,7 @@ use "nca_acs_soc.dta", clear
 
 * ESTIMATION FOR AGE
 * By year effective
-	
-replace year_eff_ban = 0 if missing(year_eff_ban) // recode gvar properly
-	
+		
 keep age perwt year year_eff_ban // drop unnecessary variables 
 
 compress 

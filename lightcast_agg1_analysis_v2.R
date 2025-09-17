@@ -66,6 +66,59 @@ occ_listings <- occ_listings %>%
 occ_listings <- occ_listings %>%
   mutate(occ_state_id = as.integer(interaction(soc_3, statefip, drop = TRUE)))
 
+# Checking the min value of total_postings for zeros
+
+#min(occ_listings$total_postings)
+#occ_listings %>% count(total_postings == 0)
+
+# Note: Includes zeros. 
+
+# Checking the min values of some of the other variables 
+
+#min(occ_listings$any_educ)
+#occ_listings %>% count(any_educ == 0)
+
+# Note: Includes NAs and zeros.
+
+# Recode variables as shares 
+
+occ_listings <- occ_listings %>%
+  mutate(
+    sany_educ = ifelse(total_postings == 0, NA, any_educ / total_postings),
+    sbachelor = ifelse(total_postings == 0, NA, bachelor / total_postings),
+    smaster = ifelse(total_postings == 0, NA, master / total_postings),
+    sdoctorate = ifelse(total_postings == 0, NA, doctorate / total_postings),
+    scomputer_skills = ifelse(total_postings == 0, NA, computer_skills / total_postings),
+    scognitive_skills = ifelse(total_postings == 0, NA, cognitive_skills / total_postings)
+  )
+
+# Checking my coding of the share variables 
+
+#occ_listings %>% filter(is.na(sany_educ) & total_postings > 0) # shouldn't happen
+# verified all NAs occur only when total_postings = 0 
+
+#occ_listings %>% filter(sany_educ == 0 & total_postings == 0) # shouldn't happen
+# verified all zeros occur only when total_postings > 0 
+
+#class(occ_listings$sany_educ)
+#numeric
+
+#unique(occ_listings$sany_educ[occ_listings$sany_educ == 0])
+# zeros appear to be numeric (as they should be) and distinct from NA.
+
+#table(
+#  is_na = is.na(occ_listings$sany_educ), 
+#  is_zero = occ_listings$sany_educ == 0,
+#  useNA = "ifany"
+#)
+# zeros and NAs appear to be distinct (they're in different cells).
+
+# Drop non-share versions of variables 
+
+occ_listings <- occ_listings %>%
+  select(-any_educ:-cognitive_skills)
+
+
 # 2. Treatment Panel 
 
 treatment_panel <- read.csv("lightcast_treatment_panel.csv")
@@ -142,8 +195,8 @@ by_group <- occ_listings_inc_ban %>%
   group_by(ever_treated) %>%
   summarize(
     across(
-      c(total_postings, any_educ, bachelor, master, doctorate, 
-        computer_skills, cognitive_skills, inc_pcap, employment_sa, hpi_sa),
+      c(total_postings, sany_educ, sbachelor, smaster, sdoctorate, 
+        scomputer_skills, scognitive_skills, inc_pcap, employment_sa, hpi_sa),
       list(mean = ~mean(.x, na.rm = TRUE),
            sd = ~sd(.x, na.rm = TRUE),
            n = ~sum(!is.na(.x))),
@@ -159,8 +212,8 @@ by_group <- occ_listings_inc_ban %>%
 
 # Welch test 
 
-vars <- c("total_postings", "any_educ", "bachelor", "master", "doctorate",
-          "computer_skills", "cognitive_skills", 
+vars <- c("total_postings", "sany_educ", "sbachelor", "smaster", "sdoctorate",
+          "scomputer_skills", "scognitive_skills", 
           "inc_pcap", "employment_sa", "hpi_sa")
 
 welch_results <- map_dfr(vars, function(v) {
@@ -193,8 +246,8 @@ balance_table <- by_group %>%
 # Outcome Var Vector 
 
 outcomes <- c(
-  "total_postings", "any_educ", "bachelor", "master", "doctorate", 
-  "computer_skills", "cognitive_skills"
+  "total_postings", "sany_educ", "sbachelor", "smaster", "sdoctorate", 
+  "scomputer_skills", "scognitive_skills"
 )
 
 # Function to extract event-study vectors (regardless of object names)
@@ -227,7 +280,7 @@ run_did_for_y <- function(yvar,
                           idname = "occ_state_id",
                           gname = "gvar_eff",
                           clust = "statefip",
-                          allow_unbalanced_panel = FALSE,
+                          allow_unbalanced_panel = TRUE,
                           min_e = -36, max_e = 36) {
   message("Running DID for outcome: ", yvar)
   
@@ -396,7 +449,7 @@ run_did_for_y_hw <- function(yvar,
                              idname = "occ_state_id",
                              gname = "gvar_eff",
                              clust = "statefip",
-                             allow_unbalanced_panel = FALSE, # may be forced to change this
+                             allow_unbalanced_panel = TRUE, # may be forced to change this
                              min_e = -36, max_e = 36) {
   message("Running HW-ban DID for outcome: ", yvar)
   
@@ -597,7 +650,7 @@ run_did_for_y_lw <- function(yvar,
                              idname = "occ_state_id",
                              gname = "gvar_eff",
                              clust = "statefip",
-                             allow_unbalanced_panel = FALSE, 
+                             allow_unbalanced_panel = TRUE, 
                              min_e = -36, max_e = 36) {
   message("Running LW-ban DID for outcome: ", yvar)
   
