@@ -243,7 +243,10 @@ replace yrschool = 19 if educd == 112 // 7
 replace yrschool = 18 if educd == 114 // masters degree 
 replace yrschool = 19 if educd == 115 // professional degree beyond bachelors 
 replace yrschool = 20 if educd == 116 // doctoral 
-label variable yrschool "potential experience"
+label variable yrschool "years of school"
+
+	* Potential Experience Variable 
+gen pot_exp = age - yrschool - 6 // assumes start school at age 6
 
 save "nca_acs.dta", replace 
 
@@ -251,7 +254,7 @@ save "nca_acs.dta", replace
 
 	
 
-* CREATE SOC DATASET -----------------------------------------------------------
+* CREATE SOC DATASET -----------------------------------------------------------
 
 
 * 1) Merge ACS data (that has SOC codes) with Treatment Panel 
@@ -393,7 +396,12 @@ replace yrschool = 19 if educd == 112 // 7
 replace yrschool = 18 if educd == 114 // masters degree 
 replace yrschool = 19 if educd == 115 // professional degree beyond bachelors 
 replace yrschool = 20 if educd == 116 // doctoral 
-label variable yrschool "potential experience"
+label variable yrschool "years of school"
+
+
+	* Potential Experience Variable 
+gen pot_exp = age - yrschool - 6 // assumes start school at age 6
+	
 
 save "nca_acs_soc.dta", replace 
 
