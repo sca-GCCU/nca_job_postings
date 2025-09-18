@@ -202,6 +202,14 @@ label variable college "bachelor's degree or higher indicator"
 	* Create an indicator specifically for black
 gen black = (race == 2)
 label variable black "black indicator"
+label define BLACK 1 "black" 0 "not black"
+label values black BLACK 
+
+	* Create male indicator
+gen male = (sex == 1)
+label variable male "male indicator"
+label define MALE 1 "male" 0 "female"
+label values male MALE 
 
 	* Create years of schooling variable 
 gen yrschool = .
@@ -247,6 +255,8 @@ label variable yrschool "years of school"
 
 	* Potential Experience Variable 
 gen pot_exp = age - yrschool - 6 // assumes start school at age 6
+replace pot_exp = 0 if pot_exp < 0 // truncate at 0 
+label variable pot_exp "potential experience"	
 
 save "nca_acs.dta", replace 
 
@@ -355,6 +365,14 @@ label variable college "bachelor's degree or higher indicator"
 	* Create an indicator specifically for black
 gen black = (race == 2)
 label variable black "black indicator"
+label define BLACK 1 "black" 0 "not black"
+label values black BLACK 
+
+	* Create male indicator
+gen male = (sex == 1)
+label variable male "male indicator"
+label define MALE 1 "male" 0 "female"
+label values male MALE 
 
 	* Create years of schooling variable 
 gen yrschool = .
@@ -398,10 +416,10 @@ replace yrschool = 19 if educd == 115 // professional degree beyond bachelors
 replace yrschool = 20 if educd == 116 // doctoral 
 label variable yrschool "years of school"
 
-
 	* Potential Experience Variable 
 gen pot_exp = age - yrschool - 6 // assumes start school at age 6
-	
+replace pot_exp = 0 if pot_exp < 0 // truncate at 0 
+label variable pot_exp "potential experience"	
 
 save "nca_acs_soc.dta", replace 
 
