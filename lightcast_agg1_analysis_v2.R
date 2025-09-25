@@ -302,23 +302,28 @@ run_did_for_y <- function(yvar,
   p_gt_1 <- ggdid(gt, group = subset1, title = paste0(yvar, " — subset 1")) +
     guides(x = guide_axis(check.overlap = TRUE)) +
     theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  attr(p_gt_1, "n_groups") <- length(subset1)
   
   p_gt_2 <- ggdid(gt, group = subset2, title = paste0(yvar, " — subset 2")) +
     guides(x = guide_axis(check.overlap = TRUE)) +
     theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  attr(p_gt_2, "n_groups") <- length(subset2)
   
   p_gt_3 <- ggdid(gt, group = subset3, title = paste0(yvar, " — subset 3")) +
     guides(x = guide_axis(check.overlap = TRUE)) +
     theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  attr(p_gt_3, "n_groups") <- length(subset3)
   
   # C) Simple aggregation
   agg_simple <- aggte(gt, type = "simple")
   
   # D) Event study aggregation + plot
   agg_event  <- aggte(gt, type = "dynamic", min_e = min_e, max_e = max_e)
+  
   p_event    <- ggdid(agg_event, xgap = 2) +
     ggtitle(paste0(yvar, " — event study")) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+  attr(p_event, "n_groups") <- 1L   # single panel
   
   # Tidy-ish tables to be bound across outcomes
   gt_df <- tibble(
@@ -333,7 +338,8 @@ run_did_for_y <- function(yvar,
     y          = yvar,
     overall_att = agg_simple$overall.att,
     overall_se  = agg_simple$overall.se,
-    overall_p   = agg_simple$overall.p
+    overall_p   = agg_simple$overall.p,
+    n_total_unit = gt$n   # total units used
   )
   
   event_df <- get_event_df(agg_event) %>% # Calling functrion to retrieve event-study
@@ -376,23 +382,48 @@ for (d in c(plot_dir, table_dir, obj_dir)) {
   if (!dir.exists(d)) dir.create(d, recursive = TRUE)
 }
 
+# --- NEW: Improved plot height controls ---
+# iv) Helper to calculate number of panels 
+
+num_panels <- function(p) {
+  if (!is.null(attr(p, "n_groups"))) return(attr(p, "n_groups"))
+  # fall-back if I add plots and don't attach n_group attributes 
+  b <- ggplot_build(p)
+  if (!is.null(b$layout$layout$PANEL)) {
+    return(unique(length(b$layout$layout$PANEL)))
+  }
+  1L
+}
+
+# v) Helper to calculate height 
+
+calc_height <- function(n, base = 2.0, per_group = 1.2, max_height = 14) {
+  height <- base + per_group * n
+  pmin(height, max_height)
+}
+
+
 # iv) Plot saver with dynamic height 
-save_plot <- function(p, file, pname,
-                      width = 7, height_default = 4.5, height_tall = 13.5, dpi = 300) {
-  # Make subset plots taller
-  height <- if (grepl("^gt_", pname)) height_tall else height_default
+save_plot <- function(p, file, pname, 
+                      width = 7,
+                      base_height = 2.0,
+                      per_group = 1.2,
+                      max_height = 14,
+                      dpi = 300) {
+
+  n <- num_panels(p)
+  height <- calc_height(n, base = base_height, per_group = per_group, max_height = max_height)
   
-  # Add a bit of margin to help crowded x-axes
-  p <- p + theme(plot.margin = margin(t = 12, r = 8, b = 12, l = 8))
+  p <- p + theme(plot.margin = margin(t = 12, r = 6, b = 12, l = 8))
   
   ggplot2::ggsave(
     filename = file,
-    plot = p,
-    path = plot_dir,
-    width = width,
-    height = height,
-    dpi = dpi,
-    units = "in"
+    plot     = p,
+    path     = plot_dir,
+    width    = width,
+    height   = height,
+    dpi      = dpi,
+    units    = "in"
   )
 }
 
@@ -421,7 +452,7 @@ readr::write_csv(event_all,  file.path(table_dir, "did_event_study_all_outcomes.
 occ_listings_hw <- occ_listings_inc_ban %>%
   filter(is.na(hw_ban) | hw_ban == 1)
 
-# Tabulate orginal groups 
+# Tabulate original groups 
 
 #occ_listings_inc_ban %>% 
 #  count(gvar_eff, name = "count")
@@ -473,6 +504,7 @@ run_did_for_y_hw <- function(yvar,
   p_gt <- ggdid(gt, title = paste0(yvar, " - group-time plot")) + 
     guides(x = guide_axis(check.overlap = TRUE)) +
     theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  attr(p_gt, "n_groups") <- 1L # single panel
   
   # C) Simple Aggregation 
   agg_simple <- aggte(gt, type = "simple")
@@ -482,9 +514,7 @@ run_did_for_y_hw <- function(yvar,
   p_event <- ggdid(agg_event, xgap = 2) +
     ggtitle(paste0(yvar, " - event study")) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
-  
-  ## ---- NEW: carry per-(g,t) sample sizes from did into the tidy table ----
-  gt_n <- if (!is.null(gt$n)) gt$n else rep(NA_real_, length(gt$att))  
+  attr(p_event, "n_groups") <- 1L # single panel
   
   # Tidy-ish tables to be bound across outcomes 
   gt_df <- tibble(
@@ -492,31 +522,15 @@ run_did_for_y_hw <- function(yvar,
     group = gt$group,
     t = gt$t,
     att = gt$att,
-    se = gt$se,
-    n = gt_n
+    se = gt$se
   )
   
-  ## ---- NEW: put run-size summaries into the simple table -----------------
-  # distinct units (ids) in this run with non-missing outcome
-  n_units_panel <- data %>%
-    filter(!is.na(.data[[yvar]])) %>%      # keep only rows with non-missing outcome
-    distinct(!!sym(idname)) %>%            # !! unquotes the symbol made from the string
-    nrow()                                 # count distinct ids
-  
-  # number of (g,t) cells that actually have an ATT estimate
-  n_gt_cells <- sum(!is.na(gt$att))
-  
-  # total unit-periods used across cells (if att_gt stored 'n')
-  n_unit_periods_used <- if (!is.null(gt$n)) sum(gt$n, na.rm = TRUE) else NA_real_
-    
   simple_df <- tibble(
     y = yvar, 
     overall_att = agg_simple$overall.att,
     overall_se = agg_simple$overall.se,
     overall_p = agg_simple$overall.p,
-    n_units_panel        = n_units_panel,        # distinct ids in this run
-    n_gt_cells           = n_gt_cells,           # number of ATT(g,t) cells
-    n_unit_periods_used  = n_unit_periods_used   # total “n” summed over cells
+    n_total_unit = gt$n # total units used 
   )
   
   event_df <- get_event_df(agg_event) %>%
@@ -548,6 +562,27 @@ event_all <- bind_rows(map(did_results_hw, ~ .x$tables$event))
 
 # V) Saving the Results (NOTE: THIS FUNCTION WORKS FOR HW AND LW BAN ANALYSIS)
 
+# i) Helper to calculate number of panels 
+
+num_panels <- function(p) {
+  if (!is.null(attr(p, "n_groups"))) return(attr(p, "n_groups"))
+  # fall-back if I add plots and don't attach n_group attributes 
+  b <- ggplot_build(p)
+  if (!is.null(b$layout$layout$PANEL)) {
+    return(unique(length(b$layout$layout$PANEL)))
+  }
+  1L
+}
+
+# ii) Helper to calculate height 
+
+calc_height <- function(n, base = 2.0, per_group = 1.2, max_height = 14) {
+  height <- base + per_group * n
+  pmin(height, max_height)
+}
+
+# iii) Plot saver for one strata (HW/LW)
+
 save_did_bundle <- function(did_list,
                             tag,
                             base_dir = "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings") {
@@ -572,14 +607,28 @@ save_did_bundle <- function(did_list,
   if (is.null(simple_all))  simple_all  <- tibble::tibble()
   if (is.null(event_all))   event_all   <- tibble::tibble()
   
-  # D) Plot saver — tall for group-time or names starting with "gt_"
-  save_plot_strat <- function(p, file, pname,
-                              width = 7, height_default = 4.5, height_tall = 13.5, dpi = 300) {
-    is_tall <- grepl("^gt", pname)
-    height  <- if (is_tall) height_tall else height_default
-    p <- p + ggplot2::theme(plot.margin = ggplot2::margin(t = 12, r = 8, b = 12, l = 8))
-    ggplot2::ggsave(filename = file, plot = p, path = plot_dir,
-                    width = width, height = height, dpi = dpi, units = "in")
+  # D) Plot saver 
+  save_plot_strat <- function(p, file, pname, 
+                        width = 7,
+                        base_height = 2.0,
+                        per_group = 1.2,
+                        max_height = 14,
+                        dpi = 300) {
+    
+    n <- num_panels(p)
+    height <- calc_height(n, base = base_height, per_group = per_group, max_height = max_height)
+    
+    p <- p + theme(plot.margin = margin(t = 12, r = 6, b = 12, l = 8))
+    
+    ggplot2::ggsave(
+      filename = file,
+      plot     = p,
+      path     = plot_dir,
+      width    = width,
+      height   = height,
+      dpi      = dpi,
+      units    = "in"
+    )
   }
   
   # E) Save plots (one file per outcome x plot kind)
@@ -672,14 +721,17 @@ run_did_for_y_lw <- function(yvar,
   p_gt_1 <- ggdid(gt, group = subset1_lw, title = paste0(yvar, " - subset 1 group-time plot")) +
     guides(x = guide_axis(check.overlap = TRUE)) + 
     theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  attr(p_gt_1, "n_groups") <- length(subset1_lw)
   
   p_gt_2 <- ggdid(gt, group = subset2_lw, title = paste0(yvar, " - subset 2 group-time plot")) +
     guides(x = guide_axis(check.overlap = TRUE)) + 
     theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  attr(p_gt_2, "n_groups") <- length(subset2_lw)
   
   p_gt_3 <- ggdid(gt, group = subset3_lw, title = paste0(yvar, " - subset 3 group-time plot")) +
     guides(x = guide_axis(check.overlap = TRUE)) + 
     theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  attr(p_gt_3, "n_groups") <- length(subset3_lw)
   
   # C) Simple Aggregation 
   agg_simple <- aggte(gt, type = "simple")
@@ -689,6 +741,7 @@ run_did_for_y_lw <- function(yvar,
   p_event <- ggdid(agg_event, xgap = 2) + 
     ggtitle(paste0(yvar, " - event study")) + 
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+  attr(p_event, "n_groups") <- 1L   # single panel
   
   # Carry per-(g,t) sample sizes into the tidy table 
   gt_n <- if(!is.null(gt$n)) gt$n else rep(NA_real_, length(gt$att))
@@ -698,30 +751,15 @@ run_did_for_y_lw <- function(yvar,
     group = gt$group, 
     t = gt$t,
     att = gt$att, 
-    se = gt$se, 
-    n = gt_n
+    se = gt$se
   )
-  
-  # distinct units (ids) in this run with non-missing outcome
-  n_units_panel <- data %>%
-    filter(!is.na(.data[[yvar]])) %>%      # keep only rows with non-missing outcome
-    distinct(!!sym(idname)) %>%            # !! unquotes the symbol made from the string
-    nrow()                                 # count distinct ids
-  
-  # number of (g,t) cells that actually have an ATT estimate
-  n_gt_cells <- sum(!is.na(gt$att))
-  
-  # total unit-periods used across cells (if att_gt stored 'n')
-  n_unit_periods_used <- if (!is.null(gt$n)) sum(gt$n, na.rm = TRUE) else NA_real_
   
   simple_df <- tibble(
     y = yvar,
     overall_att = agg_simple$overall.att,
     overall_se = agg_simple$overall.se, 
     overall_p = agg_simple$overall.p,
-    n_units_panel = n_units_panel,
-    n_gt_cells = n_gt_cells,
-    n_unit_periods_used = n_unit_periods_used
+    n_total_unit = gt$n   # total units used
   )
   
   event_df <- get_event_df(agg_event) %>%
