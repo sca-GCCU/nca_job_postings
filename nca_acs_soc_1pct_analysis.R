@@ -10,6 +10,7 @@ library(survey)
 library(purrr)
 library(readr)
 library(tibble)
+library(rlang)
 
 set.seed(1390)
 
@@ -31,9 +32,17 @@ combined_vars <- c(outcome_vars, control_vars)
 # RESULTS DIR ------------------------------------------------------------------
 res_dir <- file.path(
   "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings",
-  "results_acs"
+  "results_acs_1pct"
 )
 if (!dir.exists(res_dir)) dir.create(res_dir, recursive = TRUE)
+
+plot_dir  <- file.path(res_dir, "plots")
+table_dir <- file.path(res_dir, "tables")
+obj_dir   <- file.path(res_dir, "objects")
+
+for (d in c(plot_dir, table_dir, obj_dir)) {
+  if (!dir.exists(d)) dir.create(d, recursive = TRUE)
+}
 
 # SUMMARY STATISTICS (srvyr) ---------------------------------------------------
 des <- nca_acs_soc_1pct %>%
@@ -115,6 +124,122 @@ cat("Files written to:", res_dir, "\n")
 
 
 # CS DID -----------------------------------------------------------------------
+
+# Tabulate Groups 
+#nca_acs_soc_1pct %>%
+#  count(year_eff_ban, name = "count")
+
+# I) SET-UP 
+# a) Subsetting for Group-Time Plots 
+
+subset1 <- c("2008", "2017", "2018")
+subset2 <- c("2019", "2020", "2021")
+subset3 <- c("2022") # I'll need to revise the code so that this plot has proper height
+
+# b) Function to extract event-study vectors (regardless of object names)
+
+get_event_df <- function(ev_obj) {
+  # dynamic aggte usually stores these as egt/att.egt/se.egt
+  nm <- names(ev_obj)
+  e   <- ev_obj[[if ("egt"      %in% nm) "egt"      else "e"]]
+  att <- ev_obj[[if ("att.egt"  %in% nm) "att.egt"  else "att"]]
+  se  <- ev_obj[[if ("se.egt"   %in% nm) "se.egt"   else "se"]]
+  tibble(e = e, att = att, se = se)
+}
+
+# II) Function to Run DID (fixed)
+run_did_for_y <- function(yvar, 
+                          data = nca_acs_soc_1pct,  # CHANGE IN CLUSTER
+                          tname = "year",
+                          gname = "year_eff_ban",
+                          panel = FALSE, 
+                          bstrap = TRUE, 
+                          cband = TRUE, 
+                          clustervars = "statefip",
+                          min_e = -5, max_e = 5) {
+  yvar <- as.character(yvar)
+  message("Running DID for outcome: ", yvar)
+  
+  # A) Group-time ATTs
+  gt <- did::att_gt(
+    yname      = yvar, 
+    tname      = tname, 
+    gname      = gname, 
+    data       = data, 
+    panel      = panel, 
+    bstrap     = bstrap, 
+    cband      = cband, 
+    clustervars = clustervars
+  )
+  
+  # B) Group-time plots  
+  p_gt_1 <- ggdid(gt, group = subset1, title = paste0(yvar, " - subset 1")) + 
+    theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  
+  p_gt_2 <- ggdid(gt, group = subset2, title = paste0(yvar, " - subset 2")) + 
+    theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  
+  p_gt_3 <- ggdid(gt, group = subset3, title = paste0(yvar, " - subset 3")) + 
+    theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  
+  # C) Simple aggregation 
+  agg_simple <- aggte(gt, type = "simple")
+  
+  # D) Event-study aggregation + plot 
+  agg_event <- aggte(gt, type = "dynamic", min_e = min_e, max_e = max_e)
+  p_event <- ggdid(agg_event) + 
+    ggtitle(paste0(yvar, " - event study")) +
+    theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+  
+  # Tidy-ish tables 
+  gt_df <- tibble(
+    y    = yvar, 
+    group = gt$group, 
+    t     = gt$t, 
+    att   = gt$att, 
+    se    = gt$se
+  )
+  
+  simple_df <- tibble(
+    y           = yvar,
+    overall_att = agg_simple$overall.att,
+    overall_se  = agg_simple$overall.se,
+    overall_p   = agg_simple$overall.p
+  )
+  
+  event_df <- get_event_df(agg_event) %>% dplyr::mutate(y = yvar, .before = 1)
+  
+  list(
+    y          = yvar,
+    gt         = gt,
+    agg_simple = agg_simple,
+    agg_event  = agg_event,
+    plots      = list(gt_subset1 = p_gt_1, gt_subset2 = p_gt_2, gt_subset3 = p_gt_3, event = p_event),
+    tables     = list(gt = gt_df, simple = simple_df, event = event_df)
+  )
+}
+
+# III) Run across all outcomes
+did_results <- outcome_vars %>%
+  set_names() %>%
+  map(~ tryCatch(run_did_for_y(.x),
+                        error = function(e) { warning("Failed for ", .x, ": ", e$message); NULL }))
+
+# TRY FOR JUST ONE OUTCOME TO MAKE SURE ITS WORKING.
+
+
+# IV) Combine tidy tables across outcomes (skip failures safely)
+did_results_ok <- compact(did_results)
+
+gt_all     <- map(did_results_ok, ~ .x$tables$gt)     |> dplyr::bind_rows()
+simple_all <- map(did_results_ok, ~ .x$tables$simple) |> dplyr::bind_rows()
+event_all  <- map(did_results_ok, ~ .x$tables$event)  |> dplyr::bind_rows()
+
+# ADD PLOTS AND CODE FOR SAVING CSV FILES 
+
+
+# ADD HW AND LW PARTS OF CODE 
+
 
 
 

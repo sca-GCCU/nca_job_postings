@@ -320,7 +320,7 @@ run_did_for_y <- function(yvar,
     ggtitle(paste0(yvar, " — event study")) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
   
-  # Tidy-ish tables you can bind across outcomes
+  # Tidy-ish tables to be bound across outcomes
   gt_df <- tibble(
     y    = yvar,
     group = gt$group,
