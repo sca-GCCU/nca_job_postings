@@ -133,8 +133,9 @@ covariate_panel <- read_csv("lightcast_covariates.csv")
 
 occ_listings_merged <- list(occ_listings, treatment_panel, covariate_panel) %>%
   reduce(inner_join, by = c("statefip", "year_month")) %>%
-  select(-state.x, -state.y, -X.x, -X.y) %>% 
+  select(-state.x, -state.y, -...1.x, -...1.y) %>% 
   relocate(state, .after = statefip)
+# NOTE: Sometimes the select causes problems if the var doesn't exist.
 
 
 # IMPOSING RESTRICTIONS FOR INDUSTRY BANS --------------------------------------
@@ -269,9 +270,9 @@ get_event_df <- function(ev_obj) {
 
 # I) Subgroups for "All Ban" figures 
 
-subset1 <- c("24205", "24226", "24237")
-subset2 <- c("24238", "24241", "24247")
-subset3 <- c("24262", "24272", "24274")
+subset1 <- c(24205L, 24226L, 24237L)
+subset2 <- c(24238L, 24241L, 24247L)
+subset3 <- c(24262L, 24272L, 24274L)
 
 # II) Function to run DID for single outcome 
 
@@ -466,12 +467,16 @@ occ_listings_hw <- occ_listings_inc_ban %>%
 # Tabulate HW groups only 
 
 #occ_listings_hw %>%
-#  count(gvar_eff, name = "count")
+#  count(gvar_eff, name = "count") # Includes one extra that is outside timeframe.
 
 #occ_listings_hw %>%
 #  filter(gvar_eff == time_id) %>%
 #  distinct(gvar_eff, year_month) %>%
 #  arrange(gvar_eff)
+
+# II) Subset for G-T plots 
+
+subset_hw <- c(24241L, 24272L, 24274L)
 
 # II) New did running function for HW ban
 
@@ -502,10 +507,10 @@ run_did_for_y_hw <- function(yvar,
   # NOTE: Forgoing splitting the group-time plots up for the time being
   
   # B) Group-time plot 
-  p_gt <- ggdid(gt, title = paste0(yvar, " - group-time plot")) + 
+  p_gt <- ggdid(gt, group = subset_hw, title = paste0(yvar, " - group-time plot")) + 
     guides(x = guide_axis(check.overlap = TRUE)) +
     theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
-  attr(p_gt, "n_groups") <- 1L # single panel
+  attr(p_gt, "n_groups") <- length(subset_hw)
   
   # C) Simple Aggregation 
   agg_simple <- aggte(gt, type = "simple")
@@ -669,9 +674,9 @@ occ_listings_lw <- occ_listings_inc_ban %>%
 
 # II) Subsets for LW ban group-time plots 
 
-subset1_lw <- c("24205", "24226", "24237")
-subset2_lw <- c("24238", "24241", "24247")
-subset3_lw <- c("24262")
+subset1_lw <- c(24205L, 24226L, 24237L)
+subset2_lw <- c(24238L, 24241L, 24247L)
+subset3_lw <- c(24262L)
 
 # III) New did running function for LW ban
 
