@@ -8,6 +8,7 @@ library(tigris)
 library(purrr)
 library(broom)
 library(rlang)
+library(readr)
 
 set.seed(9284)
 
@@ -17,7 +18,7 @@ setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data
 
 # 1. Lightcast
 
-occ_listings <- read.csv("anastasi_data_2010_2025_agg1.csv")  
+occ_listings <- read_csv("anastasi_data_2010_2025_agg1.csv")  
 
 data(fips_codes)
 
@@ -121,11 +122,11 @@ occ_listings <- occ_listings %>%
 
 # 2. Treatment Panel 
 
-treatment_panel <- read.csv("lightcast_treatment_panel.csv")
+treatment_panel <- read_csv("lightcast_treatment_panel.csv")
 
 # 3. Covariate Panel 
 
-covariate_panel <- read.csv("lightcast_covariates.csv")
+covariate_panel <- read_csv("lightcast_covariates.csv")
 
 
 # MERGING DATA -----------------------------------------------------------------
@@ -360,7 +361,7 @@ did_results <- outcomes %>%
   set_names() %>%
   map(~ tryCatch(run_did_for_y(.x), error = function(e) { warning("Failed for ", .x, ": ", e$message); NULL }))
 
-# IV) Combine tidy tables across outcomes (for export/reporting) -------------
+# IV) Combine tidy tables across outcomes (for export/reporting) 
 gt_all     <- bind_rows(map(did_results, ~ .x$tables$gt))
 simple_all <- bind_rows(map(did_results, ~ .x$tables$simple))
 event_all  <- bind_rows(map(did_results, ~ .x$tables$event))
@@ -554,34 +555,15 @@ did_results_hw <- outcomes %>%
     warning("Failed for ", .x, ": ", e$message); NULL
   }))
 
-# IV) Combing tidy tables across outcomes (for inspection in R)
+# IV) Combining tidy tables across outcomes (for inspection in R)
 
-gt_all <- bind_rows(map(did_results_hw, ~ .x$tables$gt))
-simple_all <- bind_rows(map(did_results_hw, ~.x$tables$simple))
-event_all <- bind_rows(map(did_results_hw, ~ .x$tables$event))
+gt_all_hw     <- bind_rows(map(did_results_hw, ~ .x$tables$gt))
+simple_all_hw <- bind_rows(map(did_results_hw, ~ .x$tables$simple))
+event_all_hw  <- bind_rows(map(did_results_hw, ~ .x$tables$event))
 
 # V) Saving the Results (NOTE: THIS FUNCTION WORKS FOR HW AND LW BAN ANALYSIS)
 
-# i) Helper to calculate number of panels 
-
-num_panels <- function(p) {
-  if (!is.null(attr(p, "n_groups"))) return(attr(p, "n_groups"))
-  # fall-back if I add plots and don't attach n_group attributes 
-  b <- ggplot_build(p)
-  if (!is.null(b$layout$layout$PANEL)) {
-    return(unique(length(b$layout$layout$PANEL)))
-  }
-  1L
-}
-
-# ii) Helper to calculate height 
-
-calc_height <- function(n, base = 2.0, per_group = 1.2, max_height = 14) {
-  height <- base + per_group * n
-  pmin(height, max_height)
-}
-
-# iii) Plot saver for one strata (HW/LW)
+# i) Plot saver for one strata (HW/LW)
 
 save_did_bundle <- function(did_list,
                             tag,
@@ -743,9 +725,6 @@ run_did_for_y_lw <- function(yvar,
     theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
   attr(p_event, "n_groups") <- 1L   # single panel
   
-  # Carry per-(g,t) sample sizes into the tidy table 
-  gt_n <- if(!is.null(gt$n)) gt$n else rep(NA_real_, length(gt$att))
-  
   gt_df <- tibble(
     y = yvar, 
     group = gt$group, 
@@ -785,29 +764,11 @@ did_results_lw <- outcomes %>%
 
 # V) Combining tidy tables across outcomes (for inspection in R)
 
-gt_all <- bind_rows(map(did_results_lw, ~ .x$tables$gt))
-simple_all <- bind_rows(map(did_results_lw, ~ .x$tables$simple))
-event_all <- bind_rows(map(did_results_lw, ~ .x$tables$event))
+gt_all_lw     <- bind_rows(map(did_results_lw, ~ .x$tables$gt))
+simple_all_lw <- bind_rows(map(did_results_lw, ~ .x$tables$simple))
+event_all_lw  <- bind_rows(map(did_results_lw, ~ .x$tables$event))
 
 # VI) Running the "Save" Function 
 
 save_did_bundle(did_results_lw, tag = "lw") 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
