@@ -462,7 +462,7 @@ label variable socmaj "major, 2-digit soc code"
 save "nca_acs_soc.dta", replace 
 
 
-* 4) Restrictions to Account for Industry- and Occupation-Level Bans 
+* 5) Restrictions to Account for Industry- and Occupation-Level Bans 
 
 * NOTE: 
 * - Sales occupations (SOC-2: 41) already dropped. 
@@ -509,6 +509,24 @@ drop if statefip == 30
 
 save "nca_acs_soc.dta", replace 
 
+
+* 6) Dropping missing values of outcome variables 
+
+* DROP B/C UNCLEAR # OF YEARS OF SCHOOL: 
+	*nursery school to grade 4
+	*grade 5 or 6
+	*grade 7 or 8
+	*1 or more years of college credit, no degree
+* Dropping where yrschool is missing will take care of this because these are 
+* the values where it is missing. 
+
+drop if missing(yrschool)
+
+* CHECKING THAT SOME VARS AREN'T MISSING: 
+*count if missing(pot_exp)
+*count if missing(incwage)
+
+save "nca_acs_soc.dta", replace
 
 
 log close 
