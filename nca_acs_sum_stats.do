@@ -3,6 +3,7 @@ cd "C:\Users\scana\OneDrive\Documents\research\projects\nca_job_postings\data"
 log using "nca_acs_sum_stats.log", replace 
 
 
+******************************************************
 * SUMMARY STATISTICS WITH NON-SOC CODE DATA
 
 use "nca_acs.dta", clear 
@@ -56,8 +57,6 @@ di "The number of post-treatment observations is: " r(N)
 
 
 ******************************************************
-
-
 * SUMMARY STATISTICS WITH SOC CODE DATA 
 
 * BALANCE TABLE 
@@ -78,7 +77,7 @@ gen double perwt_norm = perwt_pool/r(mean)
 
 * Weighted means and SD by ban
 local balance_var age young_adult earlyc_adult mlc_adult older_adult ///
-	yrschool incwage no_high_school high_school some_college college ///
+	no_high_school high_school some_college college pot_exp incwage ///
 	employment_nsa income_pcap hpi sex black
 
 eststo clear 
@@ -119,14 +118,31 @@ esttab control treated diff using "balance_soc_table_pv.tex", ///
 
 	
 * SAMPLE COMPOSITION
+
 * By year effective 
+
+* Frequency table of observations by treatment cohort
 tab year_eff_ban
+
+* Frequency table of states by treatment cohort 
+bysort state year_eff_ban: gen tag = _n == 1
+tab year_eff_ban if tag == 1
+drop tag 
 	
 * By year enacted 
+
+* Frequency table of observations by treatment cohort 
 tab year_enact_ban
 
-	// Note: Need to create Latex tables from these outputs. 
+* Frequency table of states by treatment cohort
+bysort state year_enact_ban: gen tag = _n == 1
+tab year_enact_ban if tag == 1
+drop tag 
 
+
+	// Note: Need to create Latex tables from these outputs. 
+	// Also note: Plot average outcome evolution by cohort in R 
+	
 
 * PRE AND POST TABLE - EXCLUDING RIGHT NOW  
 gen treated_eff_rev = 1 - treated_eff // Ensure proper direction of difference 
