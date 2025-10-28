@@ -4,8 +4,6 @@ rm(list = ls())
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data")
 
-#install.packages('panelView')
-
 library(panelView)
 library(tidyverse)  # loads dplyr, tidyr, tibble, readr, etc.
 library(haven)      # for read_dta()
@@ -43,12 +41,11 @@ treatment_panel <- treatment_panel %>%
     hw_ban = if_else(state_abb == "HI", NA_real_, hw_ban)
   )
 
-
 treatment_panel <- treatment_panel %>%
   mutate(
-    eff_full = full_ban == 1 & year >= year_full_ban,
-    eff_hw = hw_ban == 1 & year >= year_eff_ban,
-    eff_lw = hw_ban == 0 & year >= year_eff_ban,
+    eff_full = replace_na(full_ban == 1 & year >= year_full_ban, FALSE),
+    eff_hw = replace_na(hw_ban == 1 & year >= year_eff_ban, FALSE),
+    eff_lw = replace_na(hw_ban == 0 & year >= year_eff_ban, FALSE),
     
     treated_levels_num = case_when(
       eff_full ~ 3L,
@@ -57,9 +54,9 @@ treatment_panel <- treatment_panel %>%
       TRUE ~ 0L
     ),
     
-    enact_full = full_ban == 1 & year >= year_full_ban,
-    enact_hw = hw_ban == 1 & year >= year_enact_ban,
-    enact_lw = hw_ban == 0 & year >= year_enact_ban,
+    enact_full = replace_na(full_ban == 1 & year >= year_full_ban, FALSE),
+    enact_hw = replace_na(hw_ban == 1 & year >= year_enact_ban, FALSE),
+    enact_lw = replace_na(hw_ban == 0 & year >= year_enact_ban, FALSE),
     
     enacted_levels_num = case_when(
       enact_full ~ 3L,
@@ -68,6 +65,8 @@ treatment_panel <- treatment_panel %>%
       TRUE ~ 0L
     )
   )
+
+write.csv(treatment_panel, "state_year_R_treatment_panel.csv")
 
 panelview(1 ~ treated_levels_num,
           data = treatment_panel,
