@@ -4,6 +4,8 @@ rm(list = ls())
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data")
 
+install.packages("forcats")
+
 library(tidyverse)
 library(haven)
 library(panelView)
@@ -14,7 +16,7 @@ library(forcats)
 
 # ACS data
 
-acs <- read_dta("nca_acs_soc.dta")
+acs_1pct <- read_dta("nca_acs_soc_1pct.dta")
 
 # Treatment Panel 
 
@@ -23,28 +25,16 @@ treatment_panel <- read_csv(
   col_select = -1
 )
 
-# FUNCTION FOR PLOT SAVING------------------------------------------------------
-
-# where to save
-fig_dir <- "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/figures"
-dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
-
-# one-liner helper
-save_last <- function(name, ext="png", width=9, height=6, dpi=300){
-  ggsave(file.path(fig_dir, paste0(name, ".", ext)),
-         plot = ggplot2::last_plot(), width = width, height = height, dpi = dpi)
-}
-
 # AGGREGATE UP TO THE STATE-LEVEL----------------------------------------------- 
 
 # Cleaning the data up
 
-acs_clean <- acs %>%
+acs_1pct_clean <- acs_1pct %>%
   mutate(across(where(is.labelled), zap_labels)) %>%
   mutate(
     year = as.integer(year),
     statefip = as.integer(statefip)
-  )
+  )  
 
 # Choose variables to keep
 
@@ -59,7 +49,7 @@ treat_vars <- c("treated_eff", "treated_enact", "year_eff_ban", "year_enact_ban"
 
 # Compute weighted means and proportions by state-year
 
-state_year <- acs_clean %>%
+state_year_1pct <- acs_1pct_clean %>%
   group_by(statefip, state, year) %>%
   summarise(
     across(all_of(cont_vars),
@@ -71,15 +61,15 @@ state_year <- acs_clean %>%
   ) %>%
   ungroup()
 
-plot_panel <- state_year %>%
+plot_panel_1pct <- state_year_1pct %>%
   left_join(treatment_panel, by = c("statefip", "state", "year")) %>%
   mutate(
     across(starts_with("eff_"), as.integer),
     across(starts_with("enact_"), as.integer)
   ) 
 
-# PLOTTING MEANS AND PROPORTIONS -----------------------------------------------
 
+# PLOTTING MEANS AND PROPORTIONS -----------------------------------------------
 
 # High- or low-wage bans by cohort
 
@@ -90,7 +80,7 @@ plot_panel <- state_year %>%
 
 # 1) Define a var for treatment status
 
-any_ban_panel <- plot_panel %>%
+any_ban_panel_1pct <- plot_panel_1pct %>%
   mutate(
     eff_inc = ifelse(eff_hw == 1 | eff_lw == 1, 1L, 0L)
   ) %>%
@@ -101,277 +91,247 @@ any_ban_panel <- plot_panel %>%
 # a) Means
 
 panelview(age_mean ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Mean Age", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_age")
 
 panelview(pot_exp_mean ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Mean Potential Experience", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_pot_exp")
 
 panelview(incwage_mean ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Mean Earnings", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_earnings")
 
 # b) Proportions
 
 panelview(young_adult_prop ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Proportion Young-Adult", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_young")
 
 panelview(earlyc_adult_prop ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Proportion Early-Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_earlyc")
 
 panelview(mlc_adult_prop ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Proportion Mid- to Late-Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_mlc")
 
 panelview(older_adult_prop ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Proportion Near-Retirement", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_older")
 
 panelview(no_high_school_prop ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Proportion No High-School", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_no_hs")
 
 panelview(high_school_prop ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Proportion High-School", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_hs")
 
 panelview(some_college_prop ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Proportion Some College", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_some_college")
 
 panelview(college_prop ~ eff_inc,
-          data = any_ban_panel, index = c("state_abb", "year"), 
+          data = any_ban_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Proportion College", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("any_college")
 
-rm(any_ban_panel)
+rm(any_ban_panel_1pct)
 
 # High-wage bans by cohort
 
 # 1) Drop the low-wage ban states
 
-hw_panel <- plot_panel %>% 
+hw_panel_1pct <- plot_panel_1pct %>% 
   filter(is.na(hw_ban) | hw_ban == 1) %>%
-  select(statefip:state_abb, eff_hw)
+  select(statefip:state.abb, eff_hw)
 
 # 2) Plot means and proportions 
 
 # a) Means
 
 panelview(age_mean ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Mean Age", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_age")
 
 panelview(pot_exp_mean ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Mean Potential Experience", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_pot_exp")
 
 panelview(incwage_mean ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Mean Earnings", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_earnings")
 
 # b) Proportions
 
 panelview(young_adult_prop ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Proportion Young-Adult", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_young")
 
 panelview(earlyc_adult_prop ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Proportion Early-Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_earlyc")
 
 panelview(mlc_adult_prop ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Proportion Mid- to Late-Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_mlc")
 
 panelview(older_adult_prop ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Proportion Near-Retirement", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_older")
 
 panelview(no_high_school_prop ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Proportion No High-School", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_no_hs")
 
 panelview(high_school_prop ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Proportion High-School", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_hs")
 
 panelview(some_college_prop ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Proportion Some College", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_some_college")
 
 panelview(college_prop ~ eff_hw,
-          data = hw_panel, index = c("state_abb", "year"), 
+          data = hw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Proportion College", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("hw_college")
 
-rm(hw_panel)
+
+rm(hw_panel_1pct)
 
 
 # Low-wage bans by cohort 
 
 # 1) Drop the high-wage states 
 
-lw_panel <- plot_panel %>%
+lw_panel_1pct <- plot_panel_1pct %>%
   filter(is.na(hw_ban) | hw_ban == 0) %>%
   select(statefip:state_abb, eff_lw)
-
+  
 # 2) Plot means and proportions 
 
 # a) Means
+
 panelview(age_mean ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Mean Age", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_age")
 
 panelview(pot_exp_mean ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Mean Potential Experience", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_pot_exp")
 
 panelview(incwage_mean ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Mean Earnings", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_earnings")
 
 # b) Proportions
+
 panelview(young_adult_prop ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Proportion Young-Adult", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_young")
 
 panelview(earlyc_adult_prop ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Proportion Early-Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_earlyc")
 
 panelview(mlc_adult_prop ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Proportion Mid- to Late-Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_mlc")
 
 panelview(older_adult_prop ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Proportion Near-Retirement", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_older")
 
 panelview(no_high_school_prop ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Proportion No High-School", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_no_hs")
 
 panelview(high_school_prop ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Proportion High-School", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_hs")
 
 panelview(some_college_prop ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Proportion Some College", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_some_college")
 
 panelview(college_prop ~ eff_lw,
-          data = lw_panel, index = c("state_abb", "year"), 
+          data = lw_panel_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Proportion College", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("lw_college")
 
-rm(lw_panel)
+rm(lw_panel_1pct)
 
 
 # AGE-STRATIFIED ANALYSIS-------------------------------------------------------
 
 # CREATE STRATIFIED DATASET 
 
-acs_by_age <- acs_clean %>%
+acs_by_age <- acs_1pct_clean %>%
   # collapse the mutually exclusive age dummies into one factor
   mutate(
     age_group = case_when(
@@ -399,7 +359,7 @@ acs_by_age <- acs_clean %>%
   ) %>%
   ungroup()
 
-plot_age_strat <- acs_by_age %>%
+plot_age_strat_1pct <- acs_by_age %>%
   left_join(treatment_panel, by = c("statefip","state","year")) %>%
   mutate(
     across(starts_with("eff_"),   ~ as.integer(replace_na(.x, 0))),
@@ -408,131 +368,145 @@ plot_age_strat <- acs_by_age %>%
 
 # YOUNG
 
-plot_young <- plot_age_strat %>%
+plot_young_1pct <- plot_age_strat_1pct %>%
   filter(age_group == "Young adult") %>%
   mutate(
     eff_inc = ifelse(eff_hw == 1 | eff_lw == 1, 1L, 0L)
   ) %>%
   select(statefip:year, incwage_mean, state_abb, eff_inc, eff_hw, eff_lw)
+  
+# Any income ban by cohort
 
 panelview(incwage_mean ~ eff_inc,
-          data = plot_young, index = c("state_abb", "year"), 
+          data = plot_young_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Earnings - Young", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("young_earnings_any")
+
+# High-wage ban by cohort 
 
 panelview(incwage_mean ~ eff_hw,
-          data = plot_young, index = c("state_abb", "year"), 
+          data = plot_young_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Earnings - Young", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("young_earnings_hw")
+
+# Low-wage ban by cohort 
 
 panelview(incwage_mean ~ eff_lw,
-          data = plot_young, index = c("state_abb", "year"), 
+          data = plot_young_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Earnings - Young", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("young_earnings_lw")
 
-rm(plot_young)
+rm(plot_young_1pct)
 
 # EARLY-CAREER 
 
-plot_early <- plot_age_strat %>%
+plot_early_1pct <- plot_age_strat_1pct %>%
   filter(age_group == "Early-career") %>%
   mutate(
     eff_inc = ifelse(eff_hw == 1 | eff_lw == 1, 1L, 0L)
   ) %>%
   select(statefip:year, incwage_mean, state_abb, eff_inc, eff_hw, eff_lw)
 
+# Any income ban by cohort
+
 panelview(incwage_mean ~ eff_inc,
-          data = plot_early, index = c("state_abb", "year"), 
+          data = plot_early_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Earnings - Early Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("early_earnings_any")
+
+# High-wage ban by cohort 
 
 panelview(incwage_mean ~ eff_hw,
-          data = plot_early, index = c("state_abb", "year"), 
+          data = plot_early_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Earnings - Early Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("early_earnings_hw")
+
+# Low-wage ban by cohort 
 
 panelview(incwage_mean ~ eff_lw,
-          data = plot_early, index = c("state_abb", "year"), 
+          data = plot_early_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Earnings - Early Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("early_earnings_lw")
 
-rm(plot_early)
+rm(plot_early_1pct)
 
 # MID-LATE CAREER
 
-plot_mid <- plot_age_strat %>%
+plot_mid_1pct <- plot_age_strat_1pct %>%
   filter(age_group == "Mid–late career") %>%
   mutate(
     eff_inc = ifelse(eff_hw == 1 | eff_lw == 1, 1L, 0L)
   ) %>%
   select(statefip:year, incwage_mean, state_abb, eff_inc, eff_hw, eff_lw)
 
+# Any income ban by cohort
+
 panelview(incwage_mean ~ eff_inc,
-          data = plot_mid, index = c("state_abb", "year"), 
+          data = plot_mid_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Earnings - Mid-late Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("midlate_earnings_any")
+
+# High-wage ban by cohort 
 
 panelview(incwage_mean ~ eff_hw,
-          data = plot_mid, index = c("state_abb", "year"), 
+          data = plot_mid_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Earnings - Mid-late Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("midlate_earnings_hw")
+
+# Low-wage ban by cohort 
 
 panelview(incwage_mean ~ eff_lw,
-          data = plot_mid, index = c("state_abb", "year"), 
+          data = plot_mid_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Earnings - Mid-late Career", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("midlate_earnings_lw")
 
-rm(plot_mid)
+rm(plot_mid_1pct)
 
 # OLDER 
 
-plot_old <- plot_age_strat %>%
+plot_old_1pct <- plot_age_strat_1pct %>%
   filter(age_group == "Older adult") %>%
   mutate(
     eff_inc = ifelse(eff_hw == 1 | eff_lw == 1, 1L, 0L)
   ) %>%
   select(statefip:year, incwage_mean, state_abb, eff_inc, eff_hw, eff_lw)
 
+# Any income ban by cohort
+
 panelview(incwage_mean ~ eff_inc,
-          data = plot_old, index = c("state_abb", "year"), 
+          data = plot_old_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Any Income Ban and Earnings - Near Retirement", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("older_earnings_any")
+
+# High-wage ban by cohort 
 
 panelview(incwage_mean ~ eff_hw,
-          data = plot_old, index = c("state_abb", "year"), 
+          data = plot_old_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "High-wage Ban and Earnings - Near Retirement", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("older_earnings_hw")
+
+# Low-wage ban by cohort 
 
 panelview(incwage_mean ~ eff_lw,
-          data = plot_old, index = c("state_abb", "year"), 
+          data = plot_old_1pct, index = c("state_abb", "year"), 
           type = "outcome", main = "Low-wage Ban and Earnings - Near Retirement", 
           by.cohort = TRUE,
           color = c("lightblue", "blue", "#99999950"))
-save_last("older_earnings_lw")
 
-rm(plot_old)
+rm(plot_old_1pct)
+
+
 
 
 
