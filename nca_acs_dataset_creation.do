@@ -167,21 +167,17 @@ clear all
 
 use "nca_acs.dta", clear 
 
-	* Create high-school/non-college aged adult indicator 
-gen young_adult = (age >= 16 & age <= 21)
-label variable young_adult "non-college aged indicator"
+	* Create Early-, Mid-, and Late-Career indicators
 
-	* Create early-career aged adult indicator 
-gen earlyc_adult = (age > 21 & age <= 34)
-label variable earlyc_adult "early-career aged adult indicator"
+gen early_career = (age >= 16 & age <= 25)
+label variable early_career "early-career indicator"
 
-	* Create mid-late-career aged adult indicator 
-gen mlc_adult = (age > 34 & age < 50)
-label variable mlc_adult "mid- to late-career aged adult indicator"
+gen mid_career = (age > 25 & age <= 45)
+label variable mid_career "mid-career indicator"
 
-	* Create near-retirement adult indicator 
-gen older_adult = (age >= 50 & age <= 64)
-label variable older_adult "near-retirement aged adult indicator"
+gen late_career = (age > 45 & age <= 64)
+label variable late_career "late-career indicator"
+
 
 	* Create no high school degree indicator 
 gen no_high_school = inrange(educd, 0, 61)
@@ -330,21 +326,17 @@ clear all
 
 use "nca_acs_soc.dta", clear 
 
-	* Create high-school/non-college aged adult indicator 
-gen young_adult = (age >= 16 & age <= 21)
-label variable young_adult "non-college aged indicator"
+	* Create Early-, Mid-, and Late-Career indicators
 
-	* Create early-career aged adult indicator 
-gen earlyc_adult = (age > 21 & age <= 34)
-label variable earlyc_adult "early-career aged adult indicator"
+gen early_career = (age >= 16 & age <= 25)
+label variable early_career "early-career indicator"
 
-	* Create mid-late-career aged adult indicator 
-gen mlc_adult = (age > 34 & age < 50)
-label variable mlc_adult "mid- to late-career aged adult indicator"
+gen mid_career = (age > 25 & age <= 45)
+label variable mid_career "mid-career indicator"
 
-	* Create near-retirement adult indicator 
-gen older_adult = (age >= 50 & age <= 64)
-label variable older_adult "near-retirement aged adult indicator"
+gen late_career = (age > 45 & age <= 64)
+label variable late_career "late-career indicator"
+
 
 	* Create no high school degree indicator 
 gen no_high_school = inrange(educd, 0, 61)

@@ -16,7 +16,7 @@ label values sex sex_label
 
 * BALANCE TABLE 
 
-local balance_var age young_adult earlyc_adult mlc_adult older_adult ///
+local balance_var age early_career mid_career late_career ///
 	yrschool incwage ///
 	no_high_school high_school some_college college ///
 	employment_nsa income_pcap hpi sex black
@@ -39,7 +39,7 @@ di "The number of treated observations is: " r(N)
 
 * PRE AND POST TABLE  
 
-local out_var age young_adult earlyc_adult mlc_adult older_adult ///
+local out_var age early_career mid_career late_career ///
 	no_high_school high_school some_college college
 	
 quietly estpost tabstat `out_var' if ban == 1 [fw=perwt], by(treated_eff) ///
@@ -69,23 +69,17 @@ replace sex = 0 if sex == 2
 label define sex_label 0 "female" 1 "male"
 label values sex sex_label
 
-* Recale to account for pooling 23 years 
-gen perwt_pool = perwt/23
-
-qui summ perwt_pool, meanonly
-gen double perwt_norm = perwt_pool/r(mean) 
-
 * Weighted means and SD by ban
-local balance_var age young_adult earlyc_adult mlc_adult older_adult ///
+local balance_var age early_career mid_career late_career ///
 	no_high_school high_school some_college college pot_exp incwage ///
 	employment_nsa income_pcap hpi sex black
 
 eststo clear 
 	
-quietly estpost summarize `balance_var' if ban==0 [aweight=perwt_norm], listwise
+quietly estpost summarize `balance_var' if ban==0 [aweight=perwt], listwise
 eststo control 
 
-quietly estpost summarize `balance_var' if ban==1 [aweight=perwt_norm], listwise
+quietly estpost summarize `balance_var' if ban==1 [aweight=perwt], listwise
 eststo treated 
 
 * Welch unequal-variance t-tests
@@ -142,14 +136,42 @@ drop tag
 
 	// Note: Need to create Latex tables from these outputs. 
 	// Also note: Plot average outcome evolution by cohort in R 
-	
 
+	
+* HISTOGRAM OF AGE 
+
+histogram age, xlabel(15(5)90) title("Age Distribution") xtitle("Age (years)") 
+
+graph export "C:\Users\scana\OneDrive\Documents\research\projects\nca_job_postings\figures\hist_age.png", replace width(2000)
+
+	// Note: I already imposed the restriction that we are only looking at 
+	// individuals who report working. 
+
+* Evaluating what percent of the population falls in the bins I'm considering  
+
+count if age >= 16 & age <= 25	
+count
+di 672622/8191338
+
+	// About 8.21% of sample 
+
+count if age > 25 & age <= 45 
+di 3632262/8191338
+	
+	// About 44.35% of sample  
+
+count if age > 45 & age <= 64
+di 3369122/8191338
+	
+	// About 41.13% of sample 
+
+	
 * PRE AND POST TABLE - EXCLUDING RIGHT NOW  
 gen treated_eff_rev = 1 - treated_eff // Ensure proper direction of difference 
 
 tab treated_eff_rev if ban == 1
 
-local out_var age young_adult earlyc_adult mlc_adult older_adult ///
+local out_var age early_career mid_career late_career ///
 	yrschool incwage ///
 	no_high_school high_school some_college college
 	
