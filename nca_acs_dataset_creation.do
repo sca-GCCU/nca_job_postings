@@ -98,6 +98,23 @@ drop if year < 2001 | year > 2023
 save "hpi2.dta", replace 
 
 
+* CPI-U DATA -------------------------------------------------------------------
+
+//IMPORT THE DTA: "cpi_u_clean.xlsx"
+
+label variable cpi_annual "annual cpi"
+
+gen cpi_base = .
+qui summarize cpi_annual if year == 2020
+replace cpi_base = r(mean)
+label variable cpi_base "base year cpi"
+
+gen cpi_deflator = cpi_base/cpi_annual
+label variable cpi_deflator "cpi deflator"
+
+save "cpi_u_deflator.dta", replace 
+
+
 * CREATE NO-SOC DATASET --------------------------------------------------------
 
 
