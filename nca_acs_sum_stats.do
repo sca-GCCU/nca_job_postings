@@ -19,7 +19,7 @@ label values sex sex_label
 local balance_var age early_career mid_career late_career ///
 	yrschool incwage ///
 	no_high_school high_school some_college college ///
-	employment_nsa income_pcap hpi sex black
+	employment_nsa hpi sex black
 	
 quietly estpost tabstat `balance_var' [fw=perwt], by(ban) ///
 	statistics(mean sd) columns(statistics) listwise 
@@ -72,7 +72,7 @@ label values sex sex_label
 * Weighted means and SD by ban
 local balance_var age early_career mid_career late_career ///
 	no_high_school high_school some_college college pot_exp incwage ///
-	employment_nsa income_pcap hpi sex black
+	employment_nsa hpi sex black
 
 eststo clear 
 	
