@@ -81,6 +81,47 @@ write.csv(treatment_panel, "lightcast_treatment_panel.csv")
 
 # COVARIATE DATA PREP ----------------------------------------------------------
 
+# CPI-U Deflator data 
+
+cpi_u <- read_excel("cpi_u_clean_m.xlsx")
+
+cpi_u <- cpi_u %>%
+  mutate(across(matches("^[0-9]{2}$"), as.character)) %>%
+  pivot_longer(
+    cols = matches("^[0-9]{2}"),
+    names_to = "month",
+    values_to = "cpi"
+  ) %>%
+  mutate(
+    month = as.integer(month),
+    cpi = as.numeric(cpi),
+    year = as.integer(Year)
+  ) %>%
+  arrange(year, month)
+
+# Set base period year 
+
+base_period <- 2020
+
+# Grab base period cpi
+
+base_cpi <- cpi_u %>%
+  filter(year == base_period) %>%
+  summarise(base_cpi = mean(cpi, na.rm = TRUE)) %>%
+  pull(base_cpi)
+
+cpi_u <- cpi_u %>%
+  mutate(
+    cpi_deflator = base_cpi / cpi,
+    year_month = sprintf("%04d-%02d", year, month)
+  ) %>%
+  select(year, month, year_month, cpi, cpi_deflator)
+
+# Save cleaned monthly deflator 
+
+write.csv(cpi_u, "cpi_u_deflator_monthly.csv", row.names = FALSE)
+
+
 # 1. BLS Employment data 
 
 bls_emp_2025 <- read_excel("bls_employment_2025.xlsx")
@@ -99,17 +140,18 @@ write.csv(lightcast_bls_emp, "lightcast_bls_emp.csv")
 # NOTE: Switch to seasonally-adjusted purchase-only HPI. 
 # Need to do in Stata too. 
 
-hpi_po_state <- read_excel("hpi_po_state.xlsx")
+hpi_po_state <- read_excel("hpi_po_state.xlsx") %>%
+  select(-Warning)
 
 lightcast_hpi <- hpi_po_state %>%
-  left_join(state_data, by = c("state" = "state_abb")) %>%
-  tidyr::uncount(weights = 3, .id = "m_in_qtr") %>%
+  left_join(state_data, by = c("state_abb")) %>%
+  uncount(weights = 3, .id = "m_in_qtr") %>%
   mutate(
-    month = (qtr - 1)*3 + m_in_qtr,
-    date = make_date(yr, month, 1)
+    month = (quarter - 1)*3 + m_in_qtr,
+    date = make_date(year, month, 1)
   ) %>%
-  filter(yr >= 2010) %>%
-  mutate(year_month = sprintf("%04d-%02d", yr, month)) %>%
+  filter(year >= 2010) %>%
+  mutate(year_month = sprintf("%04d-%02d", year, month)) %>%
   select(statefip, year_month, index_sa)
 
 write.csv(lightcast_hpi, "lightcast_hpi.csv")
@@ -163,6 +205,15 @@ lightcast_covariates <- list(
     inc_pcap = pinc_per_capita
     ) %>%
   select(-state.y)
+
+# Adjusting for inflation 
+
+lightcast_covariates <- lightcast_covariates %>%
+  left_join(cpi_u %>% select(year_month, cpi_deflator), by = "year_month") %>%
+  mutate(
+    inc_pcap_real = inc_pcap * cpi_deflator,
+    hpi_sa_real = hpi_sa * cpi_deflator
+  )
   
 write.csv(lightcast_covariates, "lightcast_covariates.csv")
 
