@@ -29,10 +29,10 @@ save nca_laws_panel, replace
 
 * PREP COVARIATES --------------------------------------------------------------
 
-	* (1) BLS employment 
+* (1) BLS employment 
 clear all
 
-	//IMPORT THE DATA: "bls_employment_2025.xlsx"
+//IMPORT THE DATA: "bls_employment_2025.xlsx"
 
 drop if state == "New York city" 
 drop if state == "Los Angeles County"
@@ -43,7 +43,7 @@ drop if year < 2001 | year > 2023
 
 save "bls_emp.dta", replace 
 
-	* (2) BEA per capita personal income 
+* (2) BEA per capita personal income 
 clear all 
 
 	//IMPORT THE DATA: "bea_income_cleaned.xlsx"
@@ -65,7 +65,7 @@ replace statefip = statefip/1000
 
 save "bea_inc.dta", replace 
 
-	* (3) FHFA Housing Price Index (HPI)
+* (3) FHFA Housing Price Index (HPI)
 clear all 
 
 //IMPORT THE DATA: "hpi_po_state.xlsx"
@@ -117,8 +117,7 @@ save "cpi_u_deflator.dta", replace
 
 * CREATE SOC DATASET -----------------------------------------------------------
 
-
-* 1) Merge ACS data (that has SOC codes) with Treatment Panel 
+* (1) Merge ACS data (that has SOC codes) with Treatment Panel 
 clear all 
 
 use "acs_2001-23_v2.dta", clear 
@@ -145,7 +144,7 @@ label variable treated_enact "date-enacted treatment indicator"
 save "nca_acs_soc_no_controls.dta", replace 
 
 	
-* 2) Merge in Covariates 
+* (2) Merge in Covariates 
 clear all 
 
 use "nca_acs_soc_no_controls.dta", clear 
@@ -165,23 +164,49 @@ merge m:1 statefip year using "hpi2.dta"
 drop if _merge == 2 //dropping full-ban values  
 drop _merge 
 
-	* Label covariates
+* Label covariates
 label variable employment_sa "seasonally-adjusted employment rate"
 label variable income_pcap "income per-capita"
 label variable hpi "housing price index"
 
-	* Drop anyone who is not employed
-keep if empstat == 1
+
+* (3) Drop those not employed, self-employed, or reporting an incwage == 0
+keep if empstat == 1 // drop anyone who is not employed 
+drop if classwkr == 1 // drop anyone self-employed
+drop if incwage == 0 // drop anyone who reports incwage == 0 
 
 save "nca_acs_soc.dta", replace 
 
 
-* 3) Create some relevant variables 
+* CONVERTING NOMINAL VARIABLES TO REAL USING CPI-U -----------------------------
+
+clear all 
+
+use "nca_acs_soc.dta", clear 
+
+merge m:1 year using "cpi_u_deflator.dta"
+
+drop if _merge == 2 //dropping years outside of range 
+drop _merge 
+
+drop cpi_annual cpi_base //only keep the deflator itself
+
+* Make the actual adjustments 
+gen incwage_real = incwage * cpi_deflator
+label variable incwage_real "real wage and salary income"
+
+gen hpi_real = hpi * cpi_deflator
+label variable hpi_real "real housing price index"
+
+save "nca_acs_soc.dta", replace 
+
+
+* CREATE RELEVANT OUTCOME VARIABLES -------------------------------------------- 
 clear all
 
 use "nca_acs_soc.dta", clear 
 
-	* Create Early-, Mid-, and Late-Career indicators
+* Create Early-, Mid-, and Late-Career indicators
 
 gen early_career = (age >= 16 & age <= 25)
 label variable early_career "early-career indicator"
@@ -193,46 +218,51 @@ gen late_career = (age > 45 & age <= 64)
 label variable late_career "late-career indicator"
 
 
-	* Create no high school degree indicator 
+* Create no high school degree indicator 
 gen no_high_school = inrange(educd, 0, 61)
 label variable no_high_school "no high school indicator"
 
-	* Create high school degree indicator
+* Create high school degree indicator
 gen high_school = inrange(educd, 62, 64)
 label variable high_school "high school degree indicator"
 
-	* Create some college indicator 
+* Create some college indicator 
 gen some_college = inrange(educd, 65, 100)
 label variable some_college "some college indicator" 
 
-	* Create a bachelor's degree or higher indicator 
+* Create a bachelor's degree or higher indicator 
 gen college = inrange(educd, 101, 116)
 label variable college "bachelor's degree or higher indicator"
 
-	* Create an indicator specifically for black
+* Create an indicator specifically for black
 gen black = (race == 2)
 label variable black "black indicator"
 label define BLACK 1 "black" 0 "not black"
 label values black BLACK 
 
-	* Create male indicator
+
+* Create male indicator
 gen male = (sex == 1)
 label variable male "male indicator"
 label define MALE 1 "male" 0 "female"
 label values male MALE 
 
-	* Create years of schooling variable 
+
+* Create years of schooling variable 
 gen yrschool = .
-		* No schooling
+		
+* No schooling
 replace yrschool = 0 if inlist(educd, 0, 1, 2, 11, 12)
-		* Grade 1-4
+
+* Grade 1-4
 *replace yrschool = 4 if educd == 10 // nursery school to grade 4
 *replace yrschool = 4 if educd == 13 // grade 1, 2, 3, or 4
 replace yrschool = 1 if educd == 14 // grade 1 
 replace yrschool = 2 if educd == 15 // grade 2
 replace yrschool = 3 if educd == 16 // grade 3
 replace yrschool = 4 if educd == 17 // grade 4 
-		* Grade 5-8
+
+* Grade 5-8
 *replace yrschool = 8 if educd == 20 // grade 5, 6, 7, or 8
 *replace yrschool = 6 if educd == 21 // grade 5 or 6
 replace yrschool = 5 if educd == 22 // grade 5 
@@ -240,20 +270,23 @@ replace yrschool = 6 if educd == 23 // grade 6
 *replace yrschool = 8 if educd == 24 // grade 7 or 8
 replace yrschool = 7 if educd == 25 // grade 7
 replace yrschool = 8 if educd == 26 // grade 8
-		* High school 
+
+* High school 
 replace yrschool = 9 if educd == 30 // grade 9
 replace yrschool = 10 if educd == 40 // grade 10
 replace yrschool = 11 if educd == 50 // grade 11
 replace yrschool = 12 if educd == 60 // grade 12 
 replace yrschool = 12 if inrange(educd, 61, 64) // "12th grade, no diploma" etc.
-		* College 
+
+* College 
 replace yrschool = 13 if inlist(educd, 65, 70) // "some college, but less than 1 year" etc.
 *replace yrschool = 16 if educd == 71 // 1 or more years of college credit, no degree
 replace yrschool = 14 if educd == 80 // 2 years of college 
 replace yrschool = 14 if inlist(educd, 81, 82, 83) // associate's degree 
 replace yrschool = 15 if educd == 90 // 3 years of college 
 replace yrschool = 16 if inlist(educd, 100, 101) // 4 years of college OR bachelor's degree
-		* Graduate 
+
+* Graduate 
 *replace yrschool = 18 if educd == 110 // 5+
 replace yrschool = 18 if educd == 111 // 6
 replace yrschool = 19 if educd == 112 // 7 
@@ -263,7 +296,7 @@ replace yrschool = 19 if educd == 115 // professional degree beyond bachelors
 replace yrschool = 20 if educd == 116 // doctoral 
 label variable yrschool "years of school"
 
-	* Potential Experience Variable 
+* Potential Experience Variable 
 gen pot_exp = age - yrschool - 6 // assumes start school at age 6
 replace pot_exp = 0 if pot_exp < 0 // truncate at 0 
 label variable pot_exp "potential experience"	
@@ -271,12 +304,12 @@ label variable pot_exp "potential experience"
 save "nca_acs_soc.dta", replace 
 
 
-* 4) Restrict Analysis to Occupations with a High-Incidence of Noncompetes 
+* RESTRICT TO OCCUPATIONS WITH A HIGH-INCIDENCE OF NONCOMPETES -----------------
 	
-	* Precompute the major-group prefix
+* Precompute the major-group prefix
 gen str2 soc2 = substr(occsoc, 1, 2)
-	
-	* Use byte target 
+
+* Use byte target 
 gen byte target = inlist(soc2, "49", "33", "39", "29", "19", "27") ///
 	| inlist(soc2, "13", "25", "31", "11", "15", "17")
 	
@@ -309,13 +342,13 @@ label variable socmaj "major, 2-digit soc code"
 save "nca_acs_soc.dta", replace 
 
 
-* 5) Restrictions to Account for Industry- and Occupation-Level Bans 
+* RESTRICT TO ACCOUNT FOR INDUSTRY- AND OCC-LEVEL BANS -------------------------
 
 * NOTE: 
 * - Sales occupations (SOC-2: 41) already dropped. 
 * - Office and Administrative Support occupations (SOC-2: 43) already dropped 
 
-* I) Broadcast  
+* (1) Broadcast  
 
 use "nca_acs_soc.dta", clear 
 
@@ -336,19 +369,19 @@ drop if broadcast == 1
 
 drop broadcast
 
-* II) Health   
+* (2) Health   
 
 drop if socmaj == 29 | socmaj == 31
 
 // NOTE: Drop socmaj 29 and 31 to account for healthcare industry bans
 
-* III) High Tech
+* (3) High Tech
  
 drop if statefip == 15 
 
 // Note: Drop Hawaii to account for its tech industry ban
 
-* IV) Motor Vehicle Industry 
+* (4) Motor Vehicle Industry 
 
 drop if statefip == 30
 
@@ -357,7 +390,7 @@ drop if statefip == 30
 save "nca_acs_soc.dta", replace 
 
 
-* 6) Dropping missing values of outcome variables 
+* DROP OBS WITH MISSING VALUES OF OUTCOME VARIABLES ----------------------------
 
 * DROP B/C UNCLEAR # OF YEARS OF SCHOOL: 
 	*nursery school to grade 4
