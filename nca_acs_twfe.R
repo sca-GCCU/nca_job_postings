@@ -19,11 +19,12 @@ nca_acs_soc <- read_dta("nca_acs_soc.dta")
 
 keep_vars <- c("year", "statefip", "perwt", "treated_eff")
 
-outcome_vars <- c("age", "pot_exp", "incwage", "young_adult", "earlyc_adult", 
-                  "mlc_adult", "older_adult", "no_high_school", "high_school", 
+outcome_vars <- c("age", "pot_exp", "incwage", "early_career", "mid_career", 
+                  "late_career", "no_high_school", "high_school", 
                   "some_college", "college")
 
-# NOTE: Run the analysis for each HW ban cohort first. 
+# NOTE: REWORK ANALYSIS TO REFLECT NEW AGE GROUPS, STRATIFIED ANALYSIS, AND
+# OCC FE. 
 
 # TWFE - HW (2008) -------------------------------------------------------------
 
