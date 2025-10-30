@@ -17,9 +17,9 @@ label values sex sex_label
 * BALANCE TABLE 
 
 local balance_var age early_career mid_career late_career ///
-	yrschool incwage ///
+	yrschool incwage_real ///
 	no_high_school high_school some_college college ///
-	employment_nsa hpi sex black
+	employment_nsa hpi_real sex black
 	
 quietly estpost tabstat `balance_var' [fw=perwt], by(ban) ///
 	statistics(mean sd) columns(statistics) listwise 
@@ -71,8 +71,8 @@ label values sex sex_label
 
 * Weighted means and SD by ban
 local balance_var age early_career mid_career late_career ///
-	no_high_school high_school some_college college pot_exp incwage ///
-	employment_nsa hpi sex black
+	no_high_school high_school some_college college pot_exp incwage_real ///
+	employment_nsa hpi_real sex black
 
 eststo clear 
 	
@@ -172,7 +172,7 @@ gen treated_eff_rev = 1 - treated_eff // Ensure proper direction of difference
 tab treated_eff_rev if ban == 1
 
 local out_var age early_career mid_career late_career ///
-	yrschool incwage ///
+	yrschool incwage_real ///
 	no_high_school high_school some_college college
 	
 qui estpost tabstat `out_var' if ban == 1, by(treated_eff) ///
