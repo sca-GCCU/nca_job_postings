@@ -1,6 +1,6 @@
 cd "C:\Users\scana\OneDrive\Documents\research\projects\nca_job_postings\data"
 
-log using "nca_acs_analysis.log", replace 
+log using "nca_acs_analysis_old.log", replace 
 
 * STACKED DID 
 
