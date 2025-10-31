@@ -27,6 +27,23 @@ replace year_enact_ban = 0 if missing(year_enact_ban)
 save nca_laws_panel, replace 
 
 
+* CPI-U DATA -------------------------------------------------------------------
+
+//IMPORT THE DTA: "cpi_u_clean.xlsx"
+
+label variable cpi_annual "annual cpi"
+
+gen cpi_base = .
+qui summarize cpi_annual if year == 2020
+replace cpi_base = r(mean)
+label variable cpi_base "base year cpi"
+
+gen cpi_deflator = cpi_base/cpi_annual
+label variable cpi_deflator "cpi deflator"
+
+save "cpi_u_deflator.dta", replace 
+
+
 * PREP COVARIATES --------------------------------------------------------------
 
 * (1) BLS employment 
@@ -41,7 +58,14 @@ collapse (mean) employment_sa, by (statefip year) // monthly to yearly data
 
 drop if year < 2001 | year > 2023
 
+* creating lagged variable 
+sort statefip year
+xtset statefip year
+
+gen employment_sa_l1 = L1.employment_sa
+
 save "bls_emp.dta", replace 
+
 
 * (2) BEA per capita personal income 
 clear all 
@@ -64,6 +88,26 @@ reshape long income_pcap, i(statefip state) j(year)
 replace statefip = statefip/1000
 
 save "bea_inc.dta", replace 
+
+* transforming to real values 
+use "bea_inc.dta", clear
+merge m:1 year using "cpi_u_deflator.dta"
+keep if _merge == 3
+drop _merge 
+
+gen inc_pcap_r = income_pcap * cpi_deflator
+
+* creating lagged variable 
+sort statefip year
+xtset statefip year
+
+gen inc_pcap_r_l1 = L1.inc_pcap_r
+
+drop cpi_*
+
+save "bea_inc.dta", replace 
+
+
 
 * (3) FHFA Housing Price Index (HPI)
 clear all 
@@ -97,22 +141,24 @@ drop if year < 2001 | year > 2023
 
 save "hpi2.dta", replace 
 
+* transforming to real values 
+use "hpi2.dta", clear 
+merge m:1 year using "cpi_u_deflator.dta"
+keep if _merge == 3
+drop _merge
 
-* CPI-U DATA -------------------------------------------------------------------
+gen hpi_r = hpi * cpi_deflator
 
-//IMPORT THE DTA: "cpi_u_clean.xlsx"
+* creating lagged variable 
+sort statefip year
+xtset statefip year
 
-label variable cpi_annual "annual cpi"
+gen hpi_r_l1 = L1.hpi_r
 
-gen cpi_base = .
-qui summarize cpi_annual if year == 2020
-replace cpi_base = r(mean)
-label variable cpi_base "base year cpi"
+drop cpi_*
 
-gen cpi_deflator = cpi_base/cpi_annual
-label variable cpi_deflator "cpi deflator"
+save "hpi2.dta", replace 
 
-save "cpi_u_deflator.dta", replace 
 
 
 * CREATE SOC DATASET -----------------------------------------------------------
@@ -120,7 +166,7 @@ save "cpi_u_deflator.dta", replace
 * (1) Merge ACS data (that has SOC codes) with Treatment Panel 
 clear all 
 
-use "acs_2001-23_v2.dta", clear 
+use "acs_2001-23_v3.dta", clear 
 merge m:1 statefip year using "nca_laws_panel.dta"
 
 drop _merge 
@@ -166,19 +212,24 @@ drop _merge
 
 * Label covariates
 label variable employment_sa "seasonally-adjusted employment rate"
+label variable employment_sa_l1 "lagged seasonally-adjusted employment rate"
 label variable income_pcap "income per-capita"
+label variable inc_pcap_r "real income per-capita"
+label variable inc_pcap_r_l1 "lagged real income per-capita"
 label variable hpi "housing price index"
+label variable hpi_r "real housing price index"
+label variable hpi_r_l1 "lagged real housing price index"
 
 
 * (3) Drop those not employed, self-employed, or reporting an incwage == 0
-keep if empstat == 1 // drop anyone who is not employed 
-drop if classwkr == 1 // drop anyone self-employed
+keep if empstat == 1 // keep employed; drop not employed 
+keep if classwkr == 2 // keep works for wages; drop self-employed or unkown
 drop if incwage == 0 // drop anyone who reports incwage == 0 
 
 save "nca_acs_soc.dta", replace 
 
 
-* CONVERTING NOMINAL VARIABLES TO REAL USING CPI-U -----------------------------
+* CONVERTING NOMINAL WAGES TO REAL USING CPI-U ---------------------------------
 
 clear all 
 
@@ -192,11 +243,8 @@ drop _merge
 drop cpi_annual cpi_base //only keep the deflator itself
 
 * Make the actual adjustments 
-gen incwage_real = incwage * cpi_deflator
-label variable incwage_real "real wage and salary income"
-
-gen hpi_real = hpi * cpi_deflator
-label variable hpi_real "real housing price index"
+gen incwage_r = incwage * cpi_deflator
+label variable incwage_r "real wage and salary income"
 
 save "nca_acs_soc.dta", replace 
 
