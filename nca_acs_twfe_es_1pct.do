@@ -28,7 +28,7 @@ g shifted_ttt = time_to_treat - r(min)
 summ shifted_ttt if time_to_treat == -1
 local true_neg1 = r(mean)
 
-reghdfe incwage_real ib`true_neg1'.shifted_ttt [aweight=perwt], ///
+reghdfe incwage_r ib`true_neg1'.shifted_ttt [pweight=perwt], ///
 	absorb(statefip year) vce(cluster statefip)
 
 * pull coefficients and SEs
