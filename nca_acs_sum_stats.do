@@ -4,62 +4,10 @@ log using "nca_acs_sum_stats.log", replace
 
 
 ******************************************************
-* SUMMARY STATISTICS WITH NON-SOC CODE DATA
-
-use "nca_acs.dta", clear 
-
-* Recode sex 
-replace sex = 0 if sex == 2
-label define sex_label 0 "female" 1 "male"
-label values sex sex_label
-
-
-* BALANCE TABLE 
-
-local balance_var age early_career mid_career late_career ///
-	yrschool incwage_real ///
-	no_high_school high_school some_college college ///
-	employment_nsa hpi_real sex black
-	
-quietly estpost tabstat `balance_var' [fw=perwt], by(ban) ///
-	statistics(mean sd) columns(statistics) listwise 
-
-esttab . using balance_table.tex, main(mean) aux(sd) nostar unstack ///
-	nonote label compress booktabs replace  
-
-	// Add count separately 
-
-qui summarize `balance_var' if ban == 0
-di "The number of control observations is: " r(N)
-qui summarize `balance_var' if ban == 1 
-di "The number of treated observations is: " r(N)
-
-	// Note ttest won't let me use frequency weights, so I'm not doing it 
-	
-
-* PRE AND POST TABLE  
-
-local out_var age early_career mid_career late_career ///
-	no_high_school high_school some_college college
-	
-quietly estpost tabstat `out_var' if ban == 1 [fw=perwt], by(treated_eff) ///
-	statistics(mean sd) columns(statistics) listwise 
-	
-esttab . using pre_post_table.tex, main(mean) aux(sd) nostar unstack ///
-	nonote label compress booktabs replace  
-	
-	// Add count separately 
-
-qui summarize `out_var' if ban == 1 & treated_eff == 0
-di "The number of pre-treatment observations is: " r(N)
-qui summarize `out_var' if ban == 1 & treated_eff == 1
-di "The number of post-treatment observations is: " r(N)
-
-
+* SUMMARY STATISTICS
 ******************************************************
-* SUMMARY STATISTICS WITH SOC CODE DATA 
 
-* BALANCE TABLE 
+* BALANCE TABLE ----------------------------------------------------------------
 clear all 
 
 use "nca_acs_soc.dta", clear 
@@ -71,8 +19,8 @@ label values sex sex_label
 
 * Weighted means and SD by ban
 local balance_var age early_career mid_career late_career ///
-	no_high_school high_school some_college college pot_exp incwage_real ///
-	employment_nsa hpi_real sex black
+	no_high_school high_school some_college college pot_exp incwage_r ///
+	employment_nsa hpi_r sex black
 
 eststo clear 
 	
@@ -111,7 +59,7 @@ esttab control treated diff using "balance_soc_table_pv.tex", ///
     title("Balance Table (ACS pooled, weights normalized; Welch t-test)")
 
 	
-* SAMPLE COMPOSITION
+* SAMPLE COMPOSITION -----------------------------------------------------------
 
 * By year effective 
 
@@ -138,7 +86,7 @@ drop tag
 	// Also note: Plot average outcome evolution by cohort in R 
 
 	
-* HISTOGRAM OF AGE 
+* HISTOGRAM OF AGE -------------------------------------------------------------
 
 histogram age, xlabel(15(5)90) title("Age Distribution") xtitle("Age (years)") 
 
@@ -172,7 +120,7 @@ gen treated_eff_rev = 1 - treated_eff // Ensure proper direction of difference
 tab treated_eff_rev if ban == 1
 
 local out_var age early_career mid_career late_career ///
-	yrschool incwage_real ///
+	yrschool incwage_r ///
 	no_high_school high_school some_college college
 	
 qui estpost tabstat `out_var' if ban == 1, by(treated_eff) ///
