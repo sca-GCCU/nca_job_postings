@@ -5,11 +5,7 @@ rm(list = ls())
 library(tidyverse)
 library(did)
 library(haven)
-library(srvyr)
-library(survey)
 library(purrr)
-library(readr)
-library(tibble)
 library(rlang)
 
 set.seed(1390)
@@ -36,91 +32,22 @@ res_dir <- file.path(
 )
 if (!dir.exists(res_dir)) dir.create(res_dir, recursive = TRUE)
 
-plot_dir  <- file.path(res_dir, "plots")
-table_dir <- file.path(res_dir, "tables")
-obj_dir   <- file.path(res_dir, "objects")
+csdid_base <- file.path(res_dir, "csdid")
+if (!dir.exists(csdid_base)) dir.create(csdid_base, recursive = TRUE)
 
-for (d in c(plot_dir, table_dir, obj_dir)) {
-  if (!dir.exists(d)) dir.create(d, recursive = TRUE)
+# Pre-create subtrees for all_bans, hw_ban, lw_ban
+for (tag in c("all_bans", "hw_ban", "lw_ban")) {
+  for (leaf in c("plots", "tables", "objects")) {
+    d <- file.path(csdid_base, tag, leaf)
+    if (!dir.exists(d)) dir.create(d, recursive = TRUE)
+  }
 }
 
-# SUMMARY STATISTICS (srvyr) ---------------------------------------------------
-des <- nca_acs_soc_1pct %>%
-  mutate(across(all_of(combined_vars), as.numeric)) %>%  # drop haven labels
-  as_survey(weights = perwt)
+# For the “all_bans” run (used below in your all-outcomes section)
+plot_dir  <- file.path(csdid_base, "all_bans", "plots")
+table_dir <- file.path(csdid_base, "all_bans", "tables")
+obj_dir   <- file.path(csdid_base, "all_bans", "objects")
 
-summary_srvyr <- des %>%
-  group_by(ban) %>%
-  summarise(
-    across(
-      all_of(combined_vars),
-      list(
-        mean = ~ as.numeric(survey_mean(.x, na.rm = TRUE, vartype = NULL)),
-        sd   = ~ as.numeric(survey_sd(.x,   na.rm = TRUE, vartype = NULL)),
-        n    = ~ unweighted(sum(!is.na(.x)))
-      ),
-      .names = "{.col}_{.fn}"
-    ),
-    .groups = "drop"
-  )
-
-# SAVE SUMMARY STATS
-write_csv(summary_srvyr, file.path(res_dir, "summary_srvyr.csv"))
-saveRDS(summary_srvyr, file.path(res_dir, "summary_srvyr.rds"))
-
-# DESIGN-BASED TWO-SAMPLE T-TESTS (survey::svyttest) ---------------------------
-nca_acs_soc_1pct[combined_vars] <- lapply(nca_acs_soc_1pct[combined_vars], as.numeric)
-
-des_svy <- svydesign(ids = ~1, weights = ~perwt, data = nca_acs_soc_1pct)
-
-tidy_svyttest <- function(var, design, rhs = "factor(ban)") {
-  fml <- as.formula(paste(var, "~", rhs))
-  tt  <- svyttest(fml, design = design)
-  
-  est  <- unname(tt$estimate)            # mean(ban==1) - mean(ban==0)
-  tval <- unname(tt$statistic)
-  df   <- unname(tt$parameter)
-  pval <- unname(tt$p.value)
-  ci   <- unname(tt$conf.int)
-  se   <- if (!is.null(tt$stderr)) unname(tt$stderr)
-  else if (is.finite(tval) && tval != 0) abs(est / tval) else NA_real_
-  
-  tibble(
-    variable   = var,
-    diff_mean  = as.numeric(est),
-    se         = as.numeric(se),
-    t          = as.numeric(tval),
-    df         = as.numeric(df),
-    p_value    = as.numeric(pval),
-    conf_low   = if (length(ci) >= 1) ci[1] else NA_real_,
-    conf_high  = if (length(ci) >= 2) ci[2] else NA_real_,
-    method     = tt$method,
-    formula    = tt$data.name
-  )
-}
-
-# Run with safety
-safe_tidy <- purrr::safely(function(v) tidy_svyttest(v, des_svy))
-out_list  <- map(combined_vars, safe_tidy)
-
-svy_ttests_results <- bind_rows(compact(map(out_list, "result")))
-
-errors <- tibble(
-  variable = combined_vars,
-  error    = map_chr(out_list, ~ if (is.null(.x$error)) "" else .x$error$message)
-) |> filter(error != "")
-
-# SAVE T-TEST RESULTS + ERROR LOG
-write_csv(svy_ttests_results, file.path(res_dir, "svy_ttests_results.csv"))
-saveRDS(svy_ttests_results, file.path(res_dir, "svy_ttests_results.rds"))
-
-if (nrow(errors) > 0) {
-  write_csv(errors, file.path(res_dir, "svy_ttests_errors.csv"))
-  saveRDS(errors, file.path(res_dir, "svy_ttests_errors.rds"))
-}
-
-# OPTIONAL: message
-cat("Files written to:", res_dir, "\n")
 
 
 # CS DID -----------------------------------------------------------------------
@@ -341,7 +268,7 @@ run_did_for_y_hw <- function(yvar,
   message("Running HW-ban DID for outcome: ", yvar)
   
   # A) Group-time ATTs
-  gt <- did::att_gt(
+  gt <- att_gt(
     yname      = yvar, 
     tname      = tname, 
     gname      = gname, 
@@ -399,7 +326,7 @@ run_did_for_y_hw <- function(yvar,
 }
 
 # III) Run across all outcomes
-did_results_hw <- outcome_vars[1] %>% # Can add [1] to test on the first outcome var
+did_results_hw <- outcome_vars %>% # Can add [1] to test on the first outcome var
   set_names() %>%
   map(~ tryCatch(run_did_for_y_hw(.x),
                  error = function(e) { warning("Failed for ", .x, ": ", e$message); NULL }))
@@ -495,9 +422,9 @@ save_did_bundle <- function(did_list,
   ))
 }
 
-# VI) Running the "Save" Function
+# VI) Running the "Save" Function (HW)
+save_did_bundle(did_list = did_results_hw, tag = "hw_ban", base_dir = csdid_base)
 
-save_did_bundle(did_list = did_results_hw, tag = "hw", base_dir = res_dir) 
 
 
 # 3. UNCONDITIONAL, LW BANS ----------------------------------------------------
@@ -598,9 +525,9 @@ simple_all_lw <- bind_rows(map(did_results_lw_ok, ~ .x$tables$simple))
 event_all_lw  <- bind_rows(map(did_results_lw_ok, ~ .x$tables$event))
 
 
-# VI) Running the "Save" Function 
+# VI) Running the "Save" Function (LW)
+save_did_bundle(did_results_lw, tag = "lw_ban", base_dir = csdid_base)
 
-save_did_bundle(did_results_lw, tag = "lw", base_dir = res_dir)
 
 
 

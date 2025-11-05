@@ -13,6 +13,19 @@ clear all
 
 use "nca_acs_soc.dta", clear 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 * ESTIMATION FOR AGE
 * By year effective
 		
