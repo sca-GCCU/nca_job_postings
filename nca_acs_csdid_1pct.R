@@ -17,12 +17,8 @@ setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data
 nca_acs_soc_1pct <- read_dta("nca_acs_soc_1pct.dta")
 
 # VECTORS ----------------------------------------------------------------------
-outcome_vars <- c("age", "pot_exp", "young_adult", "earlyc_adult", "mlc_adult", 
-                  "older_adult", "yrschool", "no_high_school", "high_school",
-                  "some_college", "college")
-
-control_vars <- c("employment_sa", "income_pcap", "hpi", "male", "black")
-
+outcome_vars <- c("age", "early_career","mid_career", "late_career")
+control_vars <- c("employment_sa_l1","inc_pcap_r_l1","hpi_r_l1")
 combined_vars <- c(outcome_vars, control_vars)
 
 # RESULTS DIR ------------------------------------------------------------------
@@ -156,7 +152,7 @@ run_did_for_y <- function(yvar,
 }
 
 # III) Run across all outcomes
-did_results <- outcome_vars %>% # Can add [1] to test on the first outcome var
+did_results <- outcome_vars[1] %>% # Can add [1] to test on the first outcome var
   set_names() %>%
   map(~ tryCatch(run_did_for_y(.x),
                         error = function(e) { warning("Failed for ", .x, ": ", e$message); NULL }))
@@ -326,7 +322,7 @@ run_did_for_y_hw <- function(yvar,
 }
 
 # III) Run across all outcomes
-did_results_hw <- outcome_vars %>% # Can add [1] to test on the first outcome var
+did_results_hw <- outcome_vars[1] %>% # Can add [1] to test on the first outcome var
   set_names() %>%
   map(~ tryCatch(run_did_for_y_hw(.x),
                  error = function(e) { warning("Failed for ", .x, ": ", e$message); NULL }))
@@ -511,7 +507,7 @@ run_did_for_y_lw <- function(yvar,
 
 # IV) Run across all outcomes 
 
-did_results_lw <- outcome_vars %>%
+did_results_lw <- outcome_vars[1] %>%
   set_names() %>%
   purrr::map(~ tryCatch(run_did_for_y_lw(.x),
                         error = function(e) { warning("Failed for ", .x, ": ", e$message); NULL }))

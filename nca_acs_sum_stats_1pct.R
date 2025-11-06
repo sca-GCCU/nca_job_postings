@@ -15,11 +15,10 @@ setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data
 # LOAD DATA --------------------------------------------------------------------
 nca_acs_soc_1pct <- read_dta("nca_acs_soc_1pct.dta")
 
-# VECTORS (must match csdid script) -------------------------------------------
-outcome_vars <- c("age","pot_exp","young_adult","earlyc_adult","mlc_adult",
-                  "older_adult","yrschool","no_high_school","high_school",
+# VECTORS ----------------------------------------------------------------------
+outcome_vars <- c("age","early_career", "mid_career", "late_career", "no_high_school","high_school",
                   "some_college","college")
-control_vars <- c("employment_sa","income_pcap","hpi","male","black")
+control_vars <- c("employment_sa_l1","inc_pcap_r_l1","hpi_r_l1")
 combined_vars <- c(outcome_vars, control_vars)
 
 # RESULTS DIRS -----------------------------------------------------------------
