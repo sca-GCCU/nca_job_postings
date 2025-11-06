@@ -18,9 +18,9 @@ label define sex_label 0 "female" 1 "male"
 label values sex sex_label
 
 * Weighted means and SD by ban
-local balance_var age early_career mid_career late_career ///
-	no_high_school high_school some_college college pot_exp incwage_r ///
-	employment_nsa hpi_r sex black
+local balance_var age early_career mid_career late_career incwage_r ///
+	no_high_school high_school some_college college pot_exp ///
+	employment_sa hpi_r inc_pcap_r sex black
 
 eststo clear 
 	
@@ -114,7 +114,7 @@ di 3369122/8191338
 	// About 41.13% of sample 
 
 	
-* PRE AND POST TABLE - EXCLUDING RIGHT NOW  
+* PRE AND POST TABLE - EXCLUDING RIGHT NOW -------------------------------------
 gen treated_eff_rev = 1 - treated_eff // Ensure proper direction of difference 
 
 tab treated_eff_rev if ban == 1
