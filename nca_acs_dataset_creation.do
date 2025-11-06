@@ -220,13 +220,27 @@ label variable hpi "housing price index"
 label variable hpi_r "real housing price index"
 label variable hpi_r_l1 "lagged real housing price index"
 
+save "nca_acs_soc.dta", replace 
 
-* (3) Drop those not employed, self-employed, or reporting an incwage == 0
+* OBSERVATIONS AT THIS POINT: 54,272,701
+
+
+* RESTRICT TO THOSE EMPLOYED AND WORKING FOR WAGES -----------------------------
+* Note: Drop those not employed, self-employed, or reporting an incwage == 0
+use "nca_acs_soc.dta", clear 
+
 keep if empstat == 1 // keep employed; drop not employed 
+					 // (29,254,534 observations deleted)
+
 keep if classwkr == 2 // keep works for wages; drop self-employed or unkown
+					  // (2,569,053 observations deleted)
+
 drop if incwage == 0 // drop anyone who reports incwage == 0 
+					 // (6,034 observations deleted)
 
 save "nca_acs_soc.dta", replace 
+
+* OBSERVATIONS AT THIS POINT: 22,443,080 
 
 
 * CONVERTING NOMINAL WAGES TO REAL USING CPI-U ---------------------------------
@@ -362,6 +376,7 @@ gen byte target = inlist(soc2, "49", "33", "39", "29", "19", "27") ///
 	| inlist(soc2, "13", "25", "31", "11", "15", "17")
 	
 keep if target
+	// (11,977,025 observations deleted)
 
 drop target 
 
@@ -389,6 +404,8 @@ label variable socmaj "major, 2-digit soc code"
 
 save "nca_acs_soc.dta", replace 
 
+* OBSERVATIONS AT THIS POINT: 10,466,055 
+
 
 * RESTRICT TO ACCOUNT FOR INDUSTRY- AND OCC-LEVEL BANS -------------------------
 
@@ -414,28 +431,31 @@ gen broadcast = inlist(occsoc, "272012", "273010", "273011", "273020") ///
 // and Communication Equipment Workers, All Other
 
 drop if broadcast == 1
+	// (100,859 observations deleted)
 
 drop broadcast
 
 * (2) Health   
-
-drop if socmaj == 29 | socmaj == 31
-
 // NOTE: Drop socmaj 29 and 31 to account for healthcare industry bans
 
+drop if socmaj == 29 | socmaj == 31
+	// (1,975,117 observations deleted)
+
 * (3) High Tech
+// Note: Drop Hawaii to account for its tech industry ban
  
 drop if statefip == 15 
-
-// Note: Drop Hawaii to account for its tech industry ban
+	// (48,054 observations deleted)
 
 * (4) Motor Vehicle Industry 
-
-drop if statefip == 30
-
 // Note: Drop Montana to account for motor vehicle industry ban
 
+drop if statefip == 30
+	// (29,604 observations deleted)
+
 save "nca_acs_soc.dta", replace 
+
+* OBSERVATIONS AT THIS POINT: 8,312,421
 
 
 * DROP OBS WITH MISSING VALUES OF OUTCOME VARIABLES ----------------------------
@@ -449,12 +469,15 @@ save "nca_acs_soc.dta", replace
 * the values where it is missing. 
 
 drop if missing(yrschool)
+	// (1,074,901 observations deleted)
 
 * CHECKING THAT SOME VARS AREN'T MISSING: 
 *count if missing(pot_exp)
 *count if missing(incwage)
 
 save "nca_acs_soc.dta", replace
+
+* OBSERVATIONS AT THIS POINT: 7,237,520
 
 
 log close 
