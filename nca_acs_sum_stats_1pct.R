@@ -18,7 +18,7 @@ nca_acs_soc_1pct <- read_dta("nca_acs_soc_1pct.dta")
 # VECTORS ----------------------------------------------------------------------
 outcome_vars <- c("age","early_career", "mid_career", "late_career", "no_high_school","high_school",
                   "some_college","college")
-control_vars <- c("employment_sa_l1","inc_pcap_r_l1","hpi_r_l1")
+control_vars <- c("employment_sa","inc_pcap_r","hpi_r")
 combined_vars <- c(outcome_vars, control_vars)
 
 # RESULTS DIRS -----------------------------------------------------------------

@@ -19,8 +19,8 @@ label values sex sex_label
 
 * Weighted means and SD by ban
 local balance_var age early_career mid_career late_career incwage_r ///
-	no_high_school high_school some_college college pot_exp ///
-	employment_sa hpi_r inc_pcap_r sex black
+	no_high_school high_school some_college college sex black ///
+	employment_sa hpi_r inc_pcap_r
 
 eststo clear 
 	
@@ -30,6 +30,7 @@ eststo control
 quietly estpost summarize `balance_var' if ban==1 [aweight=perwt], listwise
 eststo treated 
 
+	
 * Welch unequal-variance t-tests
 quietly estpost ttest `balance_var', by(ban) unequal 
 eststo diff 
@@ -83,7 +84,6 @@ drop tag
 
 
 	// Note: Need to create Latex tables from these outputs. 
-	// Also note: Plot average outcome evolution by cohort in R 
 
 	
 * HISTOGRAM OF AGE -------------------------------------------------------------
@@ -113,35 +113,12 @@ di 3369122/8191338
 	
 	// About 41.13% of sample 
 
-	
-* PRE AND POST TABLE - EXCLUDING RIGHT NOW -------------------------------------
-gen treated_eff_rev = 1 - treated_eff // Ensure proper direction of difference 
 
-tab treated_eff_rev if ban == 1
+* SOC INCLUSION TABLE ----------------------------------------------------------
 
-local out_var age early_career mid_career late_career ///
-	yrschool incwage_r ///
-	no_high_school high_school some_college college
-	
-qui estpost tabstat `out_var' if ban == 1, by(treated_eff) ///
-	statistics(mean sd) columns(statistics) listwise 
-	
-esttab ., main(mean) aux(sd) nostar unstack 
-
-qui estpost ttest `out_var' if ban == 1, by(treated_eff) unequal
-	
-esttab ., ///
-    cells("mu_2(fmt(%9.3f)) mu_1(fmt(%9.3f)) b(fmt(%9.3f)) se(fmt(%9.3f))") ///
-    unstack
-
-drop treated_eff_rev
-
-
-
-
-
-	
+tab socmaj
 	
 
+	
 
 log close 
