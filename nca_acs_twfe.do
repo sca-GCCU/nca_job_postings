@@ -20,6 +20,256 @@ cap mkdir "`tabdir'"
 cap mkdir "`sterdir'"
 
 
+* ALL HW | AGE OUTCOMES --------------------------------------------------------
+
+local age_vars age early_career mid_career late_career
+
+eststo clear
+foreach v of local age_vars {
+
+    * Spec 1: Unconditional
+    quietly reghdfe `v' treated_eff ///
+        if (hw_ban == 1 | missing(hw_ban)) ///
+        [pweight=perwt], absorb(statefip year) vce(cluster statefip)
+    estimates store `v'_s1
+    estimates save "`sterdir'/`v'_hw_all_s1.ster", replace
+
+    * Spec 2: + Occupation FE
+    quietly reghdfe `v' treated_eff ///
+        if (hw_ban == 1 | missing(hw_ban)) ///
+        [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+    estimates store `v'_s2
+    estimates save "`sterdir'/`v'_hw_all_s2.ster", replace
+
+    * Spec 3: + Occupation FE + Lagged Controls
+    quietly reghdfe `v' treated_eff c.inc_pcap_r_l1 c.hpi_r_l1 c.employment_sa_l1 ///
+        if (hw_ban == 1 | missing(hw_ban)) ///
+        [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+    estimates store `v'_s3
+    estimates save "`sterdir'/`v'_hw_all_s3.ster", replace
+}
+
+* Export an "across-specs" table for each outcome in columns
+foreach v of local age_vars {
+    esttab `v'_s1 `v'_s2 `v'_s3 using "`tabdir'/hw_all_`v'.csv", ///
+        replace label nogaps compress nonotes ///
+        keep(treated_eff) ///
+        b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) ///
+        stats(N N_clust r2 r2_a, fmt(%9.0f %9.0f %9.3f %9.3f) ///
+              labels("Obs." "Clusters" "R^2" "Adj. R^2")) ///
+        addnotes("All models use [pweight=perwt] and cluster by statefip.") ///
+        title("All HW Bans - Outcome: `v' (treated_eff)")
+}
+
+
+* ALL HW | WAGE STRATIFIED -----------------------------------------------------
+
+local age_groups early_career mid_career late_career
+
+eststo clear
+foreach a of local age_groups {
+
+    * Spec 1: Unconditional
+    quietly reghdfe incwage_r treated_eff ///
+        if ((hw_ban == 1 | missing(hw_ban)) & `a'==1) ///
+        [pweight=perwt], absorb(statefip year) vce(cluster statefip)
+    estimates store wage_`a'_s1
+    estimates save "`sterdir'/wage_`a'_hw_all_s1.ster", replace
+
+    * Spec 2: + Occupation FE
+    quietly reghdfe incwage_r treated_eff ///
+        if ((hw_ban == 1 | missing(hw_ban)) & `a'==1) ///
+        [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+    estimates store wage_`a'_s2
+    estimates save "`sterdir'/wage_`a'_hw_all_s2.ster", replace
+
+    * Spec 3: + Occupation FE + Lagged Controls
+    quietly reghdfe incwage_r treated_eff c.inc_pcap_r_l1 c.hpi_r_l1 c.employment_sa_l1 ///
+        if ((hw_ban == 1 | missing(hw_ban)) & `a'==1) ///
+        [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+    estimates store wage_`a'_s3
+    estimates save "`sterdir'/wage_`a'_hw_all_s3.ster", replace
+}
+
+label var treated_eff "Date-effective treatment indicator"
+
+esttab  ///
+    wage_early_career_s1 wage_early_career_s2 wage_early_career_s3 ///
+    wage_mid_career_s1   wage_mid_career_s2   wage_mid_career_s3   ///
+    wage_late_career_s1  wage_late_career_s2  wage_late_career_s3  ///
+    using "`tabdir'/hw_all_wage_strata.csv", replace ///
+    label nogaps compress nonotes ///
+    keep(treated_eff) b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) ///
+    stats(N N_clust r2 r2_a, fmt(0 0 3 3) labels("Obs." "Clusters" "R^2" "Adj. R^2")) ///
+    mtitle("Early: Uncond." "Early: Occ FE" "Early: Occ FE + L1" ///
+           "Mid:   Uncond." "Mid:   Occ FE" "Mid:   Occ FE + L1" ///
+           "Late:  Uncond." "Late:  Occ FE" "Late:  Occ FE + L1") ///
+    title("All HW Bans - Real income by career stage (treated_eff)")
+
+
+* ALL HW | WAGE UNSTRATIFIED ---------------------------------------------------
+
+eststo clear
+
+* Spec 1: Unconditional
+quietly reghdfe incwage_r treated_eff ///
+    if (hw_ban == 1 | missing(hw_ban)) ///
+    [pweight=perwt], absorb(statefip year) vce(cluster statefip)
+estimates store wage_s1
+estimates save "`sterdir'/wage_hw_all_s1.ster", replace
+
+* Spec 2: + Occupation FE
+quietly reghdfe incwage_r treated_eff ///
+    if (hw_ban == 1 | missing(hw_ban)) ///
+    [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+estimates store wage_s2
+estimates save "`sterdir'/wage_hw_all_s2.ster", replace
+
+* Spec 3: + Occupation FE + Lagged Controls
+quietly reghdfe incwage_r treated_eff c.inc_pcap_r_l1 c.hpi_r_l1 c.employment_sa_l1 ///
+    if (hw_ban == 1 | missing(hw_ban)) ///
+    [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+estimates store wage_s3
+estimates save "`sterdir'/wage_hw_all_s3.ster", replace
+
+* Export across-specs table
+esttab wage_s1 wage_s2 wage_s3 using "`tabdir'/hw_all_wage.csv", ///
+    replace label nogaps compress nonotes ///
+    keep(treated_eff) ///
+    b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) ///
+    stats(N N_clust r2 r2_a, fmt(%9.0f %9.0f %9.3f %9.3f) ///
+          labels("Obs." "Clusters" "R^2" "Adj. R^2")) ///
+    addnotes("All models use [pweight=perwt] and cluster by statefip.") ///
+    title("All HW Bans - Real income (treated_eff)")
+
+
+
+* ALL LW | AGE OUTCOMES --------------------------------------------------------
+
+local age_vars age early_career mid_career late_career
+
+eststo clear
+foreach v of local age_vars {
+
+    * Spec 1: Unconditional
+    quietly reghdfe `v' treated_eff ///
+        if (hw_ban == 0 | missing(hw_ban)) ///
+        [pweight=perwt], absorb(statefip year) vce(cluster statefip)
+    estimates store `v'_s1
+    estimates save "`sterdir'/`v'_lw_all_s1.ster", replace
+
+    * Spec 2: + Occupation FE
+    quietly reghdfe `v' treated_eff ///
+        if (hw_ban == 0 | missing(hw_ban)) ///
+        [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+    estimates store `v'_s2
+    estimates save "`sterdir'/`v'_lw_all_s2.ster", replace
+
+    * Spec 3: + Occupation FE + Lagged Controls
+    quietly reghdfe `v' treated_eff c.inc_pcap_r_l1 c.hpi_r_l1 c.employment_sa_l1 ///
+        if (hw_ban == 0 | missing(hw_ban)) ///
+        [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+    estimates store `v'_s3
+    estimates save "`sterdir'/`v'_lw_all_s3.ster", replace
+}
+
+* Export an "across-specs" table for each outcome in columns
+foreach v of local age_vars {
+    esttab `v'_s1 `v'_s2 `v'_s3 using "`tabdir'/lw_all_`v'.csv", ///
+        replace label nogaps compress nonotes ///
+        keep(treated_eff) ///
+        b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) ///
+        stats(N N_clust r2 r2_a, fmt(%9.0f %9.0f %9.3f %9.3f) ///
+              labels("Obs." "Clusters" "R^2" "Adj. R^2")) ///
+        addnotes("All models use [pweight=perwt] and cluster by statefip.") ///
+        title("All LW Bans - Outcome: `v' (treated_eff)")
+}
+
+
+* ALL LW | WAGE STRATIFIED -----------------------------------------------------
+
+local age_groups early_career mid_career late_career
+
+eststo clear
+foreach a of local age_groups {
+
+    * Spec 1: Unconditional
+    quietly reghdfe incwage_r treated_eff ///
+        if ((hw_ban == 0 | missing(hw_ban)) & `a'==1) ///
+        [pweight=perwt], absorb(statefip year) vce(cluster statefip)
+    estimates store wage_`a'_s1
+    estimates save "`sterdir'/wage_`a'_lw_all_s1.ster", replace
+
+    * Spec 2: + Occupation FE
+    quietly reghdfe incwage_r treated_eff ///
+        if ((hw_ban == 0 | missing(hw_ban)) & `a'==1) ///
+        [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+    estimates store wage_`a'_s2
+    estimates save "`sterdir'/wage_`a'_lw_all_s2.ster", replace
+
+    * Spec 3: + Occupation FE + Lagged Controls
+    quietly reghdfe incwage_r treated_eff c.inc_pcap_r_l1 c.hpi_r_l1 c.employment_sa_l1 ///
+        if ((hw_ban == 0 | missing(hw_ban)) & `a'==1) ///
+        [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+    estimates store wage_`a'_s3
+    estimates save "`sterdir'/wage_`a'_lw_all_s3.ster", replace
+}
+
+label var treated_eff "Date-effective treatment indicator"
+
+esttab  ///
+    wage_early_career_s1 wage_early_career_s2 wage_early_career_s3 ///
+    wage_mid_career_s1   wage_mid_career_s2   wage_mid_career_s3   ///
+    wage_late_career_s1  wage_late_career_s2  wage_late_career_s3  ///
+    using "`tabdir'/lw_all_wage_strata.csv", replace ///
+    label nogaps compress nonotes ///
+    keep(treated_eff) b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) ///
+    stats(N N_clust r2 r2_a, fmt(0 0 3 3) labels("Obs." "Clusters" "R^2" "Adj. R^2")) ///
+    mtitle("Early: Uncond." "Early: Occ FE" "Early: Occ FE + L1" ///
+           "Mid:   Uncond." "Mid:   Occ FE" "Mid:   Occ FE + L1" ///
+           "Late:  Uncond." "Late:  Occ FE" "Late:  Occ FE + L1") ///
+    title("All LW Bans - Real income by career stage (treated_eff)")
+
+
+* ALL LW | WAGE UNSTRATIFIED ---------------------------------------------------
+
+eststo clear
+
+* Spec 1: Unconditional
+quietly reghdfe incwage_r treated_eff ///
+    if (hw_ban == 0 | missing(hw_ban)) ///
+    [pweight=perwt], absorb(statefip year) vce(cluster statefip)
+estimates store wage_s1
+estimates save "`sterdir'/wage_lw_all_s1.ster", replace
+
+* Spec 2: + Occupation FE
+quietly reghdfe incwage_r treated_eff ///
+    if (hw_ban == 0 | missing(hw_ban)) ///
+    [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+estimates store wage_s2
+estimates save "`sterdir'/wage_lw_all_s2.ster", replace
+
+* Spec 3: + Occupation FE + Lagged Controls
+quietly reghdfe incwage_r treated_eff c.inc_pcap_r_l1 c.hpi_r_l1 c.employment_sa_l1 ///
+    if (hw_ban == 0 | missing(hw_ban)) ///
+    [pweight=perwt], absorb(statefip year occ1990) vce(cluster statefip)
+estimates store wage_s3
+estimates save "`sterdir'/wage_lw_all_s3.ster", replace
+
+* Export across-specs table
+esttab wage_s1 wage_s2 wage_s3 using "`tabdir'/lw_all_wage.csv", ///
+    replace label nogaps compress nonotes ///
+    keep(treated_eff) ///
+    b(%9.3f) se(%9.3f) star(* 0.10 ** 0.05 *** 0.01) ///
+    stats(N N_clust r2 r2_a, fmt(%9.0f %9.0f %9.3f %9.3f) ///
+          labels("Obs." "Clusters" "R^2" "Adj. R^2")) ///
+    addnotes("All models use [pweight=perwt] and cluster by statefip.") ///
+    title("All LW Bans - Real income (treated_eff)")
+
+
+		
+
+	
 * HW 2008 | AGE OUTCOMES -------------------------------------------------------
 local age_vars age early_career mid_career late_career
 
