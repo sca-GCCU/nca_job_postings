@@ -90,7 +90,7 @@ drop tag
 
 histogram age, xlabel(15(5)90) title("Age Distribution") xtitle("Age (years)") 
 
-graph export "C:\Users\scana\OneDrive\Documents\research\projects\nca_job_postings\figures\hist_age.png", replace width(2000)
+graph export "C:\Users\scana\OneDrive\Documents\research\projects\nca_job_postings\descriptive_stats\hist_age.png", replace width(2000)
 
 	// Note: I already imposed the restriction that we are only looking at 
 	// individuals who report working. 

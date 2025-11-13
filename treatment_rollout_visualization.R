@@ -81,7 +81,7 @@ panelview(1 ~ treated_levels_num,
 )
 
 ggsave(
-  "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/figures/rollout_effective.png",
+  "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/misc_figures/rollout_effective.png",
   plot = last_plot(),
   width = 8, height = 7
 )
@@ -99,7 +99,7 @@ panelview(1 ~ enacted_levels_num,
 )
 
 ggsave(
-  "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/figures/rollout_enacted.png",
+  "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/misc_figures/rollout_enacted.png",
   plot = last_plot(),
   width = 8, height = 7
 )

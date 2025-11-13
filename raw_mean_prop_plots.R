@@ -26,7 +26,7 @@ treatment_panel <- read_csv(
 # FUNCTION FOR PLOT SAVING------------------------------------------------------
 
 # where to save
-fig_dir <- "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/figures"
+fig_dir <- "C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/results_acs_full/descriptive_stats"
 dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
 
 # one-liner helper
