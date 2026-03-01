@@ -69,7 +69,9 @@ state_nca_laws <- state_nca_laws %>%
 
 # Keep only the vars that you need (ban indicators and dates)
 state_nca_laws <- state_nca_laws %>%
-  select(starts_with(c("state", "ban", "date")))
+  select(
+    starts_with(c("state", "ban", "date", "health")), ind_coverage
+  )
   # NOTE: Since we are creating the Minnesota analysis data, we don't need the 
   # income thresholds.
 
@@ -88,7 +90,7 @@ agg1_mn_treat <- agg1_mn %>%
 # NOTE: We only care if the bans are active Jan 2010 - Jan 2025 (inclusive).
 # Would be nice to have a method that's robust to adding more data.
 
-# A. Exclude income-ban states (including Nevada's hourly workers ban)
+# A. Exclude income, hourly, and other-ban states
 
 # Create date variable 
 agg1_mn_treat <- agg1_mn_treat %>%
@@ -112,28 +114,162 @@ agg1_mn_treat <- agg1_mn_treat %>%
     treated_eff_other = !is.na(date_eff_other) & date >= date_eff_other
   )
 
+# NOTE: The below method of determining states which ever have the various ban
+# types is robust to changes in sample alterations (it excludes bans outside of
+# whatever the current sample is).
+
 # Determine which states ever have inc1 ban
 states_inc1 <- agg1_mn_treat %>%
   group_by(state) %>%
-  summarise(ever_inc1 = any(treated_eff_inc1, na.rm = TRUE)) %>%
+  summarise(
+    state_name = first(state_name),
+    ever_inc1 = any(treated_eff_inc1, na.rm = TRUE)
+  ) %>%
   filter(ever_inc1) %>%
-  pull(state)
-
+  pull(var = state, name = state_name)
 
 # Determine which states ever have inc2 ban
+#states_inc2 <- agg1_mn_treat %>%
+#  group_by(state) %>%
+#  summarise(
+#    state_name = first(state_name),
+#    ever_inc2 = any(treated_eff_inc2, na.rm = TRUE)
+#  ) %>%
+#  filter(ever_inc2) %>%
+#  pull(var = state, name = state_name)
 
+# Determine which states ever have hourly ban
+states_hourly <- agg1_mn_treat %>%
+  group_by(state) %>%
+  summarise(
+    state_name = first(state_name),
+    ever_hourly = any(treated_eff_hourly, na.rm = TRUE)
+  ) %>%
+  filter(ever_hourly) %>%
+  pull(var = state, name = state_name)
 
-# Dropping obs from the states indicated above.
+# Determine which states ever have other ban 
+states_other <- agg1_mn_treat %>%
+  group_by(state) %>%
+  summarise(
+    state_name = first(state_name),
+    ever_other = any(treated_eff_other, na.rm = TRUE)
+  ) %>%
+  filter(ever_other) %>%
+  pull(var = state, name = state_name)
 
+# Dropping obs from the states with income, hourly, or "other" bans.
+agg1_mn_treat <- agg1_mn_treat %>%
+  filter(
+    !(state %in% c(states_inc1, states_hourly, states_other))
+  )
+
+# Drop vectors used for exclusion 
+rm(states_hourly, states_inc1, states_other)
 
 
 # B. Exclude listings from banned IND/OCC in states w/ IND/OCC bans
 
-# i. Identify treated 4-digit SOC codes to exclude for each state. 
-# (SEPARATE SCRIPT)
+# i.a. Determine which states ever have ind ban 
+states_ind <- agg1_mn_treat %>%
+  group_by(state) %>%
+  summarise(
+    state_name = first(state_name),
+    ind_coverage = first(ind_coverage),
+    ever_ind = any(treated_eff_ind, na.rm = TRUE)
+  ) %>%
+  filter(ever_ind)
 
-# Match the states to the variable names in the dataframe and exclude based 
-# on the values of the respective vector. 
+# i.b. Find corresponding SOC-4 codes 
+  # NOTE: SOC-4 here appears to be the "broad occupation" group.
+ind_crosswalk <- read.csv("data/raw-data/ban_occ_soc_crosswalk.csv") %>%
+  mutate(
+    ban_occ = str_trim(ban_occ),
+  )
+
+states_ind_exp <- states_ind %>%
+  separate_rows(ind_coverage, sep = ";") %>%
+  mutate(
+    ind_coverage = str_trim(ind_coverage)
+  )
+
+# Testing that everything will merge properly  
+#states_ind_exp %>%
+#  anti_join(ind_crosswalk, by = c("ind_coverage" = "ban_occ"))
+
+states_ind_soc <- states_ind_exp %>%
+  left_join(
+    ind_crosswalk, 
+    by = c("ind_coverage" = "ban_occ"),
+    relationship = "many-to-many"
+  )
+
+# Cleaning up variables I don't need
+states_ind_soc <- states_ind_soc %>%
+  select(-ever_ind, -note)
+
+
+# ii.a. Determine which states ever have health bans
+states_health <- agg1_mn_treat %>%
+  group_by(state) %>%
+  summarise(
+    state_name = first(state_name),
+    ever_health1 = any(treated_eff_health1, na.rm = TRUE),
+    health_coverage1 = first(health_coverage1),
+    ever_health2 = any(treated_eff_health2, na.rm = TRUE),
+    health_coverage2 = first(health_coverage2),
+    ever_health3 = any(treated_eff_health3, na.rm = TRUE),
+    health_coverage3 = first(health_coverage3)
+  ) %>%
+  filter(ever_health1)
+
+# Drop Alabama since it's health ban is subsumed by its industry ban
+states_health <- states_health %>%
+  filter(!(state == 1))
+
+
+# ii.b. Find corresponding SOC-4 codes 
+
+# Expand coverage cells 
+states_health_exp <- states_health %>%
+  separate_rows(health_coverage1, sep = ";") %>%
+  separate_rows(health_coverage2, sep = ";") %>%
+  separate_rows(health_coverage3, sep = ";") %>%
+  mutate(
+    health_coverage1 = str_trim(health_coverage1),
+    health_coverage2 = str_trim(health_coverage2),
+    health_coverage3 = str_trim(health_coverage3)
+  ) 
+  # NOTE: The above is robust to eventually have non-missing values in 
+  # health_coverage3. 
+
+# Clean up some variables I don't need
+states_health_exp <- states_health_exp %>%
+  select(-starts_with("ever"))
+
+# Merge in SOC codes 
+states_health_long <- states_health_exp %>%
+  pivot_longer(
+    cols = starts_with("health_coverage"),
+    names_to  = "coverage_source",   # optional: keeps track of 1/2/3
+    values_to = "health_coverage"
+  ) %>%
+  mutate(health_coverage = str_trim(health_coverage)) %>%
+  filter(!is.na(health_coverage), health_coverage != "") %>%
+  select(state, state_name, health_coverage) %>% # currently dropping coverage_source
+  distinct()
+
+states_health_soc <- states_health_long %>%
+  left_join(
+    ind_crosswalk, 
+    by = c("health_coverage" = "ban_occ"),
+    relationship = "many-to-many"
+  ) %>%
+  select(-note)
+
+
+# iii. Use anti_join to exclude observations from banned occupations by state. 
+
 
 
 # C. Clean up variables you don't need
