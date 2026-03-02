@@ -370,10 +370,10 @@ agg1_mn_treat <- agg1_mn_treat %>%
 
 # 4. Merge with covariate data
 
-# A. Create baseline covariates (SEPARATE SCRIPT)
-# NOTE: Baseline for the MN samples can be the year before MN's ban. So, 2022. 
-# Will be more complicated with inc ban samples.  
+# A. Create covariates (SEPARATE SCRIPT)
 
+# i. Create baseline version from this 
+# NOTE: Baseline for the MN samples can be the year before MN's ban: 2022. 
 
 # B. Merge the covariate data 
 
