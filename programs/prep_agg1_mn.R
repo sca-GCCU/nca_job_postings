@@ -4,12 +4,12 @@
 #
 # R Script: "prep_agg1_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: February 27, 2026
+# Date of this version: March 2, 2026
 #
 # Description: This script prepares the occupation-state-month level analysis 
 # data for analyzing Minnesota's full noncompete ban. 
 #
-# Dependencies: "prep_ind_ban_codes.R", "prep_covariates.R" 
+# Dependencies: "prep_covariates.R" 
 ##############################################################################
 
 rm(list = ls())
@@ -29,7 +29,9 @@ agg1_mn <- agg1_mn %>%
   mutate(drop_min_ads = total_postings < 10)
 
 # Count obs that will be dropped 
-agg1_mn %>% summarise(n_dropped = sum(drop_min_ads, na.rm = TRUE))
+n_drop_noise <- agg1_mn %>% 
+  summarise(n_dropped = sum(drop_min_ads, na.rm = TRUE))
+n_drop_noise
 
 # Drop obs 
 agg1_mn <- agg1_mn %>% 
@@ -46,8 +48,8 @@ state_nca_laws <- read.csv("data/raw-data/state_nca_laws.csv")
 # Convert year and month variables into date variables 
 state_nca_laws <- state_nca_laws %>%
   mutate(
-    date_enact_full = make_date(enact_full_year, enact_full_month, 1),
-    date_eff_full = make_date(eff_full_year, eff_full_month, 1),
+    date_enact_full = make_date(enact_full_year, coalesce(enact_full_month, 1), 1),
+    date_eff_full = make_date(eff_full_year, coalesce(eff_full_month, 1), 1),
     date_enact_inc1 = make_date(enact_inc1_year, enact_inc1_month, 1),
     date_eff_inc1 = make_date(eff_inc1_year, eff_inc1_month, 1),
     date_enact_inc2 = make_date(enact_inc2_year, enact_inc2_month, 1),
@@ -104,6 +106,7 @@ agg1_mn_treat <- agg1_mn_treat %>%
 agg1_mn_treat <- agg1_mn_treat %>%
   mutate(
     treated_eff_full = !is.na(date_eff_full) & date >= date_eff_full,
+    treated_enact_full = !is.na(date_enact_full) & date >= date_enact_full, # only need for full ban right now
     treated_eff_inc1 = !is.na(date_eff_inc1) & date >= date_eff_inc1, 
     treated_eff_inc2 = !is.na(date_eff_inc2) & date >= date_eff_inc2,
     treated_eff_hourly = !is.na(date_eff_hourly) & date >= date_eff_hourly,
@@ -202,11 +205,9 @@ states_ind_soc <- states_ind_exp %>%
     ind_crosswalk, 
     by = c("ind_coverage" = "ban_occ"),
     relationship = "many-to-many"
-  )
-
-# Cleaning up variables I don't need
-states_ind_soc <- states_ind_soc %>%
-  select(-ever_ind, -note)
+  ) %>%
+  select(-ever_ind, -note) %>%
+  rename(soc_4 = broad_occ_soc)
 
 
 # ii.a. Determine which states ever have health bans
@@ -265,23 +266,121 @@ states_health_soc <- states_health_long %>%
     by = c("health_coverage" = "ban_occ"),
     relationship = "many-to-many"
   ) %>%
-  select(-note)
+  select(-note) %>%
+  rename(soc_4 = broad_occ_soc)
 
 
 # iii. Use anti_join to exclude observations from banned occupations by state. 
 
+# Check that all soc_4 codes from states_ind_soc have match.
+missing_soc <- states_ind_soc %>%
+  anti_join(
+    agg1_mn_treat %>% distinct(soc_4),
+    by = "soc_4"
+  ) 
+  # NOTE: Some not matched, but I think this may because there are no listings
+  # of that type.
+
+rm(missing_soc)
+
+# Dropping obs in treated occupations in states with ind_bans 
+n_drop_ind_ban <- agg1_mn_treat %>%
+  semi_join(
+    states_ind_soc,
+    by = c("state", "soc_4")
+  ) %>%
+  summarise(n())
+n_drop_ind_ban
+
+agg1_mn_treat <- agg1_mn_treat %>%
+  anti_join(
+    states_ind_soc,
+    by = c("state", "soc_4")
+  )
+
+# Check that all soc_4 codes from states_health_soc have a match.
+missing_soc <- states_health_soc %>%
+  anti_join(
+    agg1_mn_treat %>% distinct(soc_4),
+    by = "soc_4"
+  ) 
+  # NOTE: No soc_4 codes missing. Reassuring. 
+
+rm(missing_soc)
+
+# Dropping obs in treated occupations in states with health_bans
+n_drop_health_ban <- agg1_mn_treat %>%
+  semi_join(
+    states_health_soc,
+    by = c("state", "soc_4")
+  ) %>%
+  summarise(n())
+n_drop_health_ban
+
+agg1_mn_treat <- agg1_mn_treat %>%
+  anti_join(
+    states_health_soc,
+    by = c("state", "soc_4")
+  )
 
 
-# C. Clean up variables you don't need
+# C. Exclude other full-ban states (CA, ND, OK)
 
+states_full <- agg1_mn_treat %>%
+  group_by(state) %>%
+  summarise(
+    state_name = first(state_name),
+    ever_full = any(treated_eff_full, na.rm = TRUE)
+  ) %>%
+  filter(ever_full) %>%
+  filter(!(state == 27)) %>% # filter out Minnesota 
+  pull(state, state_name) # vectorize
+
+n_drop_full <- agg1_mn_treat %>%
+  filter(state %in% states_full) %>%
+  summarise(n())
+n_drop_full
+
+agg1_mn_treat <- agg1_mn_treat %>%
+  filter(!(state %in% states_full))
+
+
+# D. Clean up data frames and variables you don't need anymore 
+
+# Data frames 
+rm(agg1_mn, ind_crosswalk, state_nca_laws)
+rm(list = ls(pattern = "^states"))
+
+# Variables 
+# NOTE: Keep in mind, this dataset is for the MN analysis, so we don't really 
+# need variables pertaining to other types of bans once exclusions have been
+# imposed. 
+
+agg1_mn_treat <- agg1_mn_treat %>%
+  select(
+    -starts_with("treated_eff_in"), 
+    -starts_with("treated_eff_h"),
+    -treated_eff_other,
+    -starts_with("health"),
+    -ind_coverage, 
+    -(ban_inc1:ban_other),
+    -(date_enact_inc1:date_eff_other)
+  )
 
 
 # 4. Merge with covariate data
 
 # A. Create baseline covariates (SEPARATE SCRIPT)
+# NOTE: Baseline for the MN samples can be the year before MN's ban. So, 2022. 
+# Will be more complicated with inc ban samples.  
+
 
 # B. Merge the covariate data 
 
 # C. Clean up variables you don't need 
+
+
+# 5. Convert average_salary to a real measure using CPI. All in 2022 dollars 
+# (to match the base period).
 
 
