@@ -4,12 +4,14 @@
 #
 # R Script: "prep_agg1_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 2, 2026
+# Date of this version: March 5, 2026
 #
 # Description: This script prepares the occupation-state-month level analysis 
 # data for analyzing Minnesota's full noncompete ban. 
 #
 # Dependencies: "prep_covariates.R" 
+#
+# Output: "agg1_mn_clean.csv," "agg1_mn_analysis.csv"
 ##############################################################################
 
 rm(list = ls())
@@ -98,8 +100,8 @@ agg1_mn_treat <- agg1_mn %>%
 agg1_mn_treat <- agg1_mn_treat %>%
   mutate(
     date = make_date(year, month, 1)
-  ) %>%
-  select(-c(year, month))
+  )
+  # NOTE: keep year and month for baseline covariate merge
 
 # Create indicators for whether an obs is treated by an active (full, inc1, 
 # inc2, etc.) ban. We'll use this for the below exclusions. 
@@ -368,19 +370,95 @@ agg1_mn_treat <- agg1_mn_treat %>%
   )
 
 
-# 4. Merge with covariate data
 
-# A. Create covariates (SEPARATE SCRIPT)
+# 4. Create "share" variables 
+# NOTE: When we aggregated we already restricted the output to only include
+# cells with positive numbers of total postings. 
+
+agg1_mn_treat <- agg1_mn_treat %>%
+  mutate(
+    any_educ_share = any_educ / total_postings,
+    bachelor_share = bachelor / total_postings,
+    master_share = master / total_postings, 
+    doctorate_share = master / total_postings,
+    any_exp_share = any_exp / total_postings, 
+    fulltime_share = fulltime / total_postings,
+    parttime_share = parttime / total_postings,
+    flextime = flextime / total_postings,
+    internship = internship / total_postings
+  )
+
+write_csv(agg1_mn_treat, "data/clean-data/agg1_mn_clean.csv")
+
+
+
+# 5. Merge with covariate data
+
+# A. Create covariates ("prep_covariates.R")
 
 # i. Create baseline version from this 
 # NOTE: Baseline for the MN samples can be the year before MN's ban: 2022. 
+base_year <- 2022 # year before MN ban
+
+covariates <- read_csv("data/clean-data/covariates_a_clean.csv")
+
+covariates_base <- covariates %>%
+  filter(
+    year == base_year
+  )
+
 
 # B. Merge the covariate data 
 
-# C. Clean up variables you don't need 
+agg1_mn_analysis <- agg1_mn_treat %>%
+  left_join(
+    covariates_base,
+    by = c("state"),
+    relationship = "many-to-one"
+  ) %>%
+  select(
+    -state_name.y,
+    -year.y
+  ) %>%
+  rename(
+    state_name = state_name.x,
+    year = year.x
+  )
+
+rm(agg1_mn_treat, covariates, covariates_base)
+
 
 
 # 5. Convert average_salary to a real measure using CPI. All in 2022 dollars 
 # (to match the base period).
 
+cpi <- read_csv("data/clean-data/cpi_clean.csv")
+
+agg1_mn_analysis <- agg1_mn_analysis %>%
+  left_join(
+    cpi,
+    by = "date",
+    relationship = "many-to-one"
+  ) %>%
+  select(
+    -year.y,
+    -month.y
+  ) %>%
+  rename(
+    year = "year.x",
+    month = "month.x"
+  )
+
+agg1_mn_analysis <- agg1_mn_analysis %>%
+  mutate(
+    real_ave_salary = ave_salary * cpi_deflator
+  ) %>%
+  select(
+    -cpi,
+    -cpi_deflator
+  )
+
+rm(cpi)
+
+write_csv(agg1_mn_analysis, "data/analysis-data/agg1_mn_analysis.csv")
 
