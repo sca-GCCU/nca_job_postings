@@ -4,9 +4,13 @@
 #
 # R Script: "prep_covariates" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 4, 2026
+# Date of this version: March 5, 2026
 #
-# Description: This script prepares the monthly covariates. 
+# Description: This script prepares the covariates. 
+#
+# Outputs: "acs_clean.csv," "bea_a_clean.csv," "bea_m_clean.csv," 
+# "bls_a_clean.csv," "bls_m_clean.csv," "covariates_a_clean.csv,"
+# "covariates_m_clean.csv," "cpi_clean.csv," and "hpi_clean.csv" 
 ##############################################################################
 
 rm(list = ls())
@@ -21,8 +25,10 @@ library(haven)
 # Lightcast data range (used in multiple steps below)
 date_lb <- make_date(2010, 1, 1)
 date_ub <- make_date(2025, 1, 1)
+year_lb <- 2010
+year_ub <- 2025
 
-# 1. CPI data for deflating variables 
+# 1.A CPI data for deflating variables 
 # NOTE: The exact dataset ("Historical CPI-U, January 2026") is found here: 
 # https://www.bls.gov/cpi/tables/supplemental-files/. CPI-U is the CPI for 
 # "all urban consumers."  
@@ -77,7 +83,7 @@ cpi_clean <- cpi_long %>%
 
 rm(cpi_long, base_cpi, base_period)
 
-write_csv(cpi_clean, "data/analysis-data/cpi_clean.csv")
+write_csv(cpi_clean, "data/clean-data/cpi_clean.csv")
 
 # NOTE: Be aware that October 2025 data is missing (perhaps we could interpolate
 # it if necessary in future) and much of the 2026 is missing. 
@@ -89,7 +95,7 @@ write_csv(cpi_clean, "data/analysis-data/cpi_clean.csv")
 # NOTE: Using "Employment status of the civilian noninstitutional population, 
 # not seasonally adjusted" (https://www.bls.gov/lau/rdscnp16.htm), from the BLS. 
 
-bls <- read_xlsx(
+bls_m <- read_xlsx(
   "data/raw-data/ststdnsadata.xlsx", 
   range = "A9:K31808",
   na = "–",
@@ -97,7 +103,7 @@ bls <- read_xlsx(
   trim_ws = TRUE
 )
 
-bls <- bls %>%
+bls_m <- bls_m %>%
   select(
     ...1:...4, 
     ...11
@@ -115,7 +121,7 @@ bls <- bls %>%
     month = as.numeric(month)
   )
 
-bls_clean <- bls %>%
+bls_m_clean <- bls_m %>%
   mutate(
     date = make_date(year, month, 1)
   ) %>%
@@ -123,30 +129,56 @@ bls_clean <- bls %>%
   filter(date <= date_ub) %>%
   filter(!(state_name %in% c("Los Angeles County", "New York city"))) # non-state FIPS
 
-rm(bls)
+rm(bls_m)
+
+write_csv(bls_m_clean, "data/clean-data/bls_m_clean.csv")
 
 
 # A.2 Unemployment - Annual (only goes up to 2024)
 # NOTE: Using "Employment status of the civilian noninstitutional population, 
 # annual averages" (https://www.bls.gov/lau/rdscnp16.htm), from the BLS. 
 
-#bls_annual <- read_xlsx(
-#  "data/raw-data/staadata.xlsx",
-#  range = "A9:J2605",
-#  col_names = FALSE,
-#  trim_ws = TRUE
-#)
+bls_a <- read_xlsx(
+  "data/raw-data/staadata.xlsx",
+  range = "A9:J2605",
+  col_names = FALSE,
+  trim_ws = TRUE
+)
+
+bls_a <- bls_a %>%
+  select(
+    ...1:...3, 
+    ...10
+  ) %>%
+  rename(
+    state = "...1",
+    state_name = "...2",
+    year = "...3",
+    unemp_rate = "...10"
+  ) %>%
+  mutate(
+    state = as.numeric(state),
+    year = as.numeric(year)
+  )
+
+bls_a_clean <- bls_a %>%
+  filter(year >= year_lb) %>%
+  filter(year <= year_ub) %>%
+  filter(!(state_name %in% c("Los Angeles County", "New York city"))) # non-state FIPS
+
+rm(bls_a)
+
+write_csv(bls_a_clean, "data/clean-data/bls_a_clean.csv")
 
 
 
-# B.1 Total Personal Income - Monthly
+# B.1 Per Capita Personal Income - Monthly
 # NOTE: BEA interactive data, nominal/current dollars "SQINC1 State quarterly  
 # personal income summary: personal income, population, per capita personal  
 # income" (https://www.bea.gov/data/income-saving/personal-income-by-state).
-# This is a statewide measure in millions of dollars.
 
 bea <- read.csv(
-  "data/raw-data/Table.csv",
+  "data/raw-data/Table_monthly.csv",
   header = TRUE, 
   skip = 3,
   nrows = 51
@@ -187,7 +219,7 @@ bea_long <- bea_long %>%
 # Quarter to month mapping 
 quarter_to_month <- read_xlsx("data/raw-data/quarter_to_month_crosswalk.xlsx")
 
-bea_monthly <- bea_long %>%
+bea_m <- bea_long %>%
   left_join(
     quarter_to_month,
     by = "quarter",
@@ -196,7 +228,7 @@ bea_monthly <- bea_long %>%
 
 rm(quarter_to_month, bea_long)
 
-bea_clean <- bea_monthly %>%
+bea_m_clean <- bea_m %>%
   mutate(
     date = make_date(year, month, 1)
   ) %>%
@@ -209,30 +241,53 @@ bea_clean <- bea_monthly %>%
     date <= date_ub
   )
 
-rm(bea_monthly)
+rm(bea_m)
+
+write_csv(bea_m_clean, "data/clean-data/bea_m_clean.csv")
 
 
-# B.2 Per Capita Personal Income - Monthly
-# NOTE: BEA interactive data, nominal/current dollars "SQINC1 State quarterly  
-# personal income summary: personal income, population, per capita personal  
-# income" (https://www.bea.gov/data/income-saving/personal-income-by-state).
+# B.2 Per Capita Personal Income - Annual (only goes up to 2024)
+# NOTE: BEA interactive data, nominal/current dollars "SAINC1 - State annual 
+#personal income summary: personal income, population, per capita personal 
+#income" (https://www.bea.gov/data/income-saving/personal-income-by-state).
 
-bea_per_capita <- read.csv(
-  "data/raw-data/Table_per_capita.csv",
+bea_a <- read.csv(
+  "data/raw-data/Table_annual.csv",
   header = TRUE, 
   skip = 3,
   nrows = 51
 )
 
-# NOTE: JUST REPLACE B.1 WITH B.2. IDENTICAL CODE!
+bea_a_long <- bea_a %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "year",
+    values_to = "income"
+  ) %>% 
+  mutate(
+    state = GeoFIPS / 1000,
+  ) %>%
+  select(-GeoFIPS) %>%
+  mutate(
+    GeoName = recode(GeoName, "Alaska *" = "Alaska", "Hawaii *" = "Hawaii") 
+  ) %>%
+  rename(
+    state_name = GeoName
+  )
 
+rm(bea_a)
 
+bea_a_clean <- bea_a_long %>%
+  mutate(
+    year = sub("^X", "", year)
+  ) %>%
+  mutate(
+    year = as.integer(year)
+  )
 
-# B.3 Per Capita Personal Income - Annual (only goes up to 2024)
-# NOTE: BEA interactive data, nominal/current dollars "SAINC1 - State annual 
-#personal income summary: personal income, population, per capita personal 
-#income" (https://www.bea.gov/data/income-saving/personal-income-by-state).
+rm(bea_a_long)
 
+write_csv(bea_a_clean, "data/clean-data/bea_a_clean.csv")
 
 
 
@@ -294,6 +349,8 @@ hpi_clean <- hpi_state_month %>%
 
 rm(hpi, hpi_state, hpi_state_month)
 
+write_csv(hpi_clean, "data/clean-data/hpi_clean.csv")
+
 
 # 3. Demographic controls - Annual
 
@@ -352,14 +409,16 @@ acs_clean <- acs_clean %>%
 
 rm(acs)
 
+write_csv(acs_clean, "data/clean-data/acs_clean.csv")
 
 
-# 4. Merge all covariates together 
+
+# 4.1 Merge all covariates together - Monthly 
 
 # BEA to BLS 
-bea_bls <- bea_clean %>%
+bea_bls_m <- bea_m_clean %>%
   full_join(
-    bls_clean,
+    bls_m_clean,
     by = c("state", "date")
   ) %>%
   select(
@@ -371,8 +430,8 @@ bea_bls <- bea_clean %>%
     month = "month.x"
   )
 
-# BEA + BLS to HPI
-bea_bls_hpi <- bea_bls %>%
+# (BEA + BLS) to HPI
+bea_bls_hpi_m <- bea_bls_m %>%
   full_join(
     hpi_clean,
     by = c("state_name", "date")
@@ -385,20 +444,22 @@ bea_bls_hpi <- bea_bls %>%
     month = "month.x"
   )
 
-rm(bea_bls)
+rm(bea_bls_m)
 
-# BEA + BLS + HPI to ACS
-covariates <- bea_bls_hpi %>%
+# (BEA + BLS + HPI) to ACS
+covariates_m <- bea_bls_hpi_m %>%
   left_join(
     acs_clean,
     by = c("state", "year"),
-    relationship = "many-to-many"
+    relationship = "many-to-one"
   )
 
+rm(bea_bls_hpi_m)
 
-# 5. Convert the above variables to real measures using CPI 
-# NOTE: Keep the CPI deflator around to use to convert Lightcast variables.
-covariates_cpi <- covariates %>%
+# Convert the above variables to real measures using CPI 
+# NOTE: Don't need to keep deflator here because I can load cpi_clean.csv to 
+# convert Lightcast variables.
+covariates_cpi_m <- covariates_m %>%
   left_join(
     cpi_clean,
     by = "date",
@@ -412,9 +473,9 @@ covariates_cpi <- covariates %>%
     month = "month.x"
   )
 
-rm(covariates)
+rm(covariates_m)
 
-covariates_clean <- covariates_cpi %>%
+covariates_m_clean <- covariates_cpi_m %>%
   mutate(
     real_income = income * cpi_deflator,
     real_hpi = index_nsa * cpi_deflator
@@ -422,43 +483,101 @@ covariates_clean <- covariates_cpi %>%
   select(
     -income,
     -index_nsa,
-    -cpi # but keeping the deflator
+    -starts_with("cpi")
   )
 
-rm(acs_clean, bea_bls_hpi, bea_clean, bls_clean, covariates_cpi, cpi_clean,
-   hpi_clean)
+rm(covariates_cpi_m)
+
+write_csv(covariates_m_clean, "data/clean-data/covariates_m_clean.csv")
+
+rm(bea_m_clean, bls_m_clean, covariates_m_clean)
 
 
+# 4.2 Merge all covariates together - Annual
 
-# Baseline version 
-base_year <- 2022 # year before MN ban
-
-covariates_base <- covariates_clean %>%
-  filter(year == base_year) %>%
-  group_by(state) %>%
+# i. Transform the HPI measure to annual averages 
+hpi_a_clean <- hpi_clean %>%
+  select(
+    -month,
+    -date
+  ) %>%
+  group_by(state_name, year) %>%
   summarise(
-    unemp_rate_base = mean(unemp_rate, na.rm = TRUE),
-    real_income_base = mean(real_income, na.rm = TRUE),
-    real_hpi_base = mean(real_hpi, na.rm = TRUE),
-    frac_male_base = mean(frac_male, na.rm = TRUE),
-    frac_black_base = mean(frac_black, na.rm = TRUE),
-    frac_college_base = mean(frac_college, na.rm = TRUE),
-    mean_age_base = mean(mean_age, na.rm = TRUE),
+    hpi = mean(index_nsa, na.rm = TRUE),
+    .groups = "drop" 
+  )
+
+rm(hpi_clean)
+
+# ii. Merge
+# BEA to BLS
+
+bea_bls_a <- bea_a_clean %>%
+  full_join(
+    bls_a_clean,
+    by = c("state", "year")
+  ) %>%
+  select(
+    -ends_with(".y")
+  ) %>%
+  rename(
+    state_name = state_name.x
+  )
+
+# (BEA + BLS) to HPI
+bea_bls_hpi_a <- bea_bls_a %>%
+  left_join(
+    hpi_a_clean,
+    by = c("state_name", "year")
+  )
+
+rm(bea_bls_a)
+
+# (BEA + BLS + HPI) to ACS
+covariates_a <- bea_bls_hpi_a %>%
+  full_join(
+    acs_clean,
+    by = c("state", "year")
+  )
+
+rm(bea_bls_hpi_a)
+
+
+# iii. Covert to Real
+# Create annual version of CPI data
+cpi_a_clean <- cpi_clean %>%
+  group_by(year) %>%
+  summarise(
+    mean_cpi = mean(cpi, na.rm = TRUE),
+    mean_cpi_deflator = mean(cpi_deflator, na.rm = TRUE),
     .groups = "drop"
   )
 
-# Merge baseline version back into main version
-covariates_clean <- covariates_clean %>%
+covariates_cpi_a <- covariates_a %>%
   left_join(
-    covariates_base,
-    by = "state",
+    cpi_a_clean,
+    by = "year",
     relationship = "many-to-one"
   )
 
+rm(covariates_a)
 
-# 6. Save csv file "covariates.csv" 
-write_csv(covariates_clean, "data/analysis-data/covariates.csv") # time varying 
+# Perform conversion
+covariates_a_clean <- covariates_cpi_a %>%
+  mutate(
+    real_income = income * mean_cpi_deflator,
+    real_hpi = hpi * mean_cpi_deflator
+  ) %>%
+  select(
+    -income,
+    -hpi,
+    -mean_cpi,
+    -mean_cpi_deflator
+  )
 
-# NOTE: Make everything baseline in the prep sample files that way I can vary
-# the base year depending on what analysis I'm doing. Also, I may want to 
-# run robustness checks where I treat these covariates as outcomes.  
+rm(covariates_cpi_a)
+
+write_csv(covariates_a_clean, "data/clean-data/covariates_a_clean.csv") 
+
+
+# NOTE: Make everything baseline in the analysis-data prep, NOT HERE.  
