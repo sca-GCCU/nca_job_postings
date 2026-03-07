@@ -2,16 +2,16 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "prep_agg1_mn" 
+# R Script: "prep_agg1_placebo_mn" 
 # by: Sebastian C. Anastasi
 # Date of this version: March 6, 2026
 #
-# Description: This script prepares the occupation-state-month level analysis 
-# data for analyzing Minnesota's full noncompete ban. 
+# Description: This script prepares the occupation-state-month level placebo  
+# analysis data for analyzing Minnesota's full noncompete ban. 
 #
 # Dependencies: "prep_covariates.R" 
 #
-# Output: "agg1_mn_clean.csv," "agg1_mn_analysis.csv"
+# Output: "agg1_placebo_mn_clean.csv," "agg1_placebo_mn_analysis.csv"
 ##############################################################################
 
 rm(list = ls())
@@ -21,29 +21,35 @@ setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 library(tidyverse)
 library(lubridate)
 
+
+
 # 1. Restrict to occupation-state-month cells with at least 10 total listings. 
 
 # NOTE: Currently using sample data here. 
-agg1_mn <- read.csv("data/raw-data/sample_anastasi_agg1_v2.csv")
+agg1_placebo_mn <- read.csv("data/raw-data/sample_anastasi_agg1_placebo.csv")
 
 # Total starting observations 
-n_start <- agg1_mn %>%
+n_start_p <- agg1_placebo_mn %>%
   summarise(n())
-n_start
+n_start_p
 
 # Add flag for obs to drop
-agg1_mn <- agg1_mn %>%
+agg1_placebo_mn <- agg1_placebo_mn %>%
   mutate(drop_min_ads = total_postings < 10)
 
 # Count obs that will be dropped 
-n_drop_noise <- agg1_mn %>% 
+n_drop_noise <- agg1_placebo_mn %>% 
   summarise(n_dropped = sum(drop_min_ads, na.rm = TRUE))
 n_drop_noise
 
 # Drop obs 
-agg1_mn <- agg1_mn %>% 
+agg1_placebo_mn <- agg1_placebo_mn %>% 
   filter(!drop_min_ads) %>%
   select(-drop_min_ads)
+
+
+
+
 
 
 
@@ -74,15 +80,15 @@ state_nca_laws <- state_nca_laws %>%
     date_enact_other = make_date(enact_other_year, enact_other_month, 1),
     date_eff_other = make_date(eff_other_year, eff_other_month, 1)
   )
-  # NOTE: I will start the analysis focusing on the date_eff.
+# NOTE: I will start the analysis focusing on the date_eff.
 
 # Keep only the vars that you need (ban indicators and dates)
 state_nca_laws <- state_nca_laws %>%
   select(
     starts_with(c("state", "ban", "date", "health")), ind_coverage
   )
-  # NOTE: Since we are creating the Minnesota analysis data, we don't need the 
-  # income thresholds.
+# NOTE: Since we are creating the Minnesota analysis data, we don't need the 
+# income thresholds.
 
 # Rename statefip as state to match Lightcast data 
 state_nca_laws <- state_nca_laws %>% 
@@ -90,8 +96,11 @@ state_nca_laws <- state_nca_laws %>%
   rename(state = statefip)
 
 # Merge 
-agg1_mn_treat <- agg1_mn %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn %>%
   left_join(state_nca_laws %>% select(-state_name), by = "state")
+
+
+
 
 
 
@@ -103,15 +112,15 @@ agg1_mn_treat <- agg1_mn %>%
 # A. Exclude income, hourly, and other-ban states
 
 # Create date variable 
-agg1_mn_treat <- agg1_mn_treat %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
   mutate(
     date = make_date(year, month, 1)
   )
-  # NOTE: keep year and month for baseline covariate merge
+# NOTE: keep year and month for baseline covariate merge
 
 # Create indicators for whether an obs is treated by an active (full, inc1, 
 # inc2, etc.) ban. We'll use this for the below exclusions. 
-agg1_mn_treat <- agg1_mn_treat %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
   mutate(
     treated_eff_full = !is.na(date_eff_full) & date >= date_eff_full,
     treated_enact_full = !is.na(date_enact_full) & date >= date_enact_full, # only need for full ban right now
@@ -130,7 +139,7 @@ agg1_mn_treat <- agg1_mn_treat %>%
 # whatever the current sample is).
 
 # Determine which states ever have inc1 ban
-states_inc1 <- agg1_mn_treat %>%
+states_inc1 <- agg1_placebo_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -140,7 +149,7 @@ states_inc1 <- agg1_mn_treat %>%
   pull(var = state, name = state_name)
 
 # Determine which states ever have inc2 ban
-#states_inc2 <- agg1_mn_treat %>%
+#states_inc2 <- agg1_placebo_mn_treat %>%
 #  group_by(state) %>%
 #  summarise(
 #    state_name = first(state_name),
@@ -150,7 +159,7 @@ states_inc1 <- agg1_mn_treat %>%
 #  pull(var = state, name = state_name)
 
 # Determine which states ever have hourly ban
-states_hourly <- agg1_mn_treat %>%
+states_hourly <- agg1_placebo_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -160,7 +169,7 @@ states_hourly <- agg1_mn_treat %>%
   pull(var = state, name = state_name)
 
 # Determine which states ever have other ban 
-states_other <- agg1_mn_treat %>%
+states_other <- agg1_placebo_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -170,7 +179,7 @@ states_other <- agg1_mn_treat %>%
   pull(var = state, name = state_name)
 
 # Dropping obs from the states with income, hourly, or "other" bans.
-agg1_mn_treat <- agg1_mn_treat %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
   filter(
     !(state %in% c(states_inc1, states_hourly, states_other))
   )
@@ -182,7 +191,7 @@ rm(states_hourly, states_inc1, states_other)
 # B. Exclude listings from banned IND/OCC in states w/ IND/OCC bans
 
 # i.a. Determine which states ever have ind ban 
-states_ind <- agg1_mn_treat %>%
+states_ind <- agg1_placebo_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -191,13 +200,11 @@ states_ind <- agg1_mn_treat %>%
   ) %>%
   filter(ever_ind)
 
-# NOTE: NCAs are universally banned in all legal professions. However, these 
-# observations from these occupations are already excluded from the main anal-
-# ysis sample, since it is restricted to high incidence of NCA SOC and
-# NAICS 2-digit codes, which don't include lawyers (SOC 2-digit = 23).
+# NOTE: NCAs are universally banned in all legal professions (SOC 2-digit = 23).  
+# I'm currently leaving these observations in the placebo analysis sample.
 
 # i.b. Find corresponding SOC-4 codes 
-  # NOTE: SOC-4 here appears to be the "broad occupation" group.
+# NOTE: SOC-4 here appears to be the "broad occupation" group.
 ind_crosswalk <- read.csv("data/raw-data/ban_occ_soc_crosswalk.csv") %>%
   mutate(
     ban_occ = str_trim(ban_occ),
@@ -224,7 +231,7 @@ states_ind_soc <- states_ind_exp %>%
 
 
 # ii.a. Determine which states ever have health bans
-states_health <- agg1_mn_treat %>%
+states_health <- agg1_placebo_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -254,8 +261,8 @@ states_health_exp <- states_health %>%
     health_coverage2 = str_trim(health_coverage2),
     health_coverage3 = str_trim(health_coverage3)
   ) 
-  # NOTE: The above is robust to eventually have non-missing values in 
-  # health_coverage3. 
+# NOTE: The above is robust to eventually have non-missing values in 
+# health_coverage3. 
 
 # Clean up some variables I don't need
 states_health_exp <- states_health_exp %>%
@@ -288,16 +295,16 @@ states_health_soc <- states_health_long %>%
 # Check that all soc_4 codes from states_ind_soc have match.
 missing_soc <- states_ind_soc %>%
   anti_join(
-    agg1_mn_treat %>% distinct(soc_4),
+    agg1_placebo_mn_treat %>% distinct(soc_4),
     by = "soc_4"
   ) 
-  # NOTE: Some not matched, but I think this may because there are no listings
-  # of that type.
+# NOTE: Some not matched, but I think this may because there are no listings
+# of that type.
 
 rm(missing_soc)
 
 # Dropping obs in treated occupations in states with ind_bans 
-n_drop_ind_ban <- agg1_mn_treat %>%
+n_drop_ind_ban <- agg1_placebo_mn_treat %>%
   semi_join(
     states_ind_soc,
     by = c("state", "soc_4")
@@ -305,7 +312,7 @@ n_drop_ind_ban <- agg1_mn_treat %>%
   summarise(n())
 n_drop_ind_ban
 
-agg1_mn_treat <- agg1_mn_treat %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
   anti_join(
     states_ind_soc,
     by = c("state", "soc_4")
@@ -314,15 +321,15 @@ agg1_mn_treat <- agg1_mn_treat %>%
 # Check that all soc_4 codes from states_health_soc have a match.
 missing_soc <- states_health_soc %>%
   anti_join(
-    agg1_mn_treat %>% distinct(soc_4),
+    agg1_placebo_mn_treat %>% distinct(soc_4),
     by = "soc_4"
   ) 
-  # NOTE: No soc_4 codes missing. Reassuring. 
+# NOTE: No soc_4 codes missing. Reassuring. 
 
 rm(missing_soc)
 
 # Dropping obs in treated occupations in states with health_bans
-n_drop_health_ban <- agg1_mn_treat %>%
+n_drop_health_ban <- agg1_placebo_mn_treat %>%
   semi_join(
     states_health_soc,
     by = c("state", "soc_4")
@@ -330,7 +337,7 @@ n_drop_health_ban <- agg1_mn_treat %>%
   summarise(n())
 n_drop_health_ban
 
-agg1_mn_treat <- agg1_mn_treat %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
   anti_join(
     states_health_soc,
     by = c("state", "soc_4")
@@ -339,7 +346,7 @@ agg1_mn_treat <- agg1_mn_treat %>%
 
 # C. Exclude other full-ban states (CA, ND, OK)
 
-states_full <- agg1_mn_treat %>%
+states_full <- agg1_placebo_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -349,19 +356,19 @@ states_full <- agg1_mn_treat %>%
   filter(!(state == 27)) %>% # filter out Minnesota 
   pull(state, state_name) # vectorize
 
-n_drop_full <- agg1_mn_treat %>%
+n_drop_full <- agg1_placebo_mn_treat %>%
   filter(state %in% states_full) %>%
   summarise(n())
 n_drop_full
 
-agg1_mn_treat <- agg1_mn_treat %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
   filter(!(state %in% states_full))
 
 
 # D. Clean up data frames and variables you don't need anymore 
 
 # Data frames 
-rm(agg1_mn, ind_crosswalk, state_nca_laws)
+rm(agg1_placebo_mn, ind_crosswalk, state_nca_laws)
 rm(list = ls(pattern = "^states"))
 
 # Variables 
@@ -369,7 +376,7 @@ rm(list = ls(pattern = "^states"))
 # need variables pertaining to other types of bans once exclusions have been
 # imposed. 
 
-agg1_mn_treat <- agg1_mn_treat %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
   select(
     -starts_with("treated_eff_in"), 
     -starts_with("treated_eff_h"),
@@ -383,11 +390,15 @@ agg1_mn_treat <- agg1_mn_treat %>%
 
 
 
+
+
+
+
 # 4. Create "share" variables 
 # NOTE: When we aggregated we already restricted the output to only include
 # cells with positive numbers of total postings. 
 
-agg1_mn_treat <- agg1_mn_treat %>%
+agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
   mutate(
     any_educ_share = any_educ / total_postings,
     bachelor_share = bachelor / total_postings,
@@ -400,7 +411,10 @@ agg1_mn_treat <- agg1_mn_treat %>%
     internship = internship / total_postings
   )
 
-write_csv(agg1_mn_treat, "data/clean-data/agg1_mn_clean.csv")
+write_csv(agg1_placebo_mn_treat, "data/clean-data/agg1_placebo_mn_clean.csv")
+
+
+
 
 
 
@@ -423,7 +437,7 @@ covariates_base <- covariates %>%
 
 # B. Merge the covariate data 
 
-agg1_mn_analysis <- agg1_mn_treat %>%
+agg1_placebo_mn_analysis <- agg1_placebo_mn_treat %>%
   left_join(
     covariates_base,
     by = c("state"),
@@ -438,7 +452,7 @@ agg1_mn_analysis <- agg1_mn_treat %>%
     year = year.x
   )
 
-rm(agg1_mn_treat, covariates, covariates_base)
+rm(agg1_placebo_mn_treat, covariates, covariates_base)
 
 
 
@@ -447,7 +461,7 @@ rm(agg1_mn_treat, covariates, covariates_base)
 
 cpi <- read_csv("data/clean-data/cpi_clean.csv")
 
-agg1_mn_analysis <- agg1_mn_analysis %>%
+agg1_placebo_mn_analysis <- agg1_placebo_mn_analysis %>%
   left_join(
     cpi,
     by = "date",
@@ -462,7 +476,7 @@ agg1_mn_analysis <- agg1_mn_analysis %>%
     month = "month.x"
   )
 
-agg1_mn_analysis <- agg1_mn_analysis %>%
+agg1_placebo_mn_analysis <- agg1_placebo_mn_analysis %>%
   mutate(
     real_ave_salary = ave_salary * cpi_deflator
   ) %>%
@@ -473,5 +487,9 @@ agg1_mn_analysis <- agg1_mn_analysis %>%
 
 rm(cpi)
 
-write_csv(agg1_mn_analysis, "data/analysis-data/agg1_mn_analysis.csv")
+write_csv(agg1_placebo_mn_analysis, "data/analysis-data/agg1_placebo_mn_analysis.csv")
+
+
+
+
 
