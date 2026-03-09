@@ -24,7 +24,7 @@ library(lubridate)
 # 1. Restrict to occupation-state-month cells with at least 10 total listings. 
 
 # NOTE: Currently using sample data here. 
-agg1_mn <- read.csv("data/raw-data/sample_anastasi_agg1_v2.csv")
+agg1_mn <- read_csv("data/raw-data/sample_anastasi_agg1_v2.csv")
 
 # Total starting observations 
 n_start <- agg1_mn %>%
@@ -442,7 +442,7 @@ rm(agg1_mn_treat, covariates, covariates_base)
 
 
 
-# 5. Convert average_salary to a real measure using CPI. All in 2022 dollars 
+# 6. Convert average_salary to a real measure using CPI. All in 2022 dollars 
 # (to match the base period).
 
 cpi <- read_csv("data/clean-data/cpi_clean.csv")
