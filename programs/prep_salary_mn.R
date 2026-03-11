@@ -14,6 +14,9 @@
 # Output: "salary_mn_analysis.csv"
 ##############################################################################
 
+# NOTE: When run in the cluster, I will need to update paths and (I believe)
+# install the appropriate packages. 
+
 rm(list = ls())
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
