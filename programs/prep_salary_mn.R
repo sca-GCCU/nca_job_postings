@@ -24,6 +24,7 @@ setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 library(tidyverse)
 library(lubridate)
 
+
 # 1. Load data  
 salary <- read_csv("data/raw-data/sample_anastasi_salary_v2.csv")
 
@@ -442,7 +443,6 @@ salary_mn_analysis <- salary_mn_analysis %>%
 rm(cpi)
 
 write_csv(salary_mn_analysis, "data/analysis-data/salary_mn_analysis.csv")
-
 
 
 
