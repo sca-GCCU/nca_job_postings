@@ -2,16 +2,16 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "state_law_map.R" 
+# R Script: "map_state_laws.R" 
 # by: Sebastian C. Anastasi
 # Date of this version: March 11, 2026
 #
 # Description: This script generates a map of the NCA policies of the 50 states
 # and D.C.
 #
-# Dependencies:  
+# Dependencies:
 #
-# Output: "state_law_map.pdf"
+# Output: "map_state_laws.pdf"
 ##############################################################################
 
 rm(list = ls())
@@ -123,11 +123,9 @@ ggplot(map_df) +
 
 # Save the map
 ggsave(
-  "output/state_law_map.pdf",
+  "output/figures/map_state_laws.pdf",
   width = 7,
   height = 4.5,
   units = "in"
 )
-
-
 
