@@ -25,6 +25,7 @@ library(readxl)
 library(lubridate)
 library(haven)
 
+
 # Lightcast data range (used in multiple steps below)
 date_lb <- make_date(2010, 1, 1)
 date_ub <- make_date(2025, 1, 1)
@@ -81,7 +82,7 @@ cpi_clean <- cpi_long %>%
   mutate(
     cpi_deflator = base_cpi / cpi
   ) %>%
-  filter(date >= date_lb) %>%
+  filter(date >= 2008) %>% # to convert OR's 2008 inc_threshold to real dollars
   filter(date <= date_ub)
 
 rm(cpi_long, base_cpi, base_period)
@@ -581,6 +582,7 @@ covariates_a_clean <- covariates_cpi_a %>%
 rm(covariates_cpi_a)
 
 write_csv(covariates_a_clean, "data/clean-data/covariates_a_clean.csv") 
+
 
 
 # NOTE: Make everything baseline in the analysis-data prep, NOT HERE.  
