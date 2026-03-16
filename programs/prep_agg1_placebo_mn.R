@@ -410,8 +410,8 @@ agg1_placebo_mn_treat <- agg1_placebo_mn_treat %>%
     any_exp_share = any_exp / total_postings, 
     fulltime_share = fulltime / total_postings,
     parttime_share = parttime / total_postings,
-    flextime = flextime / total_postings,
-    internship = internship / total_postings
+    flextime_share = flextime / total_postings,
+    internship_share = internship / total_postings
   )
 
 write_csv(agg1_placebo_mn_treat, "data/clean-data/agg1_placebo_mn_clean.csv")
