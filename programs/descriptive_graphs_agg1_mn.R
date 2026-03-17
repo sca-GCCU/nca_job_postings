@@ -4,9 +4,9 @@
 #
 # R Script: "descriptive_graphs_agg1_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 6, 2026
+# Date of this version: March 16, 2026
 #
-# Description: Creates occupation-state-month level descriptive.
+# Description: Creates occupation-state-month level descriptive graphs.
 #
 # Dependencies: 
 #
