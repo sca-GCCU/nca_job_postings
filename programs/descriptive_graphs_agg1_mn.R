@@ -65,7 +65,7 @@ p_amean_tot_post <- ggplot(tot_ann, aes(x = year,
                                              y = mean_yearly_total_postings, 
                                              color = group, 
                                              group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Total Postings - Annual",
@@ -122,7 +122,7 @@ p_mmean_tot_post <- ggplot(
   tot_mon,
   aes(x = date, y = mean_total_postings, color = group, group = group)
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -190,7 +190,7 @@ p_amean_any_ed <- ggplot(any_ed_ann, aes(x = year,
                                         y = mean_yearly_any_ed, 
                                         color = group, 
                                         group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Any Education Requirement - Annual",
@@ -247,7 +247,7 @@ p_mmean_any_ed <- ggplot(
   any_ed_mon,
   aes(x = date, y = mean_any_educ, color = group, group = group)
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -307,7 +307,7 @@ p_amean_any_ed_share <- ggplot(share_any_ed_ann, aes(x = year,
                                          y = mean_any_educ_share_yr, 
                                          color = group, 
                                          group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Any Education Requirement (Share) - Annual",
@@ -355,7 +355,7 @@ p_mmean_any_ed_share <- ggplot(
   share_any_ed_mon,
   aes(x = date, y = mean_any_educ_share, color = group, group = group)
 ) + 
-geom_line(size = 1.2) +
+geom_line(linewidth = 1.2) +
 geom_vline(
   xintercept = treat_date_value,
   linetype = "dashed",
@@ -423,7 +423,7 @@ p_amean_bachelor <- ggplot(
     color = group
   )
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Bachelor's Requirement - Annual",
@@ -481,7 +481,7 @@ p_mmean_bachelor <- ggplot(
     colour = group
   )
 ) +
-  geom_line(size = 1.2) + 
+  geom_line(linewidth = 1.2) + 
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -541,7 +541,7 @@ p_amean_bachelor_share <- ggplot(share_bachelors_ann, aes(x = year,
                                                      y = mean_bachelor_share_yr, 
                                                      color = group, 
                                                      group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Bachelor's Requirement (Share) - Annual",
@@ -589,7 +589,7 @@ p_mmean_bachelor_share <- ggplot(
   share_bachelor_mon,
   aes(x = date, y = mean_bachelor_share, color = group, group = group)
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -657,7 +657,7 @@ p_amean_master <- ggplot(
     color = group
   )
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Master's Requirement - Annual",
@@ -715,7 +715,7 @@ p_mmean_master <- ggplot(
     colour = group
   )
 ) +
-  geom_line(size = 1.2) + 
+  geom_line(linewidth = 1.2) + 
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -775,7 +775,7 @@ p_amean_master_share <- ggplot(share_master_ann, aes(x = year,
                                                           y = mean_master_share_yr, 
                                                           color = group, 
                                                           group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Master's Requirement (Share) - Annual",
@@ -823,7 +823,7 @@ p_mmean_master_share <- ggplot(
   share_master_mon,
   aes(x = date, y = mean_master_share, color = group, group = group)
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -893,7 +893,7 @@ p_amean_doctorate <- ggplot(
     color = group
   )
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Doctorate Requirement - Annual",
@@ -951,7 +951,7 @@ p_mmean_doctorate <- ggplot(
     colour = group
   )
 ) +
-  geom_line(size = 1.2) + 
+  geom_line(linewidth = 1.2) + 
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -1011,7 +1011,7 @@ p_amean_doctorate_share <- ggplot(share_doctorate_ann, aes(x = year,
                                                      y = mean_doctorate_share_yr, 
                                                      color = group, 
                                                      group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Doctorate Requirement (Share) - Annual",
@@ -1059,7 +1059,7 @@ p_mmean_doctorate_share <- ggplot(
   share_doctorate_mon,
   aes(x = date, y = mean_doctorate_share, color = group, group = group)
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -1128,7 +1128,7 @@ p_amean_any_exp <- ggplot(
     color = group
   )
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Any Experience Requirement - Annual",
@@ -1186,7 +1186,7 @@ p_mmean_any_exp <- ggplot(
     colour = group
   )
 ) +
-  geom_line(size = 1.2) + 
+  geom_line(linewidth = 1.2) + 
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -1246,7 +1246,7 @@ p_amean_any_exp_share <- ggplot(share_any_exp_ann, aes(x = year,
                                                            y = mean_any_exp_share_yr, 
                                                            color = group, 
                                                            group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Any Experience Requirement (Share) - Annual",
@@ -1293,7 +1293,7 @@ p_mmean_any_exp_share <- ggplot(
   share_any_exp_mon,
   aes(x = date, y = mean_any_exp_share, color = group, group = group)
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -1355,7 +1355,7 @@ p_amean_ave_exp <- ggplot(
     color = group
   )
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Average Experience Requirement - Annual",
@@ -1402,7 +1402,7 @@ p_mmean_ave_exp <- ggplot(
     ave_exp_mon,
     aes(x = date, y = mean_ave_exp, color = group, group = group)
   ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -1470,7 +1470,7 @@ p_amean_ft <- ggplot(
     color = group
   )
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Full-Time Postings - Annual",
@@ -1528,7 +1528,7 @@ p_mmean_ft <- ggplot(
     colour = group
   )
 ) +
-  geom_line(size = 1.2) + 
+  geom_line(linewidth = 1.2) + 
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -1588,7 +1588,7 @@ p_amean_ft_share <- ggplot(share_ft_ann, aes(x = year,
                                                        y = mean_ft_share_yr, 
                                                        color = group, 
                                                        group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Full-Time Postings (Share) - Annual",
@@ -1636,7 +1636,7 @@ p_mmean_ft_share <- ggplot(
   share_ft_mon,
   aes(x = date, y = mean_ft_share, color = group, group = group)
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -1716,7 +1716,7 @@ p_amean_intern <- ggplot(
     color = group
   )
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Internship Postings - Annual",
@@ -1773,7 +1773,7 @@ p_mmean_intern <- ggplot(
     colour = group
   )
 ) +
-  geom_line(size = 1.2) + 
+  geom_line(linewidth = 1.2) + 
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -1830,7 +1830,7 @@ p_amean_intern_share <- ggplot(share_intern_ann, aes(x = year,
                                              y = mean_intern_share_yr, 
                                              color = group, 
                                              group = group)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   labs(
     x = "Year",
     y = "Internship Postings (Share) - Annual",
@@ -1878,7 +1878,7 @@ p_mmean_intern_share <- ggplot(
   share_intern_mon,
   aes(x = date, y = mean_intern_share, color = group, group = group)
 ) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
