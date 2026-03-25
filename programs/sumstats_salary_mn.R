@@ -4,7 +4,7 @@
 #
 # R Script: "sumstats_salary_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 24, 2026
+# Date of this version: March 25, 2026
 #
 # Description: Creates the listings level sumstats for salary analysis. 
 #
@@ -123,8 +123,8 @@ table_sumstat_outcomes <- sumtab_out_final %>%
     booktabs = TRUE,
     linesep = "",
     align = c("lcccc"),
-    caption = "Summary Statistics - Listing-Level Salary Variables",
-    label = "sumstats_outcomes",
+    caption = "Summary Statistics - Listing-Level",
+    label = "sumstats_outcomes_salary",
     col.names = c("", "Mean", "SD", "Mean", "SD")
   ) %>%
   add_header_above(c(" " = 1, "Treatment" = 2, "Control" = 2)) %>%
@@ -145,6 +145,112 @@ writeLines(table_sumstat_outcomes, "output/tables/table_sumstat_outcomes_salary_
 
 # B. Salary Summary Statistics by Any Experience
 
+# --- 1. Compute the sum stats --- 
+sumtab_out_exp <- salary_mn_analysis %>% 
+  filter(date < mn_ban_date) %>% 
+  group_by(ban_full, any_exp) %>%
+  summarise(
+    across(
+      all_of(outcome_var), # col 
+      list( # fns 
+        Mean = ~mean(.x, na.rm = TRUE),
+        SD = ~sd(.x, na.rm = TRUE)
+      ),
+      .names = "{.col}_{.fn}" # names
+    ),
+    N = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    ban_full = if_else(ban_full == 1, "Treatment", "Control"),
+    any_exp = if_else(any_exp == 1, "Exp", "No_Exp")
+  )
+
+#--- 2. Build Main Summary Stat Rows --- 
+sumtab_out_exp_main <- sumtab_out_exp %>%
+  select(-N) %>%
+  pivot_longer(
+    cols = -c(ban_full, any_exp),
+    names_to = c("variable", ".value"),
+    names_pattern = "(.+)_(Mean|SD)"
+  ) %>%
+  pivot_wider(
+    names_from = c(ban_full, any_exp),
+    values_from = c(Mean, SD)
+  ) %>%
+  mutate(
+    variable = c("Salary (Real)", "Salary Lower Threshold (Real)",
+                 "Salary Upper Threshold (Real)")
+  ) %>%
+  mutate(
+    across(
+      c(starts_with("Mean_"), starts_with("SD_")),
+      ~ number(.x, accuracy = 0.01, big.mark = ",")
+    )
+  ) %>%
+  select(
+    variable, 
+    Mean_Treatment_No_Exp,
+    SD_Treatment_No_Exp,
+    Mean_Treatment_Exp,
+    SD_Treatment_Exp,
+    Mean_Control_No_Exp,
+    SD_Control_No_Exp,
+    Mean_Control_Exp,
+    SD_Control_Exp
+  )
+
+#--- 3. Create obs row ---
+obs_row_out_exp <- sumtab_out_exp %>%
+  select(ban_full, any_exp, N) %>%
+  pivot_wider(
+    names_from = c(ban_full, any_exp),
+    values_from = N
+  ) %>%
+  transmute(
+    variable = "Observations",
+    Mean_Treatment_No_Exp = comma(Treatment_No_Exp),
+    SD_Treatment_No_Exp = "",
+    Mean_Treatment_Exp = comma(Treatment_Exp),
+    SD_Treatment_Exp = "",
+    Mean_Control_No_Exp = comma(Control_No_Exp),
+    SD_Control_No_Exp = "",
+    Mean_Control_Exp = comma(Control_Exp),
+    SD_Control_Exp = ""
+  )
+
+
+#--- 4. Combine ---
+sumtab_out_exp_final <- bind_rows(sumtab_out_exp_main, obs_row_out_exp)
+
+
+# -- 5. Print Table --- 
+table_sumstat_outcomes_exp <- sumtab_out_exp_final %>%
+  kable(
+    format = "latex",
+    booktabs = TRUE,
+    linesep = "",
+    align = c("lcccccccc"),
+    caption = "Summary Statistics - Listing-Level by Experience",
+    label = "sumstats_outcomes_salary_exp",
+    col.names = c("", "Mean", "SD", "Mean", "SD", "Mean", "SD", "Mean", "SD")
+  ) %>%
+  add_header_above(c(" " = 1, "No Experience" = 2, "Experience" = 2,
+                     "No Experience" = 2, "Experience" = 2)) %>%
+  add_header_above(c(" " = 1, "Treatment" = 4, "Control" = 4)) %>%
+  kable_styling(latex_options = c("hold_position", "scale_down")) %>% # scale_down option to fit page 
+  footnote(
+    general_title = "",
+    fixed_small_size = TRUE,
+    general = "Notes: This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data by whether the listing had any experience requirement.",
+    threeparttable = TRUE
+  )
+
+print(table_sumstat_outcomes_exp)
+
+
+# --- 6. Write table to a .tex file ---  
+writeLines(table_sumstat_outcomes_exp, "output/tables/table_sumstat_outcomes_salary_exp_mn.tex")
 
 
 

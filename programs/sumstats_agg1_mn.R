@@ -4,7 +4,7 @@
 #
 # R Script: "sumstats_agg1_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 24, 2026
+# Date of this version: March 25, 2026
 #
 # Description: Creates the occupation-state-month level sumstats. 
 #
@@ -128,7 +128,7 @@ table_sumstat_outcomes <- sumtab_out_final %>%
     align = c("lcccc"),
     digits = 2,
     caption = "Summary Statistics - Occupation-by-State-by-Date",
-    label = "sumstats_outcomes",
+    label = "sumstats_outcomes_agg1",
     col.names = c("", "Mean", "SD", "Mean", "SD")
   ) %>%
   add_header_above(c(" " = 1, "Treatment" = 2, "Control" = 2)) %>%
