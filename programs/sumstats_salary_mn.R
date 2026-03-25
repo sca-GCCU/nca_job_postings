@@ -2,7 +2,7 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "sumstats_salary_mn" 
+# R Script: "sumstats_salary_mn.R" 
 # by: Sebastian C. Anastasi
 # Date of this version: March 25, 2026
 #
