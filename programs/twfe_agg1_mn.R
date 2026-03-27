@@ -35,21 +35,29 @@ outcome_var <- c("any_educ_share", "bachelor_share", "master_share",
 agg1_mn_analysis <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
 
 # Transform treatment indicator to numeric for tables
-
 agg1_mn_analysis <- agg1_mn_analysis %>%
   mutate(
     treated_eff_full = as.numeric(treated_eff_full),
     treated_enact_full = as.numeric(treated_enact_full)
   )
 
-# Create event time indicator for event studies 
-# NOTE: REVISIT. MAY JUST USE THE ACTUAL TIME PERIODS... OR RELABEL/RESCALE YEARS?
+# Grab MN ban date
+ban_date <- agg1_mn_analysis %>%
+  filter(ban_full == 1) %>%
+  summarise(date = first(date_eff_full)) %>%
+  pull(date)
 
+# Create event time indicator for event studies 
 agg1_mn_analysis <- agg1_mn_analysis %>%
   mutate(
-    event_time = if_else()
+    event_time = (year(date) - year(ban_date))*12 + (month(date) - month(ban_date))
   )
 
+# Create truncated version for event studies
+et_lb <- -36  # create event time lower bound
+
+es_df <- agg1_mn_analysis %>%
+  filter(event_time >= et_lb)
 
 
 # 2. TWFE estimation
@@ -58,16 +66,137 @@ agg1_mn_analysis <- agg1_mn_analysis %>%
 
 # --- Table ---  
 
-twfe_any_educ_share <- feols(any_educ_share ~ )
+# (i) Spec 1: TWFE 
+twfe_any_educ_share_1 <- feols(
+  any_educ_share ~ treated_eff_full | state + date,
+  data = agg1_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_any_educ_share_1)
+
+
+# (ii) Spec 2: Add Occupation FE
+twfe_any_educ_share_2 <- feols(
+  any_educ_share ~ treated_eff_full | state + date + soc_4,
+  data = agg1_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_any_educ_share_2)
+
+# NOTE: Some singletons are currently being removed, but I think that's just 
+# because of the small dataset right now. 
+
+
+# (iii) Spec 3: Add Demographic Controls 
+twfe_any_educ_share_3 <- feols(
+  any_educ_share ~ treated_eff_full + # treatment indicator
+    frac_male + frac_black + frac_college + mean_age | # demographic controls
+    state + date + soc_4, # other FE
+  data = agg1_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_any_educ_share_3)
+
+# NOTE: Currently dropping all of my controls because of collinearity.
+
+
+# (iv) Spec 4: Add Economic Controls 
+twfe_any_educ_share_4 <- feols(
+  any_educ_share ~ treated_eff_full + # treatment indicator
+    frac_male + frac_black + frac_college + mean_age + # demographic controls
+    unemp_rate + real_income + real_hpi | # economic controls 
+    state + date + soc_4, # other FE
+  data = agg1_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_any_educ_share_4)
+
+# NOTE: Currently dropping all of my controls because of collinearity.
+
+
+# Combine into table 
+etable(twfe_any_educ_share_1, twfe_any_educ_share_2, twfe_any_educ_share_3,
+       twfe_any_educ_share_4, tex = TRUE)
+
+# NOTE: NEED TO RELABEL AND CLEAN STUFF UP.
 
 
 
+# --- Event Study ---
+# Run event study specification 
+es_any_educ_share <- feols(
+  any_educ_share ~ i(event_time, ban_full, -1) |
+    state + date,
+  data = es_df,
+  cluster = ~state
+)
 
+summary(es_any_educ_share)
 
+# create plotting dataframe 
+es_any_educ_share_df <- tibble(
+  term = names(es_any_educ_share$coefficients),
+  estimate = as.numeric(es_any_educ_share$coefficients),
+  std_error = as.numeric(es_any_educ_share$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error,
+    ci_high = estimate + 1.96 * std_error
+  )
 
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
 
+es_any_educ_share_df <- bind_rows(es_any_educ_share_df, ref_row) %>%
+  arrange(event_time)
 
+# Create plot with ggplot 
+es_plot_any_educ_share <- ggplot(es_any_educ_share_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Any Education (Share)"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
 
+es_plot_any_educ_share
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_any_educ_share_agg1_mn.pdf",
+  es_plot_any_educ_share,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
+
+# iplot version 
+#iplot(
+#  es_any_educ_share,
+#  xlab = "Event Time",
+#  main = "Effect on Any Education (Share)"
+#)
 
 
 
