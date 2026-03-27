@@ -67,7 +67,7 @@ p_amean_rsalary <- ggplot(
     color = group
   )
 ) +
-  geom_line(linewidth = 1.2) +
+  geom_line(linewidth = 0.9) +
   labs(
     x = "Year",
     y = "Real Salary - Annual",
@@ -81,10 +81,11 @@ p_amean_rsalary <- ggplot(
   scale_color_grey() + 
   theme_minimal() + 
   theme(
-    legend.position = c(0.1, 0.1),
+    legend.position = "bottom",
     legend.background = element_blank(),
     panel.grid = element_blank(),
-    axis.line = element_line(color = "black")
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
   )
 
 p_amean_rsalary
@@ -126,7 +127,7 @@ p_amean_rsalary_exp <- ggplot(
     color = group
   )
 ) +
-  geom_line(linewidth = 1.2) +
+  geom_line(linewidth = 0.9) +
   labs(
     x = "Year",
     y = "Real Salary (Experience) - Annual",
@@ -140,10 +141,11 @@ p_amean_rsalary_exp <- ggplot(
   scale_color_grey() + 
   theme_minimal() + 
   theme(
-    legend.position = c(0.1, 0.1),
+    legend.position = "bottom",
     legend.background = element_blank(),
     panel.grid = element_blank(),
-    axis.line = element_line(color = "black")
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
   )
 
 p_amean_rsalary_exp
@@ -186,7 +188,7 @@ p_amean_rsalary_noexp <- ggplot(
     color = group
   )
 ) +
-  geom_line(linewidth = 1.2) +
+  geom_line(linewidth = 0.9) +
   labs(
     x = "Year",
     y = "Real Salary (No Experience) - Annual",
@@ -200,10 +202,11 @@ p_amean_rsalary_noexp <- ggplot(
   scale_color_grey() + 
   theme_minimal() + 
   theme(
-    legend.position = c(0.1, 0.1),
+    legend.position = "bottom",
     legend.background = element_blank(),
     panel.grid = element_blank(),
-    axis.line = element_line(color = "black")
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
   )
 
 p_amean_rsalary_noexp
@@ -248,7 +251,7 @@ p_mmean_rsalary <- ggplot(
   salary_magg,
   aes(x = date, y = mean_real_salary, color = group, group = group)
 ) + 
-  geom_line(linewidth = 1.2) +
+  geom_line(linewidth = 0.9) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -270,10 +273,11 @@ p_mmean_rsalary <- ggplot(
   theme_minimal() + 
   theme(
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-    legend.position = c(0.15, 0.95),
+    legend.position = "bottom",
     legend.background = element_blank(),
     panel.grid = element_blank(),
-    axis.line = element_line(color = "black")
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
   ) 
 
 p_mmean_rsalary
@@ -311,7 +315,7 @@ p_mmean_rsalary_exp <- ggplot(
   salary_magg_exp,
   aes(x = date, y = mean_real_salary, color = group, group = group)
 ) + 
-  geom_line(linewidth = 1.2) +
+  geom_line(linewidth = 0.9) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -333,10 +337,11 @@ p_mmean_rsalary_exp <- ggplot(
   theme_minimal() + 
   theme(
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-    legend.position = c(0.15, 0.95),
+    legend.position = "bottom",
     legend.background = element_blank(),
     panel.grid = element_blank(),
-    axis.line = element_line(color = "black")
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
   ) 
 
 p_mmean_rsalary_exp
@@ -375,7 +380,7 @@ p_mmean_rsalary_noexp <- ggplot(
   salary_magg_noexp,
   aes(x = date, y = mean_real_salary, color = group, group = group)
 ) + 
-  geom_line(linewidth = 1.2) +
+  geom_line(linewidth = 0.9) +
   geom_vline(
     xintercept = treat_date_value,
     linetype = "dashed",
@@ -397,10 +402,11 @@ p_mmean_rsalary_noexp <- ggplot(
   theme_minimal() + 
   theme(
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-    legend.position = c(0.25, 0.95),
+    legend.position = "bottom",
     legend.background = element_blank(),
     panel.grid = element_blank(),
-    axis.line = element_line(color = "black")
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
   ) 
 
 p_mmean_rsalary_noexp
