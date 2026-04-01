@@ -132,8 +132,9 @@ table_sumstat_outcomes <- sumtab_out_final %>%
   footnote(
     general_title = "",
     fixed_small_size = TRUE,
-    general = "Notes: This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data.",
-    threeparttable = TRUE
+    general = "\\\\footnotesize \\\\textit{Notes:} This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data.",
+    threeparttable = TRUE,
+    escape = FALSE
   ) 
 
 print(table_sumstat_outcomes)
@@ -242,8 +243,9 @@ table_sumstat_outcomes_exp <- sumtab_out_exp_final %>%
   footnote(
     general_title = "",
     fixed_small_size = TRUE,
-    general = "Notes: This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data by whether the listing had any experience requirement.",
-    threeparttable = TRUE
+    general = "\\\\footnotesize \\\\textit{Notes:} This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data by whether the listing had any experience requirement.",
+    threeparttable = TRUE,
+    escape = FALSE
   )
 
 print(table_sumstat_outcomes_exp)
