@@ -4,7 +4,7 @@
 #
 # R Script: "descriptive_graphs_agg1_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 16, 2026
+# Date of this version: April 1, 2026
 #
 # Description: Creates occupation-state-month level descriptive graphs.
 #
@@ -66,6 +66,7 @@ p_amean_tot_post <- ggplot(tot_ann, aes(x = year,
                                              color = group, 
                                              group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Total Postings - Annual",
@@ -92,7 +93,7 @@ ggsave(
   "output/figures/plot_amean_tot_post_agg1_mn.pdf",
   p_amean_tot_post,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -157,8 +158,8 @@ p_mmean_tot_post
 ggsave(
   "output/figures/plot_mmean_tot_post_agg1_mn.pdf",
   p_mmean_tot_post,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -193,6 +194,7 @@ p_amean_any_ed <- ggplot(any_ed_ann, aes(x = year,
                                         color = group, 
                                         group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Any Education Requirement - Annual",
@@ -219,7 +221,7 @@ ggsave(
   "output/figures/plot_amean_any_ed_agg1_mn.pdf",
   p_amean_any_ed,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -284,8 +286,8 @@ p_mmean_any_ed
 ggsave(
   "output/figures/plot_mmean_any_ed_agg1_mn.pdf",
   p_mmean_any_ed,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -312,6 +314,7 @@ p_amean_any_ed_share <- ggplot(share_any_ed_ann, aes(x = year,
                                          color = group, 
                                          group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Any Education Requirement (Share) - Annual",
@@ -335,7 +338,7 @@ ggsave(
   "output/figures/plot_amean_any_ed_share_agg1_mn.pdf",
   p_amean_any_ed_share,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -391,8 +394,8 @@ p_mmean_any_ed_share
 ggsave(
   "output/figures/plot_mmean_any_ed_share_agg1_mn.pdf",
   p_mmean_any_ed_share,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -430,6 +433,7 @@ p_amean_bachelor <- ggplot(
   )
 ) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Bachelor's Requirement - Annual",
@@ -454,7 +458,7 @@ ggsave(
   "output/figures/plot_amean_bachelor_agg1_mn.pdf",
   p_amean_bachelor,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -522,8 +526,8 @@ p_mmean_bachelor
 ggsave(
   "output/figures/plot_mmean_bachelor_agg1_mn.pdf",
   p_mmean_bachelor,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -550,6 +554,7 @@ p_amean_bachelor_share <- ggplot(share_bachelors_ann, aes(x = year,
                                                      color = group, 
                                                      group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Bachelor's Requirement (Share) - Annual",
@@ -573,7 +578,7 @@ ggsave(
   "output/figures/plot_amean_bachelor_share_agg1_mn.pdf",
   p_amean_bachelor_share,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -629,8 +634,8 @@ p_mmean_bachelor_share
 ggsave(
   "output/figures/plot_mmean_bachelor_share_agg1_mn.pdf",
   p_mmean_bachelor_share,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -668,6 +673,7 @@ p_amean_master <- ggplot(
   )
 ) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Master's Requirement - Annual",
@@ -692,7 +698,7 @@ ggsave(
   "output/figures/plot_amean_master_agg1_mn.pdf",
   p_amean_master,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -760,8 +766,8 @@ p_mmean_master
 ggsave(
   "output/figures/plot_mmean_master_agg1_mn.pdf",
   p_mmean_master,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -788,6 +794,7 @@ p_amean_master_share <- ggplot(share_master_ann, aes(x = year,
                                                           color = group, 
                                                           group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Master's Requirement (Share) - Annual",
@@ -811,7 +818,7 @@ ggsave(
   "output/figures/plot_amean_master_share_agg1_mn.pdf",
   p_amean_master_share,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -867,8 +874,8 @@ p_mmean_master_share
 ggsave(
   "output/figures/plot_mmean_master_share_agg1_mn.pdf",
   p_mmean_master_share,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -908,6 +915,7 @@ p_amean_doctorate <- ggplot(
   )
 ) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Doctorate Requirement - Annual",
@@ -932,7 +940,7 @@ ggsave(
   "output/figures/plot_amean_doctorate_agg1_mn.pdf",
   p_amean_doctorate,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1000,8 +1008,8 @@ p_mmean_doctorate
 ggsave(
   "output/figures/plot_mmean_doctorate_agg1_mn.pdf",
   p_mmean_doctorate,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -1028,6 +1036,7 @@ p_amean_doctorate_share <- ggplot(share_doctorate_ann, aes(x = year,
                                                      color = group, 
                                                      group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Doctorate Requirement (Share) - Annual",
@@ -1051,7 +1060,7 @@ ggsave(
   "output/figures/plot_amean_doctorate_share_agg1_mn.pdf",
   p_amean_doctorate_share,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1107,8 +1116,8 @@ p_mmean_doctorate_share
 ggsave(
   "output/figures/plot_mmean_doctorate_share_agg1_mn.pdf",
   p_mmean_doctorate_share,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -1147,6 +1156,7 @@ p_amean_any_exp <- ggplot(
   )
 ) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Any Experience Requirement - Annual",
@@ -1171,7 +1181,7 @@ ggsave(
   "output/figures/plot_amean_any_exp_agg1_mn.pdf",
   p_amean_any_exp,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1239,8 +1249,8 @@ p_mmean_any_exp
 ggsave(
   "output/figures/plot_mmean_any_exp_agg1_mn.pdf",
   p_mmean_any_exp,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -1267,6 +1277,7 @@ p_amean_any_exp_share <- ggplot(share_any_exp_ann, aes(x = year,
                                                            color = group, 
                                                            group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Any Experience Requirement (Share) - Annual",
@@ -1290,7 +1301,7 @@ ggsave(
   "output/figures/plot_amean_any_exp_share_agg1_mn.pdf",
   p_amean_any_exp_share,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1345,8 +1356,8 @@ p_mmean_any_exp_share
 ggsave(
   "output/figures/plot_mmean_any_exp_share_agg1_mn.pdf",
   p_mmean_any_exp_share,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -1378,6 +1389,7 @@ p_amean_ave_exp <- ggplot(
   )
 ) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Average Experience Requirement - Annual",
@@ -1401,7 +1413,7 @@ ggsave(
   "output/figures/plot_amean_ave_exp_agg1_mn.pdf",
   p_amean_ave_exp,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1456,8 +1468,8 @@ p_mmean_ave_exp
 ggsave(
   "output/figures/plot_mmean_ave_exp_agg1_mn.pdf",
   p_mmean_ave_exp,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -1495,6 +1507,7 @@ p_amean_ft <- ggplot(
   )
 ) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Full-Time Postings - Annual",
@@ -1519,7 +1532,7 @@ ggsave(
   "output/figures/plot_amean_ft_agg1_mn.pdf",
   p_amean_ft,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1587,8 +1600,8 @@ p_mmean_ft
 ggsave(
   "output/figures/plot_mmean_ft_agg1_mn.pdf",
   p_mmean_ft,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -1615,6 +1628,7 @@ p_amean_ft_share <- ggplot(share_ft_ann, aes(x = year,
                                                        color = group, 
                                                        group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Full-Time Postings (Share) - Annual",
@@ -1638,7 +1652,7 @@ ggsave(
   "output/figures/plot_amean_ft_share_agg1_mn.pdf",
   p_amean_ft_share,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1694,8 +1708,8 @@ p_mmean_ft_share
 ggsave(
   "output/figures/plot_mmean_ft_share_agg1_mn.pdf",
   p_mmean_ft_share,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -1745,6 +1759,7 @@ p_amean_intern <- ggplot(
   )
 ) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Internship Postings - Annual",
@@ -1768,7 +1783,7 @@ ggsave(
   "output/figures/plot_amean_intern_agg1_mn.pdf",
   p_amean_intern,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1833,8 +1848,8 @@ p_mmean_intern
 ggsave(
   "output/figures/plot_mmean_intern_agg1_mn.pdf",
   p_mmean_intern,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -1861,6 +1876,7 @@ p_amean_intern_share <- ggplot(share_intern_ann, aes(x = year,
                                              color = group, 
                                              group = group)) + 
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Internship Postings (Share) - Annual",
@@ -1884,7 +1900,7 @@ ggsave(
   "output/figures/plot_amean_intern_share_agg1_mn.pdf",
   p_amean_intern_share,
   width = 7,
-  height = 4.5,
+  height = 5,
   units = "in"
 )
 
@@ -1940,8 +1956,8 @@ p_mmean_intern_share
 ggsave(
   "output/figures/plot_mmean_intern_share_agg1_mn.pdf",
   p_mmean_intern_share,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 

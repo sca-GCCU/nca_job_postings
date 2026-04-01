@@ -4,7 +4,7 @@
 #
 # R Script: "descriptive_graphs_salary_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 24, 2026
+# Date of this version: April 1, 2026
 #
 # Description: Creates postings-level descriptive graphs of salary offers.
 #
@@ -68,6 +68,7 @@ p_amean_rsalary <- ggplot(
   )
 ) +
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Real Salary - Annual",
@@ -128,6 +129,7 @@ p_amean_rsalary_exp <- ggplot(
   )
 ) +
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Real Salary (Experience) - Annual",
@@ -189,6 +191,7 @@ p_amean_rsalary_noexp <- ggplot(
   )
 ) +
   geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   labs(
     x = "Year",
     y = "Real Salary (No Experience) - Annual",
@@ -285,8 +288,8 @@ p_mmean_rsalary
 ggsave(
   "output/figures/plot_mmean_rsalary_mn.pdf",
   p_mmean_rsalary,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -349,8 +352,8 @@ p_mmean_rsalary_exp
 ggsave(
   "output/figures/plot_mmean_rsalary_exp_mn.pdf",
   p_mmean_rsalary_exp,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
@@ -414,8 +417,8 @@ p_mmean_rsalary_noexp
 ggsave(
   "output/figures/plot_mmean_rsalary_noexp_mn.pdf",
   p_mmean_rsalary_noexp,
-  width = 7,
-  height = 4.5,
+  width = 11,
+  height = 5,
   units = "in"
 )
 
