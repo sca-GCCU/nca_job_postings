@@ -2,7 +2,7 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "twfe_agg1_mn.R" 
+# R Script: "twfe_agg2_mn.R" 
 # by: Sebastian C. Anastasi
 # Date of this version: April 1, 2026
 #
@@ -32,23 +32,23 @@ outcome_var <- c("any_educ_share", "bachelor_share", "master_share",
 
 # --- Load the data and prep the data ------------------------------------------
 
-agg1_mn_analysis <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
+agg2_mn_analysis <- read_csv("data/analysis-data/agg2_mn_analysis.csv")
 
 # Transform treatment indicator to numeric for tables
-agg1_mn_analysis <- agg1_mn_analysis %>%
+agg2_mn_analysis <- agg2_mn_analysis %>%
   mutate(
     treated_eff_full = as.numeric(treated_eff_full),
     treated_enact_full = as.numeric(treated_enact_full)
   )
 
 # Grab MN ban date
-ban_date <- agg1_mn_analysis %>%
+ban_date <- agg2_mn_analysis %>%
   filter(ban_full == 1) %>%
   summarise(date = first(date_eff_full)) %>%
   pull(date)
 
 # Create event time indicator for event studies 
-agg1_mn_analysis <- agg1_mn_analysis %>%
+agg2_mn_analysis <- agg2_mn_analysis %>%
   mutate(
     event_time = (year(date) - year(ban_date))*12 + (month(date) - month(ban_date))
   )
@@ -56,7 +56,7 @@ agg1_mn_analysis <- agg1_mn_analysis %>%
 # Create truncated version for event studies
 et_lb <- -36  # create event time lower bound
 
-es_df <- agg1_mn_analysis %>%
+es_df <- agg2_mn_analysis %>%
   filter(event_time >= et_lb)
 
 
@@ -68,7 +68,7 @@ es_df <- agg1_mn_analysis %>%
 # (i) Spec 1: TWFE 
 twfe_total_postings_1 <- feols(
   total_postings ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -78,44 +78,29 @@ summary(twfe_total_postings_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_total_postings_2 <- feols(
   total_postings ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_total_postings_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
 
+# ADDING NEW SPECIFICATION 3; IGNORING CONTROL VARIABLES FOR NOW
 
-# (iii) Spec 3: Add Demographic Controls 
-# twfe_total_postings_3 <- feols(
-#   total_postings ~ treated_eff_full + # treatment indicator
-#     frac_male + frac_black + frac_college + mean_age | # demographic controls
-#     state + date + soc_4, # other FE
-#   data = agg1_mn_analysis,
-#   cluster = ~state
-# )
-# 
-# summary(twfe_total_postings_3)
+# (iii) Spec 3: Add Firm FE
 
-# (iv) Spec 4: Add Economic Controls 
-# twfe_total_postings_4 <- feols(
-#   total_postings ~ treated_eff_full + # treatment indicator
-#     frac_male + frac_black + frac_college + mean_age + # demographic controls
-#     unemp_rate + real_income + real_hpi | # economic controls 
-#     state + date + soc_4, # other FE
-#   data = agg1_mn_analysis,
-#   cluster = ~state
-# )
-# 
-# summary(twfe_total_postings_4)
+twfe_total_postings_3 <- feols(
+  total_postings ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
 
+summary(twfe_total_postings_3)
 
 
 # Combine into table 
 etable(
-  twfe_total_postings_1, twfe_total_postings_2, 
+  twfe_total_postings_1, twfe_total_postings_2, twfe_total_postings_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -123,7 +108,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -131,27 +117,13 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_total_postings_agg1_mn.tex"
+  file = "output/tables/table_twfe_total_postings_agg2_mn.tex"
 )
 
-# NOTE 1: Once I'm performing other methods too, I may need to figure out how to 
+# NOTE: Once I'm performing other methods too, I may need to figure out how to 
 # combine all of these results in a different table. This is fine for now.
 
-# NOTE 2: Excluding economic and demographic controls for now. They are fully 
-# absorbed by my fixed effects and, hence, collinear.As I explored below: 
 
-#agg1_mn_analysis %>%
-#  group_by(state, date, soc_4) %>%
-#  summarize(
-#    variation = var(frac_male, na.rm = TRUE),
-#    .groups = "drop") %>%
-#  filter(!is.na(variation))
-
-# Yields a 0 by 4 tibble. No variation left after including FE. Would have to  
-# interact the controls and FE I think. 
-
-# NOTE 3: If I re-run specifications 3 and 4 (properly), I will need to re-insert
-# these into the table: twfe_total_postings_3, twfe_total_postings_4. 
 
 
 
@@ -216,7 +188,7 @@ es_plot_total_postings_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_total_postings_1_agg1_mn.pdf",
+  "output/figures/es_total_postings_1_agg2_mn.pdf",
   es_plot_total_postings_1,
   width = 7,
   height = 4.5,
@@ -282,13 +254,78 @@ es_plot_total_postings_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_total_postings_2_agg1_mn.pdf",
+  "output/figures/es_total_postings_2_agg2_mn.pdf",
   es_plot_total_postings_2,
   width = 7,
   height = 4.5,
   units = "in"
 )
 
+
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_total_postings_3 <- feols(
+  total_postings ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
+
+summary(es_total_postings_3)
+
+# create plotting dataframe 
+es_total_postings_3_df <- tibble(
+  term = names(es_total_postings_3$coefficients),
+  estimate = as.numeric(es_total_postings_3$coefficients),
+  std_error = as.numeric(es_total_postings_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_total_postings_3_df <- bind_rows(es_total_postings_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_total_postings_3 <- ggplot(es_total_postings_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Postings"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_total_postings_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_total_postings_3_agg2_mn.pdf",
+  es_plot_total_postings_3,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
 
 
 
@@ -300,7 +337,7 @@ ggsave(
 # (i) Spec 1: TWFE 
 twfe_any_educ_share_1 <- feols(
   any_educ_share ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -310,45 +347,26 @@ summary(twfe_any_educ_share_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_any_educ_share_2 <- feols(
   any_educ_share ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_any_educ_share_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
+# (iii) Spec 3: Add Firm FE
 
+twfe_any_educ_share_3 <- feols(
+  any_educ_share ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
 
-# # (iii) Spec 3: Add Demographic Controls 
-# twfe_any_educ_share_3 <- feols(
-#   any_educ_share ~ treated_eff_full + # treatment indicator
-#     frac_male + frac_black + frac_college + mean_age | # demographic controls
-#     state + date + soc_4, # other FE
-#   data = agg1_mn_analysis,
-#   cluster = ~state
-# )
-# 
-# summary(twfe_any_educ_share_3)
-# 
-
-# # (iv) Spec 4: Add Economic Controls 
-# twfe_any_educ_share_4 <- feols(
-#   any_educ_share ~ treated_eff_full + # treatment indicator
-#     frac_male + frac_black + frac_college + mean_age + # demographic controls
-#     unemp_rate + real_income + real_hpi | # economic controls 
-#     state + date + soc_4, # other FE
-#   data = agg1_mn_analysis,
-#   cluster = ~state
-# )
-# 
-# summary(twfe_any_educ_share_4)
-
+summary(twfe_any_educ_share_3)
 
 
 # Combine into table 
 etable(
-  twfe_any_educ_share_1, twfe_any_educ_share_2, 
+  twfe_any_educ_share_1, twfe_any_educ_share_2, twfe_any_educ_share_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -356,7 +374,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -364,9 +383,8 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_any_educ_share_agg1_mn.tex"
+  file = "output/tables/table_twfe_any_educ_share_agg2_mn.tex"
 )
-
 
 
 
@@ -431,7 +449,7 @@ es_plot_any_educ_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_any_educ_share_1_agg1_mn.pdf",
+  "output/figures/es_any_educ_share_1_agg2_mn.pdf",
   es_plot_any_educ_share_1,
   width = 7,
   height = 4.5,
@@ -497,7 +515,7 @@ es_plot_any_educ_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_any_educ_share_2_agg1_mn.pdf",
+  "output/figures/es_any_educ_share_2_agg2_mn.pdf",
   es_plot_any_educ_share_2,
   width = 7,
   height = 4.5,
@@ -505,142 +523,70 @@ ggsave(
 )
 
 
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_any_educ_share_3 <- feols(
+  any_educ_share ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
 
-# # (iii) Spec 3: Add Demographic Controls 
-# # Run event study specification 
-# es_any_educ_share_3 <- feols(
-#   any_educ_share ~ i(event_time, ban_full, -1) + 
-#     frac_male + frac_black + frac_college + mean_age | # demographic controls
-#     state + date + soc_4,
-#   data = es_df,
-#   cluster = ~state
-# )
-# 
-# summary(es_any_educ_share_3)
-# 
-# # create plotting dataframe 
-# es_any_educ_share_3_df <- tibble(
-#   term = names(es_any_educ_share_3$coefficients),
-#   estimate = as.numeric(es_any_educ_share_3$coefficients),
-#   std_error = as.numeric(es_any_educ_share_3$se)
-# ) %>%
-#   mutate(
-#     event_time = as.numeric(str_extract(term, "-?\\d+")),
-#     ci_low = estimate - 1.96 * std_error, # 95% CIs 
-#     ci_high = estimate + 1.96 * std_error
-#   )
-# 
-# ref_row <- tibble( #adding back in an entry for the omitted period 
-#   term = "Reference",
-#   estimate = 0, 
-#   std_error = NA_real_,
-#   event_time = -1,
-#   ci_low = NA_real_,
-#   ci_high = NA_real_
-# )
-# 
-# es_any_educ_share_3_df <- bind_rows(es_any_educ_share_3_df, ref_row) %>%
-#   arrange(event_time)
-# 
-# # Create plot with ggplot 
-# es_plot_any_educ_share_3 <- ggplot(es_any_educ_share_3_df, aes(x = event_time, y = estimate)) +
-#   geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
-#   geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
-#   geom_point() + 
-#   geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
-#   scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
-#   labs(
-#     x = "Months Since Ban",
-#     y = "Coefficient - Any Education (Share)"
-#   ) + 
-#   theme_minimal() + 
-#   theme(
-#     panel.grid = element_blank(),
-#     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-#     panel.border = element_rect(color = "black", fill = NA),
-#     axis.ticks = element_line(color = "black")
-#   )
-# 
-# es_plot_any_educ_share_3
-# 
-# # Save the event study plot 
-# ggsave(
-#   "output/figures/es_any_educ_share_3_agg1_mn.pdf",
-#   es_plot_any_educ_share_3,
-#   width = 7,
-#   height = 4.5,
-#   units = "in"
-# )
-# 
-# 
-# 
-# # (iv) Spec 4: Add Economic Controls 
-# # Run event study specification 
-# es_any_educ_share_4 <- feols(
-#   any_educ_share ~ i(event_time, ban_full, -1) + 
-#     frac_male + frac_black + frac_college + mean_age + # demographic controls
-#     unemp_rate + real_income + real_hpi | # economic controls 
-#     state + date + soc_4,
-#   data = es_df,
-#   cluster = ~state
-# )
-# 
-# summary(es_any_educ_share_4)
-# 
-# # create plotting dataframe 
-# es_any_educ_share_4_df <- tibble(
-#   term = names(es_any_educ_share_4$coefficients),
-#   estimate = as.numeric(es_any_educ_share_4$coefficients),
-#   std_error = as.numeric(es_any_educ_share_4$se)
-# ) %>%
-#   mutate(
-#     event_time = as.numeric(str_extract(term, "-?\\d+")),
-#     ci_low = estimate - 1.96 * std_error, # 95% CIs 
-#     ci_high = estimate + 1.96 * std_error
-#   )
-# 
-# ref_row <- tibble( #adding back in an entry for the omitted period 
-#   term = "Reference",
-#   estimate = 0, 
-#   std_error = NA_real_,
-#   event_time = -1,
-#   ci_low = NA_real_,
-#   ci_high = NA_real_
-# )
-# 
-# es_any_educ_share_4_df <- bind_rows(es_any_educ_share_4_df, ref_row) %>%
-#   arrange(event_time)
-# 
-# # Create plot with ggplot 
-# es_plot_any_educ_share_4 <- ggplot(es_any_educ_share_4_df, aes(x = event_time, y = estimate)) +
-#   geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
-#   geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
-#   geom_point() + 
-#   geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
-#   scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
-#   labs(
-#     x = "Months Since Ban",
-#     y = "Coefficient - Any Education (Share)"
-#   ) + 
-#   theme_minimal() + 
-#   theme(
-#     panel.grid = element_blank(),
-#     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-#     panel.border = element_rect(color = "black", fill = NA),
-#     axis.ticks = element_line(color = "black")
-#   )
-# 
-# es_plot_any_educ_share_4
-# 
-# # Save the event study plot 
-# ggsave(
-#   "output/figures/es_any_educ_share_4_agg1_mn.pdf",
-#   es_plot_any_educ_share_4,
-#   width = 7,
-#   height = 4.5,
-#   units = "in"
-# )
+summary(es_any_educ_share_3)
 
+# create plotting dataframe 
+es_any_educ_share_3_df <- tibble(
+  term = names(es_any_educ_share_3$coefficients),
+  estimate = as.numeric(es_any_educ_share_3$coefficients),
+  std_error = as.numeric(es_any_educ_share_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_any_educ_share_3_df <- bind_rows(es_any_educ_share_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_any_educ_share_3 <- ggplot(es_any_educ_share_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Any Education Requirement (Share)"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_any_educ_share_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_any_educ_share_3_agg2_mn.pdf",
+  es_plot_any_educ_share_3,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
 
 
 
@@ -652,7 +598,7 @@ ggsave(
 # (i) Spec 1: TWFE 
 twfe_bachelor_share_1 <- feols(
   bachelor_share ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -662,46 +608,26 @@ summary(twfe_bachelor_share_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_bachelor_share_2 <- feols(
   bachelor_share ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_bachelor_share_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
+# (iii) Spec 3: Add Firm FE
 
+twfe_bachelor_share_3 <- feols(
+  bachelor_share ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
 
-# # (iii) Spec 3: Add Demographic Controls 
-# twfe_bachelor_share_3 <- feols(
-#   bachelor_share ~ treated_eff_full + # treatment indicator
-#     frac_male + frac_black + frac_college + mean_age | # demographic controls
-#     state + date + soc_4, # other FE
-#   data = agg1_mn_analysis,
-#   cluster = ~state
-# )
-# 
-# summary(twfe_bachelor_share_3)
-# 
-# 
-# 
-# # (iv) Spec 4: Add Economic Controls 
-# twfe_bachelor_share_4 <- feols(
-#   bachelor_share ~ treated_eff_full + # treatment indicator
-#     frac_male + frac_black + frac_college + mean_age + # demographic controls
-#     unemp_rate + real_income + real_hpi | # economic controls 
-#     state + date + soc_4, # other FE
-#   data = agg1_mn_analysis,
-#   cluster = ~state
-# )
-# 
-# summary(twfe_bachelor_share_4)
-
+summary(twfe_bachelor_share_3)
 
 
 # Combine into table 
 etable(
-  twfe_bachelor_share_1, twfe_bachelor_share_2, 
+  twfe_bachelor_share_1, twfe_bachelor_share_2, twfe_bachelor_share_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -709,7 +635,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -717,10 +644,8 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_bachelor_share_agg1_mn.tex"
+  file = "output/tables/table_twfe_bachelor_share_agg2_mn.tex"
 )
-
-
 
 
 
@@ -784,7 +709,7 @@ es_plot_bachelor_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_bachelor_share_1_agg1_mn.pdf",
+  "output/figures/es_bachelor_share_1_agg2_mn.pdf",
   es_plot_bachelor_share_1,
   width = 7,
   height = 4.5,
@@ -850,13 +775,78 @@ es_plot_bachelor_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_bachelor_share_2_agg1_mn.pdf",
+  "output/figures/es_bachelor_share_2_agg2_mn.pdf",
   es_plot_bachelor_share_2,
   width = 7,
   height = 4.5,
   units = "in"
 )
 
+
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_bachelor_share_3 <- feols(
+  bachelor_share ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
+
+summary(es_bachelor_share_3)
+
+# create plotting dataframe 
+es_bachelor_share_3_df <- tibble(
+  term = names(es_bachelor_share_3$coefficients),
+  estimate = as.numeric(es_bachelor_share_3$coefficients),
+  std_error = as.numeric(es_bachelor_share_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_bachelor_share_3_df <- bind_rows(es_bachelor_share_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_bachelor_share_3 <- ggplot(es_bachelor_share_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Bachelor's Requirement (Share)"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_bachelor_share_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_bachelor_share_3_agg2_mn.pdf",
+  es_plot_bachelor_share_3,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
 
 
 
@@ -868,7 +858,7 @@ ggsave(
 # (i) Spec 1: TWFE 
 twfe_master_share_1 <- feols(
   master_share ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -878,44 +868,26 @@ summary(twfe_master_share_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_master_share_2 <- feols(
   master_share ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_master_share_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
+# (iii) Spec 3: Add Firm FE
 
+twfe_master_share_3 <- feols(
+  master_share ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
 
-# # (iii) Spec 3: Add Demographic Controls 
-# twfe_master_share_3 <- feols(
-#   master_share ~ treated_eff_full + # treatment indicator
-#     frac_male + frac_black + frac_college + mean_age | # demographic controls
-#     state + date + soc_4, # other FE
-#   data = agg1_mn_analysis,
-#   cluster = ~state
-# )
-# 
-# summary(twfe_master_share_3)
-# 
-# # (iv) Spec 4: Add Economic Controls 
-# twfe_master_share_4 <- feols(
-#   master_share ~ treated_eff_full + # treatment indicator
-#     frac_male + frac_black + frac_college + mean_age + # demographic controls
-#     unemp_rate + real_income + real_hpi | # economic controls 
-#     state + date + soc_4, # other FE
-#   data = agg1_mn_analysis,
-#   cluster = ~state
-# )
-# 
-# summary(twfe_master_share_4)
-
+summary(twfe_master_share_3)
 
 
 # Combine into table 
 etable(
-  twfe_master_share_1, twfe_master_share_2, 
+  twfe_master_share_1, twfe_master_share_2, twfe_master_share_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -923,7 +895,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -931,10 +904,8 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_master_share_agg1_mn.tex"
+  file = "output/tables/table_twfe_master_share_agg2_mn.tex"
 )
-
-
 
 
 
@@ -1000,7 +971,7 @@ es_plot_master_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_master_share_1_agg1_mn.pdf",
+  "output/figures/es_master_share_1_agg2_mn.pdf",
   es_plot_master_share_1,
   width = 7,
   height = 4.5,
@@ -1066,13 +1037,78 @@ es_plot_master_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_master_share_2_agg1_mn.pdf",
+  "output/figures/es_master_share_2_agg2_mn.pdf",
   es_plot_master_share_2,
   width = 7,
   height = 4.5,
   units = "in"
 )
 
+
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_master_share_3 <- feols(
+  master_share ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
+
+summary(es_master_share_3)
+
+# create plotting dataframe 
+es_master_share_3_df <- tibble(
+  term = names(es_master_share_3$coefficients),
+  estimate = as.numeric(es_master_share_3$coefficients),
+  std_error = as.numeric(es_master_share_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_master_share_3_df <- bind_rows(es_master_share_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_master_share_3 <- ggplot(es_master_share_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Master's Requirement (Share)"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_master_share_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_master_share_3_agg2_mn.pdf",
+  es_plot_master_share_3,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
 
 
 
@@ -1083,7 +1119,7 @@ ggsave(
 # (i) Spec 1: TWFE 
 twfe_doctorate_share_1 <- feols(
   doctorate_share ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -1093,20 +1129,27 @@ summary(twfe_doctorate_share_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_doctorate_share_2 <- feols(
   doctorate_share ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_doctorate_share_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
 
+# (iii) Spec 3: Add Firm FE
+
+twfe_doctorate_share_3 <- feols(
+  doctorate_share ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_doctorate_share_3)
 
 
 # Combine into table 
 etable(
-  twfe_doctorate_share_1, twfe_doctorate_share_2, 
+  twfe_doctorate_share_1, twfe_doctorate_share_2, twfe_doctorate_share_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -1114,7 +1157,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -1122,8 +1166,9 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_doctorate_share_agg1_mn.tex"
+  file = "output/tables/table_twfe_doctorate_share_agg2_mn.tex"
 )
+
 
 
 
@@ -1188,7 +1233,7 @@ es_plot_doctorate_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_doctorate_share_1_agg1_mn.pdf",
+  "output/figures/es_doctorate_share_1_agg2_mn.pdf",
   es_plot_doctorate_share_1,
   width = 7,
   height = 4.5,
@@ -1254,7 +1299,7 @@ es_plot_doctorate_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_doctorate_share_2_agg1_mn.pdf",
+  "output/figures/es_doctorate_share_2_agg2_mn.pdf",
   es_plot_doctorate_share_2,
   width = 7,
   height = 4.5,
@@ -1262,6 +1307,71 @@ ggsave(
 )
 
 
+
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_doctorate_share_3 <- feols(
+  doctorate_share ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
+
+summary(es_doctorate_share_3)
+
+# create plotting dataframe 
+es_doctorate_share_3_df <- tibble(
+  term = names(es_doctorate_share_3$coefficients),
+  estimate = as.numeric(es_doctorate_share_3$coefficients),
+  std_error = as.numeric(es_doctorate_share_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_doctorate_share_3_df <- bind_rows(es_doctorate_share_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_doctorate_share_3 <- ggplot(es_doctorate_share_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Doctorate Requirement (Share)"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_doctorate_share_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_doctorate_share_3_agg2_mn.pdf",
+  es_plot_doctorate_share_3,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
 
 
 
@@ -1271,7 +1381,7 @@ ggsave(
 # (i) Spec 1: TWFE 
 twfe_any_exp_share_1 <- feols(
   any_exp_share ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -1281,20 +1391,26 @@ summary(twfe_any_exp_share_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_any_exp_share_2 <- feols(
   any_exp_share ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_any_exp_share_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
+# (iii) Spec 3: Add Firm FE
 
+twfe_any_exp_share_3 <- feols(
+  any_exp_share ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_any_exp_share_3)
 
 
 # Combine into table 
 etable(
-  twfe_any_exp_share_1, twfe_any_exp_share_2, 
+  twfe_any_exp_share_1, twfe_any_exp_share_2, twfe_any_exp_share_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -1302,7 +1418,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -1310,8 +1427,9 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_any_exp_share_agg1_mn.tex"
+  file = "output/tables/table_twfe_any_exp_share_agg2_mn.tex"
 )
+
 
 
 
@@ -1376,7 +1494,7 @@ es_plot_any_exp_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_any_exp_share_1_agg1_mn.pdf",
+  "output/figures/es_any_exp_share_1_agg2_mn.pdf",
   es_plot_any_exp_share_1,
   width = 7,
   height = 4.5,
@@ -1442,7 +1560,7 @@ es_plot_any_exp_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_any_exp_share_2_agg1_mn.pdf",
+  "output/figures/es_any_exp_share_2_agg2_mn.pdf",
   es_plot_any_exp_share_2,
   width = 7,
   height = 4.5,
@@ -1450,6 +1568,71 @@ ggsave(
 )
 
 
+
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_any_exp_share_3 <- feols(
+  any_exp_share ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
+
+summary(es_any_exp_share_3)
+
+# create plotting dataframe 
+es_any_exp_share_3_df <- tibble(
+  term = names(es_any_exp_share_3$coefficients),
+  estimate = as.numeric(es_any_exp_share_3$coefficients),
+  std_error = as.numeric(es_any_exp_share_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_any_exp_share_3_df <- bind_rows(es_any_exp_share_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_any_exp_share_3 <- ggplot(es_any_exp_share_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Any Experience Requirement (Share)"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_any_exp_share_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_any_exp_share_3_agg2_mn.pdf",
+  es_plot_any_exp_share_3,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
 
 
 
@@ -1460,7 +1643,7 @@ ggsave(
 # (i) Spec 1: TWFE 
 twfe_ave_exp_1 <- feols(
   ave_exp ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -1470,20 +1653,26 @@ summary(twfe_ave_exp_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_ave_exp_2 <- feols(
   ave_exp ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_ave_exp_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
+# (iii) Spec 3: Add Firm FE
 
+twfe_ave_exp_3 <- feols(
+  ave_exp ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_ave_exp_3)
 
 
 # Combine into table 
 etable(
-  twfe_ave_exp_1, twfe_ave_exp_2, 
+  twfe_ave_exp_1, twfe_ave_exp_2, twfe_ave_exp_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -1491,7 +1680,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -1499,8 +1689,9 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_ave_exp_agg1_mn.tex"
+  file = "output/tables/table_twfe_ave_exp_agg2_mn.tex"
 )
+
 
 
 
@@ -1565,7 +1756,7 @@ es_plot_ave_exp_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_ave_exp_1_agg1_mn.pdf",
+  "output/figures/es_ave_exp_1_agg2_mn.pdf",
   es_plot_ave_exp_1,
   width = 7,
   height = 4.5,
@@ -1631,8 +1822,75 @@ es_plot_ave_exp_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_ave_exp_2_agg1_mn.pdf",
+  "output/figures/es_ave_exp_2_agg2_mn.pdf",
   es_plot_ave_exp_2,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
+
+
+
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_ave_exp_3 <- feols(
+  ave_exp ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
+
+summary(es_ave_exp_3)
+
+# create plotting dataframe 
+es_ave_exp_3_df <- tibble(
+  term = names(es_ave_exp_3$coefficients),
+  estimate = as.numeric(es_ave_exp_3$coefficients),
+  std_error = as.numeric(es_ave_exp_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_ave_exp_3_df <- bind_rows(es_ave_exp_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_ave_exp_3 <- ggplot(es_ave_exp_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Average Experience"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_ave_exp_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_ave_exp_3_agg2_mn.pdf",
+  es_plot_ave_exp_3,
   width = 7,
   height = 4.5,
   units = "in"
@@ -1649,7 +1907,7 @@ ggsave(
 # (i) Spec 1: TWFE 
 twfe_fulltime_share_1 <- feols(
   fulltime_share ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -1659,20 +1917,26 @@ summary(twfe_fulltime_share_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_fulltime_share_2 <- feols(
   fulltime_share ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_fulltime_share_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
+# (iii) Spec 3: Add Firm FE
 
+twfe_fulltime_share_3 <- feols(
+  fulltime_share ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_fulltime_share_3)
 
 
 # Combine into table 
 etable(
-  twfe_fulltime_share_1, twfe_fulltime_share_2, 
+  twfe_fulltime_share_1, twfe_fulltime_share_2, twfe_fulltime_share_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -1680,7 +1944,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -1688,8 +1953,10 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_fulltime_share_agg1_mn.tex"
+  file = "output/tables/table_twfe_fulltime_share_agg2_mn.tex"
 )
+
+
 
 
 
@@ -1754,7 +2021,7 @@ es_plot_fulltime_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_fulltime_share_1_agg1_mn.pdf",
+  "output/figures/es_fulltime_share_1_agg2_mn.pdf",
   es_plot_fulltime_share_1,
   width = 7,
   height = 4.5,
@@ -1820,7 +2087,7 @@ es_plot_fulltime_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_fulltime_share_2_agg1_mn.pdf",
+  "output/figures/es_fulltime_share_2_agg2_mn.pdf",
   es_plot_fulltime_share_2,
   width = 7,
   height = 4.5,
@@ -1828,6 +2095,71 @@ ggsave(
 )
 
 
+
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_fulltime_share_3 <- feols(
+  fulltime_share ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
+
+summary(es_fulltime_share_3)
+
+# create plotting dataframe 
+es_fulltime_share_3_df <- tibble(
+  term = names(es_fulltime_share_3$coefficients),
+  estimate = as.numeric(es_fulltime_share_3$coefficients),
+  std_error = as.numeric(es_fulltime_share_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_fulltime_share_3_df <- bind_rows(es_fulltime_share_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_fulltime_share_3 <- ggplot(es_fulltime_share_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Full-Time Postings (Share)"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_fulltime_share_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_fulltime_share_3_agg2_mn.pdf",
+  es_plot_fulltime_share_3,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
 
 
 
@@ -1838,7 +2170,7 @@ ggsave(
 # (i) Spec 1: TWFE 
 twfe_internship_share_1 <- feols(
   internship_share ~ treated_eff_full | state + date,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
@@ -1848,20 +2180,26 @@ summary(twfe_internship_share_1)
 # (ii) Spec 2: Add Occupation FE
 twfe_internship_share_2 <- feols(
   internship_share ~ treated_eff_full | state + date + soc_4,
-  data = agg1_mn_analysis,
+  data = agg2_mn_analysis,
   cluster = ~state
 )
 
 summary(twfe_internship_share_2)
 
-# NOTE: Some singletons are currently being removed, but I think that's just 
-# because of the small dataset right now. 
+# (iii) Spec 3: Add Firm FE
 
+twfe_internship_share_3 <- feols(
+  internship_share ~ treated_eff_full | state + date + soc_4 + company,
+  data = agg2_mn_analysis,
+  cluster = ~state
+)
+
+summary(twfe_internship_share_3)
 
 
 # Combine into table 
 etable(
-  twfe_internship_share_1, twfe_internship_share_2, 
+  twfe_internship_share_1, twfe_internship_share_2, twfe_internship_share_3, 
   tex = TRUE,
   tpt = TRUE,
   dict = c(
@@ -1869,7 +2207,8 @@ etable(
     treated_eff_full = "Treated $\\times$ Post",
     state = "State",
     date = "Month-Year",
-    soc_4 = "Occupation"
+    soc_4 = "Occupation",
+    company = "Firm"
   ),
   style.tex = style.tex("aer"), # Removes weird "Model" thing and cleans up headings
   notes = c(
@@ -1877,8 +2216,9 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_internship_share_agg1_mn.tex"
+  file = "output/tables/table_twfe_internship_share_agg2_mn.tex"
 )
+
 
 
 
@@ -1943,7 +2283,7 @@ es_plot_internship_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_internship_share_1_agg1_mn.pdf",
+  "output/figures/es_internship_share_1_agg2_mn.pdf",
   es_plot_internship_share_1,
   width = 7,
   height = 4.5,
@@ -2009,7 +2349,7 @@ es_plot_internship_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_internship_share_2_agg1_mn.pdf",
+  "output/figures/es_internship_share_2_agg2_mn.pdf",
   es_plot_internship_share_2,
   width = 7,
   height = 4.5,
@@ -2017,6 +2357,71 @@ ggsave(
 )
 
 
+
+# (iii) Spec 3: Add Firm FE 
+# Run event study specification 
+es_internship_share_3 <- feols(
+  internship_share ~ i(event_time, ban_full, -1) |
+    state + date + soc_4 + company,
+  data = es_df,
+  cluster = ~state
+)
+
+summary(es_internship_share_3)
+
+# create plotting dataframe 
+es_internship_share_3_df <- tibble(
+  term = names(es_internship_share_3$coefficients),
+  estimate = as.numeric(es_internship_share_3$coefficients),
+  std_error = as.numeric(es_internship_share_3$se)
+) %>%
+  mutate(
+    event_time = as.numeric(str_extract(term, "-?\\d+")),
+    ci_low = estimate - 1.96 * std_error, # 95% CIs 
+    ci_high = estimate + 1.96 * std_error
+  )
+
+ref_row <- tibble( #adding back in an entry for the omitted period 
+  term = "Reference",
+  estimate = 0, 
+  std_error = NA_real_,
+  event_time = -1,
+  ci_low = NA_real_,
+  ci_high = NA_real_
+)
+
+es_internship_share_3_df <- bind_rows(es_internship_share_3_df, ref_row) %>%
+  arrange(event_time)
+
+# Create plot with ggplot 
+es_plot_internship_share_3 <- ggplot(es_internship_share_3_df, aes(x = event_time, y = estimate)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") + 
+  geom_vline(xintercept = -1, linetype = "dotted", color = "black") +
+  geom_point() + 
+  geom_errorbar(aes(ymin = ci_low, ymax = ci_high), width = 0.4) + 
+  scale_x_continuous(breaks = seq(-36, 19, by = 3)) + 
+  labs(
+    x = "Months Since Ban",
+    y = "Coefficient - Internship Postings (Share)"
+  ) + 
+  theme_minimal() + 
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    panel.border = element_rect(color = "black", fill = NA),
+    axis.ticks = element_line(color = "black")
+  )
+
+es_plot_internship_share_3
+
+# Save the event study plot 
+ggsave(
+  "output/figures/es_internship_share_3_agg2_mn.pdf",
+  es_plot_internship_share_3,
+  width = 7,
+  height = 4.5,
+  units = "in"
+)
 
 
 
