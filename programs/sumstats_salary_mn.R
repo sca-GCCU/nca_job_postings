@@ -132,7 +132,7 @@ table_sumstat_outcomes <- sumtab_out_final %>%
   footnote(
     general_title = "",
     fixed_small_size = TRUE,
-    general = "\\\\footnotesize \\\\textit{Notes:} This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data.",
+    general = "\\\\footnotesize \\\\textit{Notes:} This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data. Real versions of the salary variables are creating using the Consumer Price Index (CPI).",
     threeparttable = TRUE,
     escape = FALSE
   ) 
@@ -243,7 +243,7 @@ table_sumstat_outcomes_exp <- sumtab_out_exp_final %>%
   footnote(
     general_title = "",
     fixed_small_size = TRUE,
-    general = "\\\\footnotesize \\\\textit{Notes:} This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data by whether the listing had any experience requirement.",
+    general = "\\\\footnotesize \\\\textit{Notes:} This table reports the pre-ban means and standard deviations of salary key variables from the listings-level aggregation of the Lightcast job-postings data by whether the listing had any experience requirement. Real versions of the salary variables are creating using the Consumer Price Index (CPI).",
     threeparttable = TRUE,
     escape = FALSE
   )
