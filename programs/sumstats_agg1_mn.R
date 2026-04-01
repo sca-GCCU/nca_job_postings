@@ -30,7 +30,7 @@ agg1_mn_analysis <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
 
 
 # Create vectors of key variables  
-outcome_var <- c("any_educ_share", "bachelor_share", "master_share", 
+outcome_var <- c("total_postings", "any_educ_share", "bachelor_share", "master_share", 
                  "doctorate_share", "any_exp_share", "ave_exp", "fulltime_share",
                  "internship_share")
 
@@ -87,7 +87,7 @@ sumtab_out_main <- sumtab_out %>%
     SD_Control
   ) %>%
   mutate(
-    variable = c("Any Education", "Bachelor's", "Master's", "Doctorate",
+    variable = c("Postings", "Any Education", "Bachelor's", "Master's", "Doctorate",
                  "Any Experience", "Average Experience", 
                  "Fulltime", "Internship")
   ) %>%
