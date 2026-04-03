@@ -2,7 +2,7 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "prep_covariates" 
+# R Script: "3a_prep_covariates.R" 
 # by: Sebastian C. Anastasi
 # Date of this version: March 5, 2026
 #

@@ -2,16 +2,16 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "prep_salary_mn" 
+# R Script: "3c_prep_agg2_mn.R" 
 # by: Sebastian C. Anastasi
 # Date of this version: March 6, 2026
 #
-# Description: This script prepares the salary analysis data for examining
-# Minnesota's full noncompete ban. 
+# Description: This script prepares the firm-occupation-state-month level  
+# analysis data for analyzing Minnesota's full noncompete ban. 
 #
-# Dependencies: "prep_covariates.R" 
+# Dependencies: "3a_prep_covariates.R" 
 #
-# Output: "salary_mn_analysis.csv"
+# Output: "agg2_mn_clean.csv," "agg2_mn_analysis.csv"
 ##############################################################################
 
 # NOTE: When run in the cluster, I will need to update paths and (I believe)
@@ -24,14 +24,60 @@ setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 library(tidyverse)
 library(lubridate)
 
+# 1. Restrict to firms with at least 10 total listings. 
 
-# 1. Load data  
-salary <- read_csv("data/raw-data/sample_anastasi_salary_v2.csv")
+# NOTE: Currently using sample data here. 
+agg2_mn <- read_csv("data/raw-data/sample_anastasi_agg2_v2.csv")
 
-# Starting observations 
-n_start_s <- salary %>%
-  summarise(n())
-n_start_s
+# Total starting observations 
+n_start_a2_mn <- agg2_mn %>%
+  summarise(N = n()) %>%
+  pull(N)
+
+n_start_a2_mn
+
+write_lines(
+  format(n_start_a2_mn, big.mark = ","),
+  "output/other/n_start_a2_mn.tex"
+)
+
+# Define new total company postings variable to use for filtering  
+agg2_mn <- agg2_mn %>%
+  group_by(company) %>%
+  mutate(
+    total_postings_ever = sum(total_postings, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Create flag for whether to drop 
+agg2_mn <- agg2_mn %>%
+  mutate(
+    drop_min_ads = (total_postings_ever < 10)
+  )
+
+#agg2_mn_audit <- agg2_mn %>%
+#  filter(
+#    company == 3234293
+#  )
+
+#rm(agg2_mn_audit)
+
+# Count number dropped 
+n_drop_noise_a2_mn <- agg2_mn %>%
+  summarise(n_dropped = sum(drop_min_ads, na.rm = TRUE)) %>%
+  pull(n_dropped)
+
+n_drop_noise_a2_mn
+
+write_lines(
+  format(n_drop_noise_a2_mn, big.mark = ","),
+  "output/other/n_drop_noise_a2_mn.tex"
+)
+
+# Drop obs 
+agg2_mn <- agg2_mn %>%
+  filter(!drop_min_ads) %>%
+  select(-drop_min_ads)
 
 
 
@@ -78,8 +124,11 @@ state_nca_laws <- state_nca_laws %>%
   rename(state = statefip)
 
 # Merge 
-salary_mn_treat <- salary %>%
+agg2_mn_treat <- agg2_mn %>%
   left_join(state_nca_laws %>% select(-state_name), by = "state")
+
+
+
 
 
 
@@ -91,7 +140,7 @@ salary_mn_treat <- salary %>%
 # A. Exclude income, hourly, and other-ban states
 
 # Create date variable 
-salary_mn_treat <- salary_mn_treat %>%
+agg2_mn_treat <- agg2_mn_treat %>%
   mutate(
     date = make_date(year, month, 1)
   )
@@ -99,7 +148,7 @@ salary_mn_treat <- salary_mn_treat %>%
 
 # Create indicators for whether an obs is treated by an active (full, inc1, 
 # inc2, etc.) ban. We'll use this for the below exclusions. 
-salary_mn_treat <- salary_mn_treat %>%
+agg2_mn_treat <- agg2_mn_treat %>%
   mutate(
     treated_eff_full = !is.na(date_eff_full) & date >= date_eff_full,
     treated_enact_full = !is.na(date_enact_full) & date >= date_enact_full, # only need for full ban right now
@@ -118,7 +167,7 @@ salary_mn_treat <- salary_mn_treat %>%
 # whatever the current sample is).
 
 # Determine which states ever have inc1 ban
-states_inc1 <- salary_mn_treat %>%
+states_inc1 <- agg2_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -128,7 +177,7 @@ states_inc1 <- salary_mn_treat %>%
   pull(var = state, name = state_name)
 
 # Determine which states ever have inc2 ban
-#states_inc2 <- salary_mn_treat %>%
+#states_inc2 <- agg2_mn_treat %>%
 #  group_by(state) %>%
 #  summarise(
 #    state_name = first(state_name),
@@ -138,7 +187,7 @@ states_inc1 <- salary_mn_treat %>%
 #  pull(var = state, name = state_name)
 
 # Determine which states ever have hourly ban
-states_hourly <- salary_mn_treat %>%
+states_hourly <- agg2_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -148,7 +197,7 @@ states_hourly <- salary_mn_treat %>%
   pull(var = state, name = state_name)
 
 # Determine which states ever have other ban 
-states_other <- salary_mn_treat %>%
+states_other <- agg2_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -158,7 +207,37 @@ states_other <- salary_mn_treat %>%
   pull(var = state, name = state_name)
 
 # Dropping obs from the states with income, hourly, or "other" bans.
-salary_mn_treat <- salary_mn_treat %>%
+n_drop_incb_a2_mn <- agg2_mn_treat %>%
+  filter(state %in% states_inc1) %>%
+  summarise(N = n()) %>%
+  pull(N)
+
+write_lines(
+  format(n_drop_incb_a2_mn, big.mark = ","),
+  "output/other/n_drop_incb_a2_mn.tex"
+)
+
+n_drop_hourb_a2_mn <- agg2_mn_treat %>%
+  filter(state %in% states_hourly) %>%
+  summarise(N = n()) %>%
+  pull(N)
+
+write_lines(
+  format(n_drop_hourb_a2_mn, big.mark = ","),
+  "output/other/n_drop_hourb_a2_mn.tex"
+)
+
+n_drop_otherb_a2_mn <- agg2_mn_treat %>%
+  filter(state %in% states_other) %>%
+  summarise(N = n()) %>%
+  pull(N)
+
+write_lines(
+  format(n_drop_otherb_a2_mn, big.mark = ","),
+  "output/other/n_drop_otherb_a2_mn.tex"
+)
+
+agg2_mn_treat <- agg2_mn_treat %>%
   filter(
     !(state %in% c(states_inc1, states_hourly, states_other))
   )
@@ -170,7 +249,7 @@ rm(states_hourly, states_inc1, states_other)
 # B. Exclude listings from banned IND/OCC in states w/ IND/OCC bans
 
 # i.a. Determine which states ever have ind ban 
-states_ind <- salary_mn_treat %>%
+states_ind <- agg2_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -212,7 +291,7 @@ states_ind_soc <- states_ind_exp %>%
 
 
 # ii.a. Determine which states ever have health bans
-states_health <- salary_mn_treat %>%
+states_health <- agg2_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -276,7 +355,7 @@ states_health_soc <- states_health_long %>%
 # Check that all soc_4 codes from states_ind_soc have match.
 missing_soc <- states_ind_soc %>%
   anti_join(
-    salary_mn_treat %>% distinct(soc_4),
+    agg2_mn_treat %>% distinct(soc_4),
     by = "soc_4"
   ) 
 # NOTE: Some not matched, but I think this may because there are no listings
@@ -285,15 +364,22 @@ missing_soc <- states_ind_soc %>%
 rm(missing_soc)
 
 # Dropping obs in treated occupations in states with ind_bans 
-n_drop_ind_ban <- salary_mn_treat %>%
+n_drop_indb_a2_mn <- agg2_mn_treat %>%
   semi_join(
     states_ind_soc,
     by = c("state", "soc_4")
   ) %>%
-  summarise(n())
-n_drop_ind_ban
+  summarise(N = n()) %>%
+  pull(N)
 
-salary_mn_treat <- salary_mn_treat %>%
+n_drop_indb_a2_mn
+
+write_lines(
+  format(n_drop_indb_a2_mn, big.mark = ","),
+  "output/other/n_drop_indb_a2_mn.tex"
+)
+
+agg2_mn_treat <- agg2_mn_treat %>%
   anti_join(
     states_ind_soc,
     by = c("state", "soc_4")
@@ -302,7 +388,7 @@ salary_mn_treat <- salary_mn_treat %>%
 # Check that all soc_4 codes from states_health_soc have a match.
 missing_soc <- states_health_soc %>%
   anti_join(
-    salary_mn_treat %>% distinct(soc_4),
+    agg2_mn_treat %>% distinct(soc_4),
     by = "soc_4"
   ) 
 # NOTE: No soc_4 codes missing. Reassuring. 
@@ -310,15 +396,22 @@ missing_soc <- states_health_soc %>%
 rm(missing_soc)
 
 # Dropping obs in treated occupations in states with health_bans
-n_drop_health_ban <- salary_mn_treat %>%
+n_drop_healthb_a2_mn <- agg2_mn_treat %>%
   semi_join(
     states_health_soc,
     by = c("state", "soc_4")
   ) %>%
-  summarise(n())
-n_drop_health_ban
+  summarise(N = n()) %>%
+  pull(N)
 
-salary_mn_treat <- salary_mn_treat %>%
+n_drop_healthb_a2_mn
+
+write_lines(
+  format(n_drop_healthb_a2_mn, big.mark = ","),
+  "output/other/n_drop_healthb_a2_mn.tex"
+)
+
+agg2_mn_treat <- agg2_mn_treat %>%
   anti_join(
     states_health_soc,
     by = c("state", "soc_4")
@@ -327,7 +420,7 @@ salary_mn_treat <- salary_mn_treat %>%
 
 # C. Exclude other full-ban states (CA, ND, OK)
 
-states_full <- salary_mn_treat %>%
+states_full <- agg2_mn_treat %>%
   group_by(state) %>%
   summarise(
     state_name = first(state_name),
@@ -337,19 +430,26 @@ states_full <- salary_mn_treat %>%
   filter(!(state == 27)) %>% # filter out Minnesota 
   pull(state, state_name) # vectorize
 
-n_drop_full <- salary_mn_treat %>%
+n_drop_full_a2_mn <- agg2_mn_treat %>%
   filter(state %in% states_full) %>%
-  summarise(n())
-n_drop_full
+  summarise(N = n()) %>%
+  pull(N)
 
-salary_mn_treat <- salary_mn_treat %>%
+n_drop_full_a2_mn
+
+write_lines(
+  format(n_drop_full_a2_mn, big.mark = ","),
+  "output/other/n_drop_full_a2_mn.tex"
+)
+
+agg2_mn_treat <- agg2_mn_treat %>%
   filter(!(state %in% states_full))
 
 
 # D. Clean up data frames and variables you don't need anymore 
 
 # Data frames 
-rm(salary, ind_crosswalk, state_nca_laws)
+rm(agg2_mn, ind_crosswalk, state_nca_laws)
 rm(list = ls(pattern = "^states"))
 
 # Variables 
@@ -357,7 +457,7 @@ rm(list = ls(pattern = "^states"))
 # need variables pertaining to other types of bans once exclusions have been
 # imposed. 
 
-salary_mn_treat <- salary_mn_treat %>%
+agg2_mn_treat <- agg2_mn_treat %>%
   select(
     -starts_with("treated_eff_in"), 
     -starts_with("treated_eff_h"),
@@ -372,7 +472,30 @@ salary_mn_treat <- salary_mn_treat %>%
 
 
 
-# 4. Merge with covariate data
+
+
+# 4. Create "share" variables 
+# NOTE: When we aggregated we already restricted the output to only include
+# cells with positive numbers of total postings. 
+
+agg2_mn_treat <- agg2_mn_treat %>%
+  mutate(
+    any_educ_share = any_educ / total_postings,
+    bachelor_share = bachelor / total_postings,
+    master_share = master / total_postings, 
+    doctorate_share = master / total_postings,
+    any_exp_share = any_exp / total_postings, 
+    fulltime_share = fulltime / total_postings,
+    parttime_share = parttime / total_postings,
+    flextime_share = flextime / total_postings,
+    internship_share = internship / total_postings
+  )
+
+write_csv(agg2_mn_treat, "data/clean-data/agg2_mn_clean.csv")
+
+
+
+# 5. Merge with covariate data
 
 # A. Create covariates ("prep_covariates.R")
 
@@ -390,7 +513,7 @@ covariates_base <- covariates %>%
 
 # B. Merge the covariate data 
 
-salary_mn_analysis <- salary_mn_treat %>%
+agg2_mn_analysis <- agg2_mn_treat %>%
   left_join(
     covariates_base,
     by = c("state"),
@@ -405,16 +528,16 @@ salary_mn_analysis <- salary_mn_treat %>%
     year = year.x
   )
 
-rm(salary_mn_treat, covariates, covariates_base)
+rm(agg2_mn_treat, covariates, covariates_base)
 
 
 
-# 5. Convert salary info to a real dollars using CPI. All in 2022 dollars 
+# 5. Convert average_salary to a real measure using CPI. All in 2022 dollars 
 # (to match the base period).
 
 cpi <- read_csv("data/clean-data/cpi_clean.csv")
 
-salary_mn_analysis <- salary_mn_analysis %>%
+agg2_mn_analysis <- agg2_mn_analysis %>%
   left_join(
     cpi,
     by = "date",
@@ -429,11 +552,9 @@ salary_mn_analysis <- salary_mn_analysis %>%
     month = "month.x"
   )
 
-salary_mn_analysis <- salary_mn_analysis %>%
+agg2_mn_analysis <- agg2_mn_analysis %>%
   mutate(
-    real_salary = salary * cpi_deflator,
-    real_salary_from = salary_from * cpi_deflator,
-    real_salary_to = salary_to * cpi_deflator
+    real_ave_salary = ave_salary * cpi_deflator
   ) %>%
   select(
     -cpi,
@@ -442,10 +563,4 @@ salary_mn_analysis <- salary_mn_analysis %>%
 
 rm(cpi)
 
-write_csv(salary_mn_analysis, "data/analysis-data/salary_mn_analysis.csv")
-
-
-
-
-
-
+write_csv(agg2_mn_analysis, "data/analysis-data/agg2_mn_analysis.csv")

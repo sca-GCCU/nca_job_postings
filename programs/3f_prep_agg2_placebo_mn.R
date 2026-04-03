@@ -2,20 +2,24 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "prep_agg2_placebo_mn" 
+# R Script: "3f_prep_agg2_placebo_mn.R" 
 # by: Sebastian C. Anastasi
 # Date of this version: March 6, 2026
 #
 # Description: This script prepares the firm-occupation-state-month level  
 # placebo analysis data for analyzing Minnesota's full noncompete ban. 
 #
-# Dependencies: "prep_covariates.R" 
+# Dependencies: "3a_prep_covariates.R" 
 #
 # Output: "agg2_placebo_mn_clean.csv," "agg2_placebo_mn_analysis.csv"
 ##############################################################################
 
 # NOTE: When run in the cluster, I will need to update paths and (I believe)
 # install the appropriate packages. 
+
+# NOTE: I am not currently creating tex files for the number of observations 
+# dropped in the placebo versions of agg1 and agg2, because I don't anticipate
+# needing to report those numbers. 
 
 rm(list = ls())
 

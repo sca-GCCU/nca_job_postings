@@ -112,9 +112,9 @@ income_bans_tab <- state_laws_ib %>%
   kable_styling(latex_options = c("hold_position")) %>%
   footnote(
     general_title = "",
-    fixed_small_size = TRUE,
-    general = "Notes: This table reports the date that states' noncompete income restrictions become effective. Of these states, Illinois, Maryland, and Oregon passed further laws to raise these thresholds in subsequent years. The third column reports the income threshold at the time the initial law is passed. Column four reports these income thresholds converted into 2022 dollars using the Consumer Price Index (CPI).",
-    threeparttable = TRUE
+    general = "\\\\footnotesize \\\\textit{Notes:} This table reports the date that states' noncompete income restrictions become effective. Of these states, Illinois, Maryland, and Oregon passed further laws to raise these thresholds in subsequent years. The third column reports the income threshold at the time the initial law is passed. Column four reports these income thresholds converted into 2022 dollars using the Consumer Price Index (CPI).",
+    threeparttable = TRUE,
+    escape = FALSE # enables me to force footnotesize using LaTex commands
   ) 
 
 # Write table to a .tex file 
@@ -122,7 +122,6 @@ writeLines(income_bans_tab, "output/tables/table_income_bans.tex")
 
 print(income_bans_tab)
 
-# NOTES: Right now I will need to mannually italicize the word "Notes."
 
 
 # 2. OCCUPATION/INDUSTRY BANS 

@@ -135,11 +135,12 @@ table_sumstat_outcomes <- sumtab_out_final %>%
   kable_styling(latex_options = c("hold_position")) %>%
   footnote(
     general_title = "",
-    fixed_small_size = TRUE,
     general = "\\\\footnotesize \\\\textit{Notes:} This table reports the pre-ban means and standard deviations of key variables from the occupation-by-state-by-date-level aggregation of the Lightcast job-postings data.",
     threeparttable = TRUE,
     escape = FALSE
   ) 
+# NOTE: I previously included fixed_small_size = TRUE in footnote(), but this 
+# is no longer necessary since I force footnotesize using LaTex commands. 
 
 print(table_sumstat_outcomes)
 
