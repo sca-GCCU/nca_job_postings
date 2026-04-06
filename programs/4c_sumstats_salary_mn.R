@@ -4,7 +4,7 @@
 #
 # R Script: "sumstats_salary_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 25, 2026
+# Date of this version: April 6, 2026
 #
 # Description: Creates the listings level sumstats for salary analysis. 
 #
@@ -18,7 +18,12 @@
 
 rm(list = ls())
 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+# Load path helper 
+home <- path.expand("~")
+proj_root <- file.path(home, "nca_job_postings")
+programs_dir <- file.path(proj_root, "programs")
+source(file.path(programs_dir, "0c_paths.R"))
+
 
 library(tidyverse)
 library(stargazer)
@@ -26,7 +31,7 @@ library(kableExtra)
 library(scales)
 
 # Load analysis data 
-salary_mn_analysis <- read_csv("data/analysis-data/salary_mn_analysis.csv")
+salary_mn_analysis <- read_csv(file.path(data_analysis, "salary_mn_analysis.csv"))
 
 
 # Create vectors of key variables  
@@ -140,7 +145,7 @@ table_sumstat_outcomes <- sumtab_out_final %>%
 print(table_sumstat_outcomes)
 
 # --- 6. Write table to a .tex file ---  
-writeLines(table_sumstat_outcomes, "output/tables/table_sumstat_outcomes_salary_mn.tex")
+writeLines(table_sumstat_outcomes, file.path(output_tables, "table_sumstat_outcomes_salary_mn.tex"))
 
 
 
@@ -252,7 +257,7 @@ print(table_sumstat_outcomes_exp)
 
 
 # --- 6. Write table to a .tex file ---  
-writeLines(table_sumstat_outcomes_exp, "output/tables/table_sumstat_outcomes_salary_exp_mn.tex")
+writeLines(table_sumstat_outcomes_exp, file.path(output_tables, "table_sumstat_outcomes_salary_exp_mn.tex"))
 
 
 

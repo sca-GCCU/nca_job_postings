@@ -4,7 +4,7 @@
 #
 # R Script: "twfe_agg1_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 1, 2026
+# Date of this version: April 6, 2026
 #
 # Description: Generates TWFE estimates and tables, as well as corresponding 
 # Event Study plots. 
@@ -19,7 +19,12 @@
 
 rm(list = ls())
 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+# Load path helper 
+home <- path.expand("~")
+proj_root <- file.path(home, "nca_job_postings")
+programs_dir <- file.path(proj_root, "programs")
+source(file.path(programs_dir, "0c_paths.R"))
+
 
 library(fixest)
 library(tidyverse)
@@ -32,7 +37,7 @@ outcome_var <- c("any_educ_share", "bachelor_share", "master_share",
 
 # --- Load the data and prep the data ------------------------------------------
 
-agg1_mn_analysis <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
+agg1_mn_analysis <- read_csv(file.path(data_analysis, "agg1_mn_analysis.csv"))
 
 # Transform treatment indicator to numeric for tables
 agg1_mn_analysis <- agg1_mn_analysis %>%
@@ -131,7 +136,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_total_postings_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_total_postings_agg1_mn.tex")
 )
 
 # NOTE 1: Once I'm performing other methods too, I may need to figure out how to 
@@ -216,7 +221,7 @@ es_plot_total_postings_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_total_postings_1_agg1_mn.pdf",
+  file.path(output_figures, "es_total_postings_1_agg1_mn.pdf"),
   es_plot_total_postings_1,
   width = 7,
   height = 4.5,
@@ -282,7 +287,7 @@ es_plot_total_postings_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_total_postings_2_agg1_mn.pdf",
+  file.path(output_figures, "es_total_postings_2_agg1_mn.pdf"),
   es_plot_total_postings_2,
   width = 7,
   height = 4.5,
@@ -364,7 +369,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_any_educ_share_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_any_educ_share_agg1_mn.tex")
 )
 
 
@@ -431,7 +436,7 @@ es_plot_any_educ_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_any_educ_share_1_agg1_mn.pdf",
+  file.path(output_figures, "es_any_educ_share_1_agg1_mn.pdf"),
   es_plot_any_educ_share_1,
   width = 7,
   height = 4.5,
@@ -497,7 +502,7 @@ es_plot_any_educ_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_any_educ_share_2_agg1_mn.pdf",
+  file.path(output_figures, "es_any_educ_share_2_agg1_mn.pdf"),
   es_plot_any_educ_share_2,
   width = 7,
   height = 4.5,
@@ -717,7 +722,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_bachelor_share_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_bachelor_share_agg1_mn.tex")
 )
 
 
@@ -784,7 +789,7 @@ es_plot_bachelor_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_bachelor_share_1_agg1_mn.pdf",
+  file.path(output_figures, "es_bachelor_share_1_agg1_mn.pdf"),
   es_plot_bachelor_share_1,
   width = 7,
   height = 4.5,
@@ -850,7 +855,7 @@ es_plot_bachelor_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_bachelor_share_2_agg1_mn.pdf",
+  file.path(output_figures, "es_bachelor_share_2_agg1_mn.pdf"),
   es_plot_bachelor_share_2,
   width = 7,
   height = 4.5,
@@ -931,7 +936,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_master_share_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_master_share_agg1_mn.tex")
 )
 
 
@@ -1000,7 +1005,7 @@ es_plot_master_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_master_share_1_agg1_mn.pdf",
+  file.path(output_figures, "es_master_share_1_agg1_mn.pdf"),
   es_plot_master_share_1,
   width = 7,
   height = 4.5,
@@ -1066,7 +1071,7 @@ es_plot_master_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_master_share_2_agg1_mn.pdf",
+  file.path(output_figures, "es_master_share_2_agg1_mn.pdf"),
   es_plot_master_share_2,
   width = 7,
   height = 4.5,
@@ -1122,7 +1127,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_doctorate_share_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_doctorate_share_agg1_mn.tex")
 )
 
 
@@ -1188,7 +1193,7 @@ es_plot_doctorate_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_doctorate_share_1_agg1_mn.pdf",
+  file.path(output_figures, "es_doctorate_share_1_agg1_mn.pdf"),
   es_plot_doctorate_share_1,
   width = 7,
   height = 4.5,
@@ -1254,7 +1259,7 @@ es_plot_doctorate_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_doctorate_share_2_agg1_mn.pdf",
+  file.path(output_figures, "es_doctorate_share_2_agg1_mn.pdf"),
   es_plot_doctorate_share_2,
   width = 7,
   height = 4.5,
@@ -1310,7 +1315,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_any_exp_share_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_any_exp_share_agg1_mn.tex")
 )
 
 
@@ -1376,7 +1381,7 @@ es_plot_any_exp_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_any_exp_share_1_agg1_mn.pdf",
+  file.path(output_figures, "es_any_exp_share_1_agg1_mn.pdf"),
   es_plot_any_exp_share_1,
   width = 7,
   height = 4.5,
@@ -1442,7 +1447,7 @@ es_plot_any_exp_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_any_exp_share_2_agg1_mn.pdf",
+  file.path(output_figures, "es_any_exp_share_2_agg1_mn.pdf"),
   es_plot_any_exp_share_2,
   width = 7,
   height = 4.5,
@@ -1499,7 +1504,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_ave_exp_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_ave_exp_agg1_mn.tex")
 )
 
 
@@ -1565,7 +1570,7 @@ es_plot_ave_exp_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_ave_exp_1_agg1_mn.pdf",
+  file.path(output_figures, "es_ave_exp_1_agg1_mn.pdf"),
   es_plot_ave_exp_1,
   width = 7,
   height = 4.5,
@@ -1631,7 +1636,7 @@ es_plot_ave_exp_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_ave_exp_2_agg1_mn.pdf",
+  file.path(output_figures, "es_ave_exp_2_agg1_mn.pdf"),
   es_plot_ave_exp_2,
   width = 7,
   height = 4.5,
@@ -1688,7 +1693,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_fulltime_share_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_fulltime_share_agg1_mn.tex")
 )
 
 
@@ -1754,7 +1759,7 @@ es_plot_fulltime_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_fulltime_share_1_agg1_mn.pdf",
+  file.path(output_figures, "es_fulltime_share_1_agg1_mn.pdf"),
   es_plot_fulltime_share_1,
   width = 7,
   height = 4.5,
@@ -1820,7 +1825,7 @@ es_plot_fulltime_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_fulltime_share_2_agg1_mn.pdf",
+  file.path(output_figures, "es_fulltime_share_2_agg1_mn.pdf"),
   es_plot_fulltime_share_2,
   width = 7,
   height = 4.5,
@@ -1877,7 +1882,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_internship_share_agg1_mn.tex"
+  file = file.path(output_tables, "table_twfe_internship_share_agg1_mn.tex")
 )
 
 
@@ -1943,7 +1948,7 @@ es_plot_internship_share_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_internship_share_1_agg1_mn.pdf",
+  file.path(output_figures, "es_internship_share_1_agg1_mn.pdf"),
   es_plot_internship_share_1,
   width = 7,
   height = 4.5,
@@ -2009,7 +2014,7 @@ es_plot_internship_share_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_internship_share_2_agg1_mn.pdf",
+  file.path(output_figures, "es_internship_share_2_agg1_mn.pdf"),
   es_plot_internship_share_2,
   width = 7,
   height = 4.5,

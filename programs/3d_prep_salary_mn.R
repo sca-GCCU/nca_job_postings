@@ -4,7 +4,7 @@
 #
 # R Script: "3d_prep_salary_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 6, 2026
+# Date of this version: April 6, 2026
 #
 # Description: This script prepares the salary analysis data for examining
 # Minnesota's full noncompete ban. 
@@ -19,14 +19,19 @@
 
 rm(list = ls())
 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+# Load path helper 
+home <- path.expand("~")
+proj_root <- file.path(home, "nca_job_postings")
+programs_dir <- file.path(proj_root, "programs")
+source(file.path(programs_dir, "0c_paths.R"))
+
 
 library(tidyverse)
 library(lubridate)
 
 
 # 1. Load data  
-salary <- read_csv("data/raw-data/sample_anastasi_salary_v2.csv")
+salary <- read_csv(file.path(data_raw, "sample_anastasi_salary_v2.csv"))
 
 # Starting observations 
 n_start_sal_mn <- salary %>%
@@ -36,14 +41,14 @@ n_start_sal_mn
 
 write_lines(
   format(n_start_sal_mn, big.mark = ","),
-  "output/other/n_start_sal_mn.tex"
+  file.path(output_other, "n_start_sal_mn.tex")
 )
 
 
 # 2. Merge with NCA treatment panel.
 
 # Load treatment panel 
-state_nca_laws <- read.csv("data/raw-data/state_nca_laws.csv")
+state_nca_laws <- read.csv(file.path(data_raw, "state_nca_laws.csv"))
 
 # Convert year and month variables into date variables 
 state_nca_laws <- state_nca_laws %>%
@@ -171,7 +176,7 @@ n_drop_incb_sal_mn <- salary_mn_treat %>%
 
 write_lines(
   format(n_drop_incb_sal_mn, big.mark = ","),
-  "output/other/n_drop_incb_sal_mn.tex"
+  file.path(output_other, "n_drop_incb_sal_mn.tex")
 )
 
 n_drop_hourb_sal_mn <- salary_mn_treat %>%
@@ -181,7 +186,7 @@ n_drop_hourb_sal_mn <- salary_mn_treat %>%
 
 write_lines(
   format(n_drop_hourb_sal_mn, big.mark = ","),
-  "output/other/n_drop_hourb_sal_mn.tex"
+  file.path(output_other, "n_drop_hourb_sal_mn.tex")
 )
 
 n_drop_otherb_sal_mn <- salary_mn_treat %>%
@@ -191,7 +196,7 @@ n_drop_otherb_sal_mn <- salary_mn_treat %>%
 
 write_lines(
   format(n_drop_otherb_sal_mn, big.mark = ","),
-  "output/other/n_drop_otherb_sal_mn.tex"
+  file.path(output_other, "n_drop_otherb_sal_mn.tex")
 )
 
 salary_mn_treat <- salary_mn_treat %>%
@@ -222,7 +227,7 @@ states_ind <- salary_mn_treat %>%
 
 # i.b. Find corresponding SOC-4 codes 
 # NOTE: SOC-4 here appears to be the "broad occupation" group.
-ind_crosswalk <- read.csv("data/raw-data/ban_occ_soc_crosswalk.csv") %>%
+ind_crosswalk <- read.csv(file.path(data_raw, "ban_occ_soc_crosswalk.csv")) %>%
   mutate(
     ban_occ = str_trim(ban_occ),
   )
@@ -333,7 +338,7 @@ n_drop_indb_sal_mn
 
 write_lines(
   format(n_drop_indb_sal_mn, big.mark = ","),
-  "output/other/n_drop_indb_sal_mn.tex"
+  file.path(output_other, "n_drop_indb_sal_mn.tex")
 )
 
 salary_mn_treat <- salary_mn_treat %>%
@@ -365,7 +370,7 @@ n_drop_healthb_sal_mn
 
 write_lines(
   format(n_drop_healthb_sal_mn, big.mark = ","),
-  "output/other/n_drop_healthb_sal_mn.tex"
+  file.path(output_other, "n_drop_healthb_sal_mn.tex")
 )
 
 salary_mn_treat <- salary_mn_treat %>%
@@ -396,7 +401,7 @@ n_drop_full_sal_mn
 
 write_lines(
   format(n_drop_full_sal_mn, big.mark = ","),
-  "output/other/n_drop_full_sal_mn.tex"
+  file.path(output_other, "n_drop_full_sal_mn.tex")
 )
 
 salary_mn_treat <- salary_mn_treat %>%
@@ -437,7 +442,7 @@ salary_mn_treat <- salary_mn_treat %>%
 # NOTE: Baseline for the MN samples can be the year before MN's ban: 2022. 
 base_year <- 2022 # year before MN ban
 
-covariates <- read_csv("data/clean-data/covariates_a_clean.csv")
+covariates <- read_csv(file.path(data_clean, "covariates_a_clean.csv"))
 
 covariates_base <- covariates %>%
   filter(
@@ -469,7 +474,7 @@ rm(salary_mn_treat, covariates, covariates_base)
 # 5. Convert salary info to a real dollars using CPI. All in 2022 dollars 
 # (to match the base period).
 
-cpi <- read_csv("data/clean-data/cpi_clean.csv")
+cpi <- read_csv(file.path(data_clean, "cpi_clean.csv"))
 
 salary_mn_analysis <- salary_mn_analysis %>%
   left_join(
@@ -499,7 +504,7 @@ salary_mn_analysis <- salary_mn_analysis %>%
 
 rm(cpi)
 
-write_csv(salary_mn_analysis, "data/analysis-data/salary_mn_analysis.csv")
+write_csv(salary_mn_analysis, file.path(data_analysis, "salary_mn_analysis.csv"))
 
 
 

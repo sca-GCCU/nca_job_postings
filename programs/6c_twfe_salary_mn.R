@@ -4,7 +4,7 @@
 #
 # R Script: "twfe_salary_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 1, 2026
+# Date of this version: April 6, 2026
 #
 # Description: Generates TWFE estimates and tables, as well as corresponding 
 # Event Study plots. 
@@ -19,7 +19,12 @@
 
 rm(list = ls())
 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+# Load path helper 
+home <- path.expand("~")
+proj_root <- file.path(home, "nca_job_postings")
+programs_dir <- file.path(proj_root, "programs")
+source(file.path(programs_dir, "0c_paths.R"))
+
 
 library(fixest)
 library(tidyverse)
@@ -28,7 +33,7 @@ library(tidyverse)
 
 # --- Load the data and prep the data ------------------------------------------
 
-salary_mn_analysis <- read_csv("data/analysis-data/salary_mn_analysis.csv")
+salary_mn_analysis <- read_csv(file.path(data_analysis, "salary_mn_analysis.csv"))
 
 #outcome_var <- c("real_salary", "real_salary_from", "real_salary_to")
 
@@ -122,7 +127,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_real_salary_salary_mn.tex"
+  file = file.path(output_tables, "table_twfe_real_salary_salary_mn.tex")
 )
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -193,7 +198,7 @@ es_plot_real_salary_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_1_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_1_salary_mn.pdf"),
   es_plot_real_salary_1,
   width = 7,
   height = 4.5,
@@ -259,7 +264,7 @@ es_plot_real_salary_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_2_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_2_salary_mn.pdf"),
   es_plot_real_salary_2,
   width = 7,
   height = 4.5,
@@ -325,7 +330,7 @@ es_plot_real_salary_3
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_3_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_3_salary_mn.pdf"),
   es_plot_real_salary_3,
   width = 7,
   height = 4.5,
@@ -393,7 +398,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_real_salary_from_salary_mn.tex"
+  file = file.path(output_tables, "table_twfe_real_salary_from_salary_mn.tex")
 )
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -464,7 +469,7 @@ es_plot_real_salary_from_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_from_1_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_from_1_salary_mn.pdf"),
   es_plot_real_salary_from_1,
   width = 7,
   height = 4.5,
@@ -530,7 +535,7 @@ es_plot_real_salary_from_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_from_2_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_from_2_salary_mn.pdf"),
   es_plot_real_salary_from_2,
   width = 7,
   height = 4.5,
@@ -596,7 +601,7 @@ es_plot_real_salary_from_3
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_from_3_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_from_3_salary_mn.pdf"),
   es_plot_real_salary_from_3,
   width = 7,
   height = 4.5,
@@ -664,7 +669,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_real_salary_to_salary_mn.tex"
+  file = file.path(output_tables, "table_twfe_real_salary_to_salary_mn.tex")
 )
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -735,7 +740,7 @@ es_plot_real_salary_to_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_to_1_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_to_1_salary_mn.pdf"),
   es_plot_real_salary_to_1,
   width = 7,
   height = 4.5,
@@ -801,7 +806,7 @@ es_plot_real_salary_to_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_to_2_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_to_2_salary_mn.pdf"),
   es_plot_real_salary_to_2,
   width = 7,
   height = 4.5,
@@ -867,7 +872,7 @@ es_plot_real_salary_to_3
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_to_3_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_to_3_salary_mn.pdf"),
   es_plot_real_salary_to_3,
   width = 7,
   height = 4.5,
@@ -951,7 +956,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_real_salary_exp_salary_mn.tex"
+  file = file.path(output_tables, "table_twfe_real_salary_exp_salary_mn.tex")
 )
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -1020,7 +1025,7 @@ es_plot_real_salary_exp_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_exp_1_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_exp_1_salary_mn.pdf"),
   es_plot_real_salary_exp_1,
   width = 7,
   height = 4.5,
@@ -1086,7 +1091,7 @@ es_plot_real_salary_exp_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_exp_2_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_exp_2_salary_mn.pdf"),
   es_plot_real_salary_exp_2,
   width = 7,
   height = 4.5,
@@ -1152,7 +1157,7 @@ es_plot_real_salary_exp_3
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_exp_3_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_exp_3_salary_mn.pdf"),
   es_plot_real_salary_exp_3,
   width = 7,
   height = 4.5,
@@ -1231,7 +1236,7 @@ etable(
     "*Notes:* Standard errors are clustered at the state level.",
     "*** p$<$0.01, ** p$<$0.05, * p$<$0.1"
   ),
-  file = "output/tables/table_twfe_real_salary_no_exp_salary_mn.tex"
+  file = file.path(output_tables, "table_twfe_real_salary_no_exp_salary_mn.tex")
 )
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -1301,7 +1306,7 @@ es_plot_real_salary_no_exp_1
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_no_exp_1_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_no_exp_1_salary_mn.pdf"),
   es_plot_real_salary_no_exp_1,
   width = 7,
   height = 4.5,
@@ -1367,7 +1372,7 @@ es_plot_real_salary_no_exp_2
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_no_exp_2_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_no_exp_2_salary_mn.pdf"),
   es_plot_real_salary_no_exp_2,
   width = 7,
   height = 4.5,
@@ -1433,7 +1438,7 @@ es_plot_real_salary_no_exp_3
 
 # Save the event study plot 
 ggsave(
-  "output/figures/es_real_salary_no_exp_3_salary_mn.pdf",
+  file.path(output_figures, "es_real_salary_no_exp_3_salary_mn.pdf"),
   es_plot_real_salary_no_exp_3,
   width = 7,
   height = 4.5,

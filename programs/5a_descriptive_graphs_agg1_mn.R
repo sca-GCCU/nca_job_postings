@@ -4,7 +4,7 @@
 #
 # R Script: "descriptive_graphs_agg1_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 1, 2026
+# Date of this version: April 6, 2026
 #
 # Description: Creates occupation-state-month level descriptive graphs.
 #
@@ -18,14 +18,19 @@
 
 rm(list = ls())
 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+# Load path helper 
+home <- path.expand("~")
+proj_root <- file.path(home, "nca_job_postings")
+programs_dir <- file.path(proj_root, "programs")
+source(file.path(programs_dir, "0c_paths.R"))
+
 
 library(tidyverse)
 library(lubridate)
 library(scales)
 
 # 1. Load analysis data 
-agg1_mn_analysis <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
+agg1_mn_analysis <- read_csv(file.path(data_analysis, "agg1_mn_analysis.csv"))
 
 
 # 2. Create plots of raw means by treatment status 
@@ -62,9 +67,9 @@ tot_ann <- agg1_mn_analysis %>%
   )
 
 p_amean_tot_post <- ggplot(tot_ann, aes(x = year, 
-                                             y = mean_yearly_total_postings, 
-                                             color = group, 
-                                             group = group)) + 
+                                        y = mean_yearly_total_postings, 
+                                        color = group, 
+                                        group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -90,7 +95,7 @@ p_amean_tot_post <- ggplot(tot_ann, aes(x = year,
 p_amean_tot_post
 
 ggsave(
-  "output/figures/plot_amean_tot_post_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_tot_post_agg1_mn.pdf"),
   p_amean_tot_post,
   width = 7,
   height = 5,
@@ -156,7 +161,7 @@ p_mmean_tot_post <- ggplot(
 p_mmean_tot_post
 
 ggsave(
-  "output/figures/plot_mmean_tot_post_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_tot_post_agg1_mn.pdf"),
   p_mmean_tot_post,
   width = 11,
   height = 5,
@@ -187,12 +192,12 @@ any_ed_ann <- agg1_mn_analysis %>%
     group = ifelse(ban_full == 1, "Minnesota", "Control States")
   ) %>%
   filter(year != 2025)
-  
+
 
 p_amean_any_ed <- ggplot(any_ed_ann, aes(x = year, 
-                                        y = mean_yearly_any_ed, 
-                                        color = group, 
-                                        group = group)) + 
+                                         y = mean_yearly_any_ed, 
+                                         color = group, 
+                                         group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -218,7 +223,7 @@ p_amean_any_ed <- ggplot(any_ed_ann, aes(x = year,
 p_amean_any_ed
 
 ggsave(
-  "output/figures/plot_amean_any_ed_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_any_ed_agg1_mn.pdf"),
   p_amean_any_ed,
   width = 7,
   height = 5,
@@ -284,7 +289,7 @@ p_mmean_any_ed <- ggplot(
 p_mmean_any_ed
 
 ggsave(
-  "output/figures/plot_mmean_any_ed_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_any_ed_agg1_mn.pdf"),
   p_mmean_any_ed,
   width = 11,
   height = 5,
@@ -310,9 +315,9 @@ share_any_ed_ann <- agg1_mn_analysis %>%
   filter(year != 2025)
 
 p_amean_any_ed_share <- ggplot(share_any_ed_ann, aes(x = year, 
-                                         y = mean_any_educ_share_yr, 
-                                         color = group, 
-                                         group = group)) + 
+                                                     y = mean_any_educ_share_yr, 
+                                                     color = group, 
+                                                     group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -335,7 +340,7 @@ p_amean_any_ed_share <- ggplot(share_any_ed_ann, aes(x = year,
 p_amean_any_ed_share
 
 ggsave(
-  "output/figures/plot_amean_any_ed_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_any_ed_share_agg1_mn.pdf"),
   p_amean_any_ed_share,
   width = 7,
   height = 5,
@@ -363,36 +368,36 @@ p_mmean_any_ed_share <- ggplot(
   share_any_ed_mon,
   aes(x = date, y = mean_any_educ_share, color = group, group = group)
 ) + 
-geom_line(linewidth = 0.9) +
-geom_vline(
-  xintercept = treat_date_value,
-  linetype = "dashed",
-  color = "black"
-) +
-labs(
-  x = "Year-Month",
-  y = "Any Education Requirement (Share) - Monthly",
-  color = ""
-) +
-scale_color_grey() +
-scale_x_date(
-  breaks = date_breaks_vec,
-  labels = label_date("%Y-%m")
-) +
-theme_minimal() + 
-theme(
-  axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-  legend.position = "bottom",
-  legend.background = element_blank(),
-  panel.grid = element_blank(),
-  axis.line = element_line(color = "black"),
-  axis.ticks = element_line(color = "black")
-) 
+  geom_line(linewidth = 0.9) +
+  geom_vline(
+    xintercept = treat_date_value,
+    linetype = "dashed",
+    color = "black"
+  ) +
+  labs(
+    x = "Year-Month",
+    y = "Any Education Requirement (Share) - Monthly",
+    color = ""
+  ) +
+  scale_color_grey() +
+  scale_x_date(
+    breaks = date_breaks_vec,
+    labels = label_date("%Y-%m")
+  ) +
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    legend.position = "bottom",
+    legend.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black")
+  ) 
 
 p_mmean_any_ed_share
 
 ggsave(
-  "output/figures/plot_mmean_any_ed_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_any_ed_share_agg1_mn.pdf"),
   p_mmean_any_ed_share,
   width = 11,
   height = 5,
@@ -455,7 +460,7 @@ p_amean_bachelor <- ggplot(
 p_amean_bachelor
 
 ggsave(
-  "output/figures/plot_amean_bachelor_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_bachelor_agg1_mn.pdf"),
   p_amean_bachelor,
   width = 7,
   height = 5,
@@ -524,7 +529,7 @@ p_mmean_bachelor <- ggplot(
 p_mmean_bachelor
 
 ggsave(
-  "output/figures/plot_mmean_bachelor_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_bachelor_agg1_mn.pdf"),
   p_mmean_bachelor,
   width = 11,
   height = 5,
@@ -550,9 +555,9 @@ share_bachelors_ann <- agg1_mn_analysis %>%
   filter(year != 2025)
 
 p_amean_bachelor_share <- ggplot(share_bachelors_ann, aes(x = year, 
-                                                     y = mean_bachelor_share_yr, 
-                                                     color = group, 
-                                                     group = group)) + 
+                                                          y = mean_bachelor_share_yr, 
+                                                          color = group, 
+                                                          group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -575,7 +580,7 @@ p_amean_bachelor_share <- ggplot(share_bachelors_ann, aes(x = year,
 p_amean_bachelor_share
 
 ggsave(
-  "output/figures/plot_amean_bachelor_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_bachelor_share_agg1_mn.pdf"),
   p_amean_bachelor_share,
   width = 7,
   height = 5,
@@ -632,7 +637,7 @@ p_mmean_bachelor_share <- ggplot(
 p_mmean_bachelor_share
 
 ggsave(
-  "output/figures/plot_mmean_bachelor_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_bachelor_share_agg1_mn.pdf"),
   p_mmean_bachelor_share,
   width = 11,
   height = 5,
@@ -695,7 +700,7 @@ p_amean_master <- ggplot(
 p_amean_master
 
 ggsave(
-  "output/figures/plot_amean_master_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_master_agg1_mn.pdf"),
   p_amean_master,
   width = 7,
   height = 5,
@@ -764,7 +769,7 @@ p_mmean_master <- ggplot(
 p_mmean_master
 
 ggsave(
-  "output/figures/plot_mmean_master_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_master_agg1_mn.pdf"),
   p_mmean_master,
   width = 11,
   height = 5,
@@ -790,9 +795,9 @@ share_master_ann <- agg1_mn_analysis %>%
   filter(year != 2025)
 
 p_amean_master_share <- ggplot(share_master_ann, aes(x = year, 
-                                                          y = mean_master_share_yr, 
-                                                          color = group, 
-                                                          group = group)) + 
+                                                     y = mean_master_share_yr, 
+                                                     color = group, 
+                                                     group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -815,7 +820,7 @@ p_amean_master_share <- ggplot(share_master_ann, aes(x = year,
 p_amean_master_share
 
 ggsave(
-  "output/figures/plot_amean_master_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_master_share_agg1_mn.pdf"),
   p_amean_master_share,
   width = 7,
   height = 5,
@@ -872,7 +877,7 @@ p_mmean_master_share <- ggplot(
 p_mmean_master_share
 
 ggsave(
-  "output/figures/plot_mmean_master_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_master_share_agg1_mn.pdf"),
   p_mmean_master_share,
   width = 11,
   height = 5,
@@ -937,7 +942,7 @@ p_amean_doctorate <- ggplot(
 p_amean_doctorate
 
 ggsave(
-  "output/figures/plot_amean_doctorate_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_doctorate_agg1_mn.pdf"),
   p_amean_doctorate,
   width = 7,
   height = 5,
@@ -1006,7 +1011,7 @@ p_mmean_doctorate <- ggplot(
 p_mmean_doctorate
 
 ggsave(
-  "output/figures/plot_mmean_doctorate_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_doctorate_agg1_mn.pdf"),
   p_mmean_doctorate,
   width = 11,
   height = 5,
@@ -1032,9 +1037,9 @@ share_doctorate_ann <- agg1_mn_analysis %>%
   filter(year != 2025)
 
 p_amean_doctorate_share <- ggplot(share_doctorate_ann, aes(x = year, 
-                                                     y = mean_doctorate_share_yr, 
-                                                     color = group, 
-                                                     group = group)) + 
+                                                           y = mean_doctorate_share_yr, 
+                                                           color = group, 
+                                                           group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -1057,7 +1062,7 @@ p_amean_doctorate_share <- ggplot(share_doctorate_ann, aes(x = year,
 p_amean_doctorate_share
 
 ggsave(
-  "output/figures/plot_amean_doctorate_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_doctorate_share_agg1_mn.pdf"),
   p_amean_doctorate_share,
   width = 7,
   height = 5,
@@ -1114,7 +1119,7 @@ p_mmean_doctorate_share <- ggplot(
 p_mmean_doctorate_share
 
 ggsave(
-  "output/figures/plot_mmean_doctorate_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_doctorate_share_agg1_mn.pdf"),
   p_mmean_doctorate_share,
   width = 11,
   height = 5,
@@ -1178,7 +1183,7 @@ p_amean_any_exp <- ggplot(
 p_amean_any_exp
 
 ggsave(
-  "output/figures/plot_amean_any_exp_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_any_exp_agg1_mn.pdf"),
   p_amean_any_exp,
   width = 7,
   height = 5,
@@ -1247,7 +1252,7 @@ p_mmean_any_exp <- ggplot(
 p_mmean_any_exp
 
 ggsave(
-  "output/figures/plot_mmean_any_exp_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_any_exp_agg1_mn.pdf"),
   p_mmean_any_exp,
   width = 11,
   height = 5,
@@ -1273,9 +1278,9 @@ share_any_exp_ann <- agg1_mn_analysis %>%
   filter(year != 2025)
 
 p_amean_any_exp_share <- ggplot(share_any_exp_ann, aes(x = year, 
-                                                           y = mean_any_exp_share_yr, 
-                                                           color = group, 
-                                                           group = group)) + 
+                                                       y = mean_any_exp_share_yr, 
+                                                       color = group, 
+                                                       group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -1298,7 +1303,7 @@ p_amean_any_exp_share <- ggplot(share_any_exp_ann, aes(x = year,
 p_amean_any_exp_share
 
 ggsave(
-  "output/figures/plot_amean_any_exp_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_any_exp_share_agg1_mn.pdf"),
   p_amean_any_exp_share,
   width = 7,
   height = 5,
@@ -1354,7 +1359,7 @@ p_mmean_any_exp_share <- ggplot(
 p_mmean_any_exp_share
 
 ggsave(
-  "output/figures/plot_mmean_any_exp_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_any_exp_share_agg1_mn.pdf"),
   p_mmean_any_exp_share,
   width = 11,
   height = 5,
@@ -1410,7 +1415,7 @@ p_amean_ave_exp <- ggplot(
 p_amean_ave_exp
 
 ggsave(
-  "output/figures/plot_amean_ave_exp_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_ave_exp_agg1_mn.pdf"),
   p_amean_ave_exp,
   width = 7,
   height = 5,
@@ -1434,9 +1439,9 @@ ave_exp_mon <- agg1_mn_analysis %>%
   )
 
 p_mmean_ave_exp <- ggplot(
-    ave_exp_mon,
-    aes(x = date, y = mean_ave_exp, color = group, group = group)
-  ) + 
+  ave_exp_mon,
+  aes(x = date, y = mean_ave_exp, color = group, group = group)
+) + 
   geom_line(linewidth = 0.9) +
   geom_vline(
     xintercept = treat_date_value,
@@ -1466,7 +1471,7 @@ p_mmean_ave_exp <- ggplot(
 p_mmean_ave_exp
 
 ggsave(
-  "output/figures/plot_mmean_ave_exp_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_ave_exp_agg1_mn.pdf"),
   p_mmean_ave_exp,
   width = 11,
   height = 5,
@@ -1529,7 +1534,7 @@ p_amean_ft <- ggplot(
 p_amean_ft
 
 ggsave(
-  "output/figures/plot_amean_ft_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_ft_agg1_mn.pdf"),
   p_amean_ft,
   width = 7,
   height = 5,
@@ -1598,7 +1603,7 @@ p_mmean_ft <- ggplot(
 p_mmean_ft
 
 ggsave(
-  "output/figures/plot_mmean_ft_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_ft_agg1_mn.pdf"),
   p_mmean_ft,
   width = 11,
   height = 5,
@@ -1624,9 +1629,9 @@ share_ft_ann <- agg1_mn_analysis %>%
   filter(year != 2025)
 
 p_amean_ft_share <- ggplot(share_ft_ann, aes(x = year, 
-                                                       y = mean_ft_share_yr, 
-                                                       color = group, 
-                                                       group = group)) + 
+                                             y = mean_ft_share_yr, 
+                                             color = group, 
+                                             group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -1649,7 +1654,7 @@ p_amean_ft_share <- ggplot(share_ft_ann, aes(x = year,
 p_amean_ft_share
 
 ggsave(
-  "output/figures/plot_amean_ft_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_ft_share_agg1_mn.pdf"),
   p_amean_ft_share,
   width = 7,
   height = 5,
@@ -1706,7 +1711,7 @@ p_mmean_ft_share <- ggplot(
 p_mmean_ft_share
 
 ggsave(
-  "output/figures/plot_mmean_ft_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_ft_share_agg1_mn.pdf"),
   p_mmean_ft_share,
   width = 11,
   height = 5,
@@ -1780,7 +1785,7 @@ p_amean_intern <- ggplot(
 p_amean_intern
 
 ggsave(
-  "output/figures/plot_amean_intern_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_intern_agg1_mn.pdf"),
   p_amean_intern,
   width = 7,
   height = 5,
@@ -1846,7 +1851,7 @@ p_mmean_intern <- ggplot(
 p_mmean_intern
 
 ggsave(
-  "output/figures/plot_mmean_intern_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_intern_agg1_mn.pdf"),
   p_mmean_intern,
   width = 11,
   height = 5,
@@ -1872,9 +1877,9 @@ share_intern_ann <- agg1_mn_analysis %>%
   filter(year != 2025)
 
 p_amean_intern_share <- ggplot(share_intern_ann, aes(x = year, 
-                                             y = mean_intern_share_yr, 
-                                             color = group, 
-                                             group = group)) + 
+                                                     y = mean_intern_share_yr, 
+                                                     color = group, 
+                                                     group = group)) + 
   geom_line(linewidth = 0.9) +
   geom_point(size = 2) +
   labs(
@@ -1897,7 +1902,7 @@ p_amean_intern_share <- ggplot(share_intern_ann, aes(x = year,
 p_amean_intern_share
 
 ggsave(
-  "output/figures/plot_amean_intern_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_amean_intern_share_agg1_mn.pdf"),
   p_amean_intern_share,
   width = 7,
   height = 5,
@@ -1954,7 +1959,7 @@ p_mmean_intern_share <- ggplot(
 p_mmean_intern_share
 
 ggsave(
-  "output/figures/plot_mmean_intern_share_agg1_mn.pdf",
+  file.path(output_figures, "plot_mmean_intern_share_agg1_mn.pdf"),
   p_mmean_intern_share,
   width = 11,
   height = 5,

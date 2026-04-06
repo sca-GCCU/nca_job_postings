@@ -4,7 +4,7 @@
 #
 # R Script: "3a_prep_covariates.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 5, 2026
+# Date of this version: April 6, 2026
 #
 # Description: This script prepares the covariates. 
 #
@@ -16,10 +16,16 @@
 # NOTE: When run in the cluster, I will need to update paths and (I believe)
 # install the appropriate packages. 
 
+# Clear environment
 rm(list = ls())
 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+# Load path helper 
+home <- path.expand("~")
+proj_root <- file.path(home, "nca_job_postings")
+programs_dir <- file.path(proj_root, "programs")
+source(file.path(programs_dir, "0c_paths.R"))
 
+# Load packages 
 library(tidyverse)
 library(readxl)
 library(lubridate)
@@ -38,7 +44,7 @@ year_ub <- 2025
 # "all urban consumers."  
 
 cpi <- read_xlsx(
-  "data/raw-data/historical-cpi-u-202601.xlsx", 
+  file.path(data_raw, "historical-cpi-u-202601.xlsx"), 
   range = "B6:N119",
   na = "–",
   col_names = FALSE, # don't use first row as names; get default names
@@ -87,7 +93,7 @@ cpi_clean <- cpi_long %>%
 
 rm(cpi_long, base_cpi, base_period)
 
-write_csv(cpi_clean, "data/clean-data/cpi_clean.csv")
+write_csv(cpi_clean, file.path(data_clean, "cpi_clean.csv"))
 
 # NOTE: Be aware that October 2025 data is missing (perhaps we could interpolate
 # it if necessary in future) and much of the 2026 is missing. 
@@ -100,7 +106,7 @@ write_csv(cpi_clean, "data/clean-data/cpi_clean.csv")
 # not seasonally adjusted" (https://www.bls.gov/lau/rdscnp16.htm), from the BLS. 
 
 bls_m <- read_xlsx(
-  "data/raw-data/ststdnsadata.xlsx", 
+  file.path(data_raw, "ststdnsadata.xlsx"), 
   range = "A9:K31808",
   na = "–",
   col_names = FALSE, 
@@ -135,7 +141,7 @@ bls_m_clean <- bls_m %>%
 
 rm(bls_m)
 
-write_csv(bls_m_clean, "data/clean-data/bls_m_clean.csv")
+write_csv(bls_m_clean, file.path(data_clean, "bls_m_clean.csv"))
 
 
 # A.2 Unemployment - Annual (only goes up to 2024)
@@ -143,7 +149,7 @@ write_csv(bls_m_clean, "data/clean-data/bls_m_clean.csv")
 # annual averages" (https://www.bls.gov/lau/rdscnp16.htm), from the BLS. 
 
 bls_a <- read_xlsx(
-  "data/raw-data/staadata.xlsx",
+  file.path(data_raw, "staadata.xlsx"),
   range = "A9:J2605",
   col_names = FALSE,
   trim_ws = TRUE
@@ -172,7 +178,7 @@ bls_a_clean <- bls_a %>%
 
 rm(bls_a)
 
-write_csv(bls_a_clean, "data/clean-data/bls_a_clean.csv")
+write_csv(bls_a_clean, file.path(data_clean, "bls_a_clean.csv"))
 
 
 
@@ -182,7 +188,7 @@ write_csv(bls_a_clean, "data/clean-data/bls_a_clean.csv")
 # income" (https://www.bea.gov/data/income-saving/personal-income-by-state).
 
 bea <- read.csv(
-  "data/raw-data/Table_monthly.csv",
+  file.path(data_raw, "Table_monthly.csv"),
   header = TRUE, 
   skip = 3,
   nrows = 51
@@ -221,7 +227,7 @@ bea_long <- bea_long %>%
   )
 
 # Quarter to month mapping 
-quarter_to_month <- read_xlsx("data/raw-data/quarter_to_month_crosswalk.xlsx")
+quarter_to_month <- read_xlsx(file.path(data_raw, "quarter_to_month_crosswalk.xlsx"))
 
 bea_m <- bea_long %>%
   left_join(
@@ -247,7 +253,7 @@ bea_m_clean <- bea_m %>%
 
 rm(bea_m)
 
-write_csv(bea_m_clean, "data/clean-data/bea_m_clean.csv")
+write_csv(bea_m_clean, file.path(data_clean, "bea_m_clean.csv"))
 
 
 # B.2 Per Capita Personal Income - Annual (only goes up to 2024)
@@ -256,7 +262,7 @@ write_csv(bea_m_clean, "data/clean-data/bea_m_clean.csv")
 #income" (https://www.bea.gov/data/income-saving/personal-income-by-state).
 
 bea_a <- read.csv(
-  "data/raw-data/Table_annual.csv",
+  file.path(data_raw, "Table_annual.csv"),
   header = TRUE, 
   skip = 3,
   nrows = 51
@@ -291,7 +297,7 @@ bea_a_clean <- bea_a_long %>%
 
 rm(bea_a_long)
 
-write_csv(bea_a_clean, "data/clean-data/bea_a_clean.csv")
+write_csv(bea_a_clean, file.path(data_clean, "bea_a_clean.csv"))
 
 
 
@@ -300,7 +306,7 @@ write_csv(bea_a_clean, "data/clean-data/bea_a_clean.csv")
 # "Master HPI Data" (https://www.fhfa.gov/data/hpi/datasets?tab=master-hpi-data).
 # State data is only available on a quarterly basis (not monthly or annual). 
 
-hpi <- read.csv("data/raw-data/hpi_master.csv", header = TRUE)
+hpi <- read.csv(file.path(data_raw, "hpi_master.csv"), header = TRUE)
 
 hpi_state <- hpi %>% 
   filter(
@@ -326,7 +332,7 @@ hpi_state <- hpi_state %>%
   )  
 
 # Quarter to monthly mapping 
-quarter_to_month <- read_xlsx("data/raw-data/quarter_to_month_crosswalk.xlsx")
+quarter_to_month <- read_xlsx(file.path(data_raw, "quarter_to_month_crosswalk.xlsx"))
 
 hpi_state_month <- hpi_state %>%
   left_join(
@@ -353,13 +359,13 @@ hpi_clean <- hpi_state_month %>%
 
 rm(hpi, hpi_state, hpi_state_month)
 
-write_csv(hpi_clean, "data/clean-data/hpi_clean.csv")
+write_csv(hpi_clean, file.path(data_clean, "hpi_clean.csv"))
 
 
 # 3. Demographic controls - Annual
 
 # Load ACS data 
-acs <- read_dta("data/raw-data/usa_00019.dta") 
+acs <- read_dta(file.path(data_raw, "usa_00019.dta")) 
 
 # Restrict to working age individuals: Age 16-64
 n_drop_age <- acs %>%
@@ -413,7 +419,7 @@ acs_clean <- acs_clean %>%
 
 rm(acs)
 
-write_csv(acs_clean, "data/clean-data/acs_clean.csv")
+write_csv(acs_clean, file.path(data_clean, "acs_clean.csv"))
 
 
 
@@ -492,7 +498,7 @@ covariates_m_clean <- covariates_cpi_m %>%
 
 rm(covariates_cpi_m)
 
-write_csv(covariates_m_clean, "data/clean-data/covariates_m_clean.csv")
+write_csv(covariates_m_clean, file.path(data_clean, "covariates_m_clean.csv"))
 
 rm(bea_m_clean, bls_m_clean, covariates_m_clean)
 
@@ -581,8 +587,8 @@ covariates_a_clean <- covariates_cpi_a %>%
 
 rm(covariates_cpi_a)
 
-write_csv(covariates_a_clean, "data/clean-data/covariates_a_clean.csv") 
+write_csv(covariates_a_clean, file.path(data_clean, "covariates_a_clean.csv")) 
 
 
 
-# NOTE: Make everything baseline in the analysis-data prep, NOT HERE.  
+# NOTE: Make everything baseline in the analysis-data prep, NOT HERE.

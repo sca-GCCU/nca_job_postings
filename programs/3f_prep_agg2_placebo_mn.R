@@ -4,7 +4,7 @@
 #
 # R Script: "3f_prep_agg2_placebo_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 6, 2026
+# Date of this version: April 6, 2026
 #
 # Description: This script prepares the firm-occupation-state-month level  
 # placebo analysis data for analyzing Minnesota's full noncompete ban. 
@@ -23,7 +23,12 @@
 
 rm(list = ls())
 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+# Load path helper 
+home <- path.expand("~")
+proj_root <- file.path(home, "nca_job_postings")
+programs_dir <- file.path(proj_root, "programs")
+source(file.path(programs_dir, "0c_paths.R"))
+
 
 library(tidyverse)
 library(lubridate)
@@ -31,7 +36,7 @@ library(lubridate)
 # 1. Restrict to firms with at least 10 total listings. 
 
 # NOTE: Currently using sample data here. 
-agg2_placebo_mn <- read_csv("data/raw-data/sample_anastasi_agg2_placebo.csv")
+agg2_placebo_mn <- read_csv(file.path(data_raw, "sample_anastasi_agg2_placebo.csv"))
 
 # Total starting observations 
 n_start2 <- agg2_placebo_mn %>%
@@ -74,7 +79,7 @@ agg2_placebo_mn <- agg2_placebo_mn %>%
 # 2. Merge with NCA treatment panel.
 
 # Load treatment panel 
-state_nca_laws <- read.csv("data/raw-data/state_nca_laws.csv")
+state_nca_laws <- read.csv(file.path(data_raw, "state_nca_laws.csv"))
 
 # Convert year and month variables into date variables 
 state_nca_laws <- state_nca_laws %>%
@@ -225,7 +230,7 @@ states_ind <- agg2_placebo_mn_treat %>%
 
 # i.b. Find corresponding SOC-4 codes 
 # NOTE: SOC-4 here appears to be the "broad occupation" group.
-ind_crosswalk <- read.csv("data/raw-data/ban_occ_soc_crosswalk.csv") %>%
+ind_crosswalk <- read.csv(file.path(data_raw, "ban_occ_soc_crosswalk.csv")) %>%
   mutate(
     ban_occ = str_trim(ban_occ),
   )
@@ -430,7 +435,7 @@ agg2_placebo_mn_treat <- agg2_placebo_mn_treat %>%
     internship_share = internship / total_postings
   )
 
-write_csv(agg2_placebo_mn_treat, "data/clean-data/agg2_placebo_mn_clean.csv")
+write_csv(agg2_placebo_mn_treat, file.path(data_clean, "agg2_placebo_mn_clean.csv"))
 
 
 
@@ -442,7 +447,7 @@ write_csv(agg2_placebo_mn_treat, "data/clean-data/agg2_placebo_mn_clean.csv")
 # NOTE: Baseline for the MN samples can be the year before MN's ban: 2022. 
 base_year <- 2022 # year before MN ban
 
-covariates <- read_csv("data/clean-data/covariates_a_clean.csv")
+covariates <- read_csv(file.path(data_clean, "covariates_a_clean.csv"))
 
 covariates_base <- covariates %>%
   filter(
@@ -474,7 +479,7 @@ rm(agg2_placebo_mn_treat, covariates, covariates_base)
 # 5. Convert average_salary to a real measure using CPI. All in 2022 dollars 
 # (to match the base period).
 
-cpi <- read_csv("data/clean-data/cpi_clean.csv")
+cpi <- read_csv(file.path(data_clean, "cpi_clean.csv"))
 
 agg2_placebo_mn_analysis <- agg2_placebo_mn_analysis %>%
   left_join(
@@ -502,4 +507,4 @@ agg2_placebo_mn_analysis <- agg2_placebo_mn_analysis %>%
 
 rm(cpi)
 
-write_csv(agg2_placebo_mn_analysis, "data/analysis-data/agg2_placebo_mn_analysis.csv")
+write_csv(agg2_placebo_mn_analysis, file.path(data_analysis, "agg2_placebo_mn_analysis.csv"))
