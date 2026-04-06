@@ -468,7 +468,7 @@ agg1_mn_treat <- agg1_mn_treat %>%
     any_educ_share = any_educ / total_postings,
     bachelor_share = bachelor / total_postings,
     master_share = master / total_postings, 
-    doctorate_share = master / total_postings,
+    doctorate_share = doctorate / total_postings,
     any_exp_share = any_exp / total_postings, 
     fulltime_share = fulltime / total_postings,
     parttime_share = parttime / total_postings,

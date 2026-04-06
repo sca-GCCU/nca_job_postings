@@ -35,7 +35,8 @@ salary <- read_csv(file.path(data_raw, "sample_anastasi_salary_v2.csv"))
 
 # Starting observations 
 n_start_sal_mn <- salary %>%
-  summarise(n())
+  summarise(N = n()) %>%
+  pull(N)
 
 n_start_sal_mn
 

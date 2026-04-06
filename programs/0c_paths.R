@@ -39,6 +39,8 @@ log_dir         <- file.path(proj_root, "logs")
 programs_dir    <- file.path(proj_root, "programs")
 
 # 7. Create missing folders automatically
+dir.create(data_dir,      showWarnings = FALSE, recursive = TRUE)
+dir.create(data_raw,      showWarnings = FALSE, recursive = TRUE)
 dir.create(data_analysis, showWarnings = FALSE, recursive = TRUE)
 dir.create(data_clean,    showWarnings = FALSE, recursive = TRUE)
 
