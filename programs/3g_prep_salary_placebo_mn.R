@@ -31,7 +31,7 @@ library(lubridate)
 
 
 # 1. Load data  
-salary_placebo <- read_csv(file.path(data_raw, "sample_anastasi_salary_placebo.csv"))
+salary_placebo <- read_csv(file.path(data_raw, "anastasi_salary_placebo.csv"))
 
 # Starting observations 
 n_start_sal_p_mn <- salary_placebo %>% # sal_p for salary_placebo

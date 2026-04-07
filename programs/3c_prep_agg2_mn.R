@@ -31,8 +31,7 @@ library(lubridate)
 
 # 1. Restrict to firms with at least 10 total listings. 
 
-# NOTE: Currently using sample data here. 
-agg2_mn <- read_csv(file.path(data_raw, "sample_anastasi_agg2_v2.csv"))
+agg2_mn <- read_csv(file.path(data_raw, "anastasi_agg2_v2.csv"))
 
 # Total starting observations 
 n_start_a2_mn <- agg2_mn %>%

@@ -37,8 +37,7 @@ library(lubridate)
 
 # 1. Restrict to occupation-state-month cells with at least 10 total listings. 
 
-# NOTE: Currently using sample data here. 
-agg1_placebo_mn <- read.csv(file.path(data_raw, "sample_anastasi_agg1_placebo.csv"))
+agg1_placebo_mn <- read.csv(file.path(data_raw, "anastasi_agg1_placebo.csv"))
 
 # Total starting observations 
 n_start_p <- agg1_placebo_mn %>%
