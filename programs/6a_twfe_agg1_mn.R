@@ -2,7 +2,7 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "twfe_agg1_mn.R" 
+# R Script: "6a_twfe_agg1_mn.R" 
 # by: Sebastian C. Anastasi
 # Date of this version: April 6, 2026
 #
