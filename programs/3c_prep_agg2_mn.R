@@ -21,10 +21,11 @@ rm(list = ls())
 gc()
 
 # Load path helper 
-home <- path.expand("~")
-proj_root <- file.path(home, "nca_job_postings")
-programs_dir <- file.path(proj_root, "programs")
-source(file.path(programs_dir, "0c_paths.R"))
+#home <- path.expand("~") # NOTE: COMMENT OUT FOR DEBUG.
+#proj_root <- file.path(home, "nca_job_postings") # NOTE: COMMENT OUT FOR DEBUG.
+#programs_dir <- file.path(proj_root, "programs") # NOTE: COMMENT OUT FOR DEBUG.
+#source(file.path(programs_dir, "0c_paths.R")) # NOTE: COMMENT OUT FOR DEBUG.
+source("C:/Users/scana/Desktop/Github_projects/nca_job_postings/programs/0c_paths.R")
 
 library(dplyr)
 library(tidyr)
@@ -34,7 +35,9 @@ library(lubridate)
 
 # 1. Restrict to firms with at least 10 total listings. 
 
-agg2_mn <- read_csv(file.path(data_raw, "anastasi_agg2_v2.csv"))
+#agg2_mn <- read_csv(file.path(data_raw, "anastasi_agg2_v2.csv")) # NOTE: COMMENT OUT FOR DEBUG.
+
+agg2_mn <- read_csv("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data/raw-data/sample_anastasi_agg2_v2.csv") # FOR LOCAL DEBUG.
 
 # Total starting observations 
 n_start_a2_mn <- agg2_mn %>%
@@ -99,31 +102,32 @@ gc()
 # 2. Merge with NCA treatment panel.
 
 # Load treatment panel 
-state_nca_laws <- read.csv(file.path(data_raw, "state_nca_laws.csv"))
+state_nca_laws <- read_csv(file.path(data_raw, "state_nca_laws.csv"))
 
 # Convert year and month variables into date variables 
 state_nca_laws <- state_nca_laws %>%
   mutate(
-    date_enact_full = make_date(enact_full_year, coalesce(enact_full_month, 1), 1),
+    #date_enact_full = make_date(enact_full_year, coalesce(enact_full_month, 1), 1),
     date_eff_full = make_date(eff_full_year, coalesce(eff_full_month, 1), 1),
-    date_enact_inc1 = make_date(enact_inc1_year, enact_inc1_month, 1),
+    #date_enact_inc1 = make_date(enact_inc1_year, enact_inc1_month, 1),
     date_eff_inc1 = make_date(eff_inc1_year, eff_inc1_month, 1),
-    date_enact_inc2 = make_date(enact_inc2_year, enact_inc2_month, 1),
+    #date_enact_inc2 = make_date(enact_inc2_year, enact_inc2_month, 1),
     date_eff_inc2 = make_date(eff_inc2_year, eff_inc2_month, 1),
-    date_enact_hourly = make_date(enact_hourly_year, enact_hourly_month, 1),
+    #date_enact_hourly = make_date(enact_hourly_year, enact_hourly_month, 1),
     date_eff_hourly = make_date(eff_hourly_year, eff_hourly_month, 1),
-    date_enact_ind = make_date(enact_ind_year, enact_ind_month, 1),
+    #date_enact_ind = make_date(enact_ind_year, enact_ind_month, 1),
     date_eff_ind = make_date(eff_ind_year, eff_ind_month, 1),
-    date_enact_health1 = make_date(enact_health1_year, enact_health1_month, 1),
+    #date_enact_health1 = make_date(enact_health1_year, enact_health1_month, 1),
     date_eff_health1 = make_date(eff_health1_year, eff_health1_month, 1),
-    date_enact_health2 = make_date(enact_health2_year, enact_health2_month, 1),
+    #date_enact_health2 = make_date(enact_health2_year, enact_health2_month, 1),
     date_eff_health2 = make_date(eff_health2_year, eff_health2_month, 1),
-    date_enact_health3 = make_date(enact_health3_year, enact_health3_month, 1),
+    #date_enact_health3 = make_date(enact_health3_year, enact_health3_month, 1),
     date_eff_health3 = make_date(eff_health3_year, eff_health3_month, 1),
-    date_enact_other = make_date(enact_other_year, enact_other_month, 1),
+    #date_enact_other = make_date(enact_other_year, enact_other_month, 1),
     date_eff_other = make_date(eff_other_year, eff_other_month, 1)
   )
-# NOTE: I will start the analysis focusing on the date_eff.
+# NOTE: Commenting out "enact" variables for now. I will start the analysis 
+# focusing on the date_eff.
 
 # Keep only the vars that you need (ban indicators and dates)
 state_nca_laws <- state_nca_laws %>%
@@ -171,7 +175,7 @@ agg2_mn_treat <- agg2_mn_treat %>%
 agg2_mn_treat <- agg2_mn_treat %>%
   mutate(
     treated_eff_full = !is.na(date_eff_full) & date >= date_eff_full,
-    treated_enact_full = !is.na(date_enact_full) & date >= date_enact_full, # only need for full ban right now
+    #treated_enact_full = !is.na(date_enact_full) & date >= date_enact_full, # only need for full ban right now
     treated_eff_inc1 = !is.na(date_eff_inc1) & date >= date_eff_inc1, 
     treated_eff_inc2 = !is.na(date_eff_inc2) & date >= date_eff_inc2,
     treated_eff_hourly = !is.na(date_eff_hourly) & date >= date_eff_hourly,
@@ -290,7 +294,7 @@ states_ind <- agg2_mn_treat %>%
 
 # i.b. Find corresponding SOC-4 codes 
 # NOTE: SOC-4 here appears to be the "broad occupation" group.
-ind_crosswalk <- read.csv(file.path(data_raw, "ban_occ_soc_crosswalk.csv")) %>%
+ind_crosswalk <- read_csv(file.path(data_raw, "ban_occ_soc_crosswalk.csv")) %>%
   mutate(
     ban_occ = str_trim(ban_occ),
   )
@@ -508,7 +512,7 @@ agg2_mn_treat <- agg2_mn_treat %>%
     -starts_with("health"),
     -ind_coverage, 
     -(ban_inc1:ban_other),
-    -(date_enact_inc1:date_eff_other)
+    -(date_eff_inc1:date_eff_other)
   )
 
 gc()

@@ -14,7 +14,9 @@
 ##############################################################################
 
 # 1. Identify home directory (robust to use on Cluster)
-home <- path.expand("~")
+#home <- path.expand("~") # NOTE: COMMENT OUT FOR DEBUG.
+
+home <- "C:/Users/scana/OneDrive/Documents/research/projects" # FOR DEBUG
 
 # 2. Define project root
 proj_root <- file.path(home, "nca_job_postings")
@@ -36,7 +38,7 @@ output_other    <- file.path(output_dir, "other")
 log_dir         <- file.path(proj_root, "logs")
 
 # 6. Code
-programs_dir    <- file.path(proj_root, "programs")
+#programs_dir    <- file.path(proj_root, "programs") # NOTE: COMMENT OUT FOR DEBUG. 
 
 # 7. Create missing folders automatically
 dir.create(data_dir,      showWarnings = FALSE, recursive = TRUE)
