@@ -18,6 +18,7 @@
 # install the appropriate packages. 
 
 rm(list = ls())
+gc()
 
 # Load path helper 
 home <- path.expand("~")
@@ -46,6 +47,9 @@ write_lines(
   format(n_start_a2_mn, big.mark = ","),
   file.path(output_other, "n_start_a2_mn.tex")
 )
+
+rm(n_start_a2_mn)
+gc()
 
 # Define new total company postings variable to use for filtering  
 agg2_mn <- agg2_mn %>%
@@ -80,10 +84,15 @@ write_lines(
   file.path(output_other, "n_drop_noise_a2_mn.tex")
 )
 
+rm(n_drop_noise_a2_mn)
+gc()
+
 # Drop obs 
 agg2_mn <- agg2_mn %>%
   filter(!drop_min_ads) %>%
   select(-drop_min_ads)
+
+gc()
 
 
 
@@ -124,6 +133,8 @@ state_nca_laws <- state_nca_laws %>%
 # NOTE: Since we are creating the Minnesota analysis data, we don't need the 
 # income thresholds.
 
+gc()
+
 # Rename statefip as state to match Lightcast data 
 state_nca_laws <- state_nca_laws %>% 
   rename(state_name = state) %>% 
@@ -132,6 +143,9 @@ state_nca_laws <- state_nca_laws %>%
 # Merge 
 agg2_mn_treat <- agg2_mn %>%
   left_join(state_nca_laws %>% select(-state_name), by = "state")
+
+rm(agg2_mn)
+gc()
 
 
 
@@ -223,6 +237,7 @@ write_lines(
   file.path(output_other, "n_drop_incb_a2_mn.tex")
 )
 
+
 n_drop_hourb_a2_mn <- agg2_mn_treat %>%
   filter(state %in% states_hourly) %>%
   summarise(N = n()) %>%
@@ -232,6 +247,7 @@ write_lines(
   format(n_drop_hourb_a2_mn, big.mark = ","),
   file.path(output_other, "n_drop_hourb_a2_mn.tex")
 )
+
 
 n_drop_otherb_a2_mn <- agg2_mn_treat %>%
   filter(state %in% states_other) %>%
@@ -243,13 +259,16 @@ write_lines(
   file.path(output_other, "n_drop_otherb_a2_mn.tex")
 )
 
+
 agg2_mn_treat <- agg2_mn_treat %>%
   filter(
     !(state %in% c(states_inc1, states_hourly, states_other))
   )
 
 # Drop vectors used for exclusion 
-rm(states_hourly, states_inc1, states_other)
+rm(states_hourly, states_inc1, states_other,
+   n_drop_incb_a2_mn, n_drop_hourb_a2_mn, n_drop_otherb_a2_mn)
+gc()
 
 
 # B. Exclude listings from banned IND/OCC in states w/ IND/OCC bans
@@ -295,6 +314,9 @@ states_ind_soc <- states_ind_exp %>%
   select(-ever_ind, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
+rm(states_ind_exp)
+gc()
+
 
 # ii.a. Determine which states ever have health bans
 states_health <- agg2_mn_treat %>%
@@ -313,6 +335,8 @@ states_health <- agg2_mn_treat %>%
 # Drop Alabama since it's health ban is subsumed by its industry ban
 states_health <- states_health %>%
   filter(!(state == 1))
+
+gc()
 
 
 # ii.b. Find corresponding SOC-4 codes 
@@ -355,6 +379,9 @@ states_health_soc <- states_health_long %>%
   select(-note) %>%
   rename(soc_4 = broad_occ_soc)
 
+rm(states_health_exp, states_health_long)
+gc()
+
 
 # iii. Use anti_join to exclude observations from banned occupations by state. 
 
@@ -391,6 +418,9 @@ agg2_mn_treat <- agg2_mn_treat %>%
     by = c("state", "soc_4")
   )
 
+rm(states_ind_soc, n_drop_indb_a2_mn)
+gc()
+
 # Check that all soc_4 codes from states_health_soc have a match.
 missing_soc <- states_health_soc %>%
   anti_join(
@@ -423,6 +453,9 @@ agg2_mn_treat <- agg2_mn_treat %>%
     by = c("state", "soc_4")
   )
 
+rm(states_health_soc, n_drop_healthb_a2_mn)
+gc()
+
 
 # C. Exclude other full-ban states (CA, ND, OK)
 
@@ -451,12 +484,16 @@ write_lines(
 agg2_mn_treat <- agg2_mn_treat %>%
   filter(!(state %in% states_full))
 
+rm(states_full, n_drop_full_a2_mn)
+gc()
+
 
 # D. Clean up data frames and variables you don't need anymore 
 
 # Data frames 
-rm(agg2_mn, ind_crosswalk, state_nca_laws)
+rm(ind_crosswalk, state_nca_laws)
 rm(list = ls(pattern = "^states"))
+gc()
 
 # Variables 
 # NOTE: Keep in mind, this dataset is for the MN analysis, so we don't really 
@@ -473,6 +510,8 @@ agg2_mn_treat <- agg2_mn_treat %>%
     -(ban_inc1:ban_other),
     -(date_enact_inc1:date_eff_other)
   )
+
+gc()
 
 
 
@@ -499,6 +538,7 @@ agg2_mn_treat <- agg2_mn_treat %>%
 
 write_csv(agg2_mn_treat, file.path(data_clean, "agg2_mn_clean.csv"))
 
+gc()
 
 
 # 5. Merge with covariate data
@@ -515,6 +555,9 @@ covariates_base <- covariates %>%
   filter(
     year == base_year
   )
+
+rm(covariates)
+gc()
 
 
 # B. Merge the covariate data 
@@ -534,8 +577,8 @@ agg2_mn_analysis <- agg2_mn_treat %>%
     year = year.x
   )
 
-rm(agg2_mn_treat, covariates, covariates_base)
-
+rm(agg2_mn_treat, covariates_base)
+gc()
 
 
 # 5. Convert average_salary to a real measure using CPI. All in 2022 dollars 
