@@ -19,11 +19,13 @@ setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 
 #install.packages("kableExtra")
 
-library(tidyverse)
+library(dplyr)
+library(readr)
+library(tibble)
 library(knitr)
 library(kableExtra)
 library(lubridate)
-library(scales)
+library(scales) 
 
 state_laws <- read_csv("data/raw-data/state_nca_laws.csv")
 cpi <- read_csv("data/clean-data/cpi_clean.csv")

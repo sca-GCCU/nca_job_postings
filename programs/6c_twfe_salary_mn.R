@@ -25,11 +25,13 @@ proj_root <- file.path(home, "nca_job_postings")
 programs_dir <- file.path(proj_root, "programs")
 source(file.path(programs_dir, "0c_paths.R"))
 
-
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(stringr)
+library(tibble)
+library(lubridate)
 library(fixest)
-library(tidyverse)
-
-
 
 # --- Load the data and prep the data ------------------------------------------
 

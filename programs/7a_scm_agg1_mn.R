@@ -22,7 +22,9 @@ setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 #install.packages("Synth")
 #install.packages("SCtools")
 
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readr)
 library(Synth)
 library(SCtools)
 

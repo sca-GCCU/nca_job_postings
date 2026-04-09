@@ -13,7 +13,17 @@
 # Output: 
 ##############################################################################
 
-packages <- c("tidyverse", "lubridate", "fixest", "stargazer", "kableExtra", 
+# NOTE 1: Error when trying to install tidyverse. It needed ragg, which wasn't 
+# installed,and may not be able to be installed on the Cluster... So, I'm just  
+# going to install and load individual packages that I need.
+
+# NOTE 2: It takes a while for packages to install on RStudio, so don't re-run
+# this entire script. IN FUTURE, selectively install the necessary packages.  
+
+# NOTE 3: It's fine to leave that "repos" argument. It just says from where to 
+# download packages. It specifically routes you to the nearest CRAN server.
+
+packages <- c("lubridate", "fixest", "stargazer", "kableExtra", 
               "scales", "readxl", "haven")
 
 installed <- rownames(installed.packages())

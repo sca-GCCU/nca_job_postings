@@ -18,9 +18,10 @@ rm(list = ls())
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 
-library(tidyverse)
-library(usmap)
+library(dplyr)
+library(ggplot2)
 library(lubridate)
+library(usmap)
 
 # 1. CREATE MAP OF NONCOMPETE POLICIES ----------------------------------------
 

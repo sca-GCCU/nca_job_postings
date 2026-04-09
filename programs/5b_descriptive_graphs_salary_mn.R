@@ -25,11 +25,11 @@ proj_root <- file.path(home, "nca_job_postings")
 programs_dir <- file.path(proj_root, "programs")
 source(file.path(programs_dir, "0c_paths.R"))
 
-
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readr)
 library(lubridate)
 library(scales)
-
 
 # Load data 
 salary_df <- read_csv(file.path(data_analysis, "salary_mn_analysis.csv"))

@@ -25,9 +25,13 @@ proj_root <- file.path(home, "nca_job_postings")
 programs_dir <- file.path(proj_root, "programs")
 source(file.path(programs_dir, "0c_paths.R"))
 
-
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(stringr)
+library(tibble)
+library(lubridate)
 library(fixest)
-library(tidyverse)
 
 outcome_var <- c("any_educ_share", "bachelor_share", "master_share", 
                  "doctorate_share", "any_exp_share", "ave_exp", "fulltime_share",

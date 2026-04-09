@@ -25,10 +25,12 @@ programs_dir <- file.path(proj_root, "programs")
 source(file.path(programs_dir, "0c_paths.R"))
 
 
-library(tidyverse)
-library(stargazer)
+library(dplyr)
+library(tidyr)
+library(readr)
 library(kableExtra)
-library(scales)
+library(stargazer) # necessary?
+library(scales) # necessary?
 
 # Load analysis data 
 agg2_mn_analysis <- read_csv(file.path(data_analysis, "agg2_mn_analysis.csv"))
