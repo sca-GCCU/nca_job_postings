@@ -33,6 +33,9 @@ library(tibble)
 library(lubridate)
 library(fixest)
 
+# use all available cores assigned to the job/session
+setFixest_nthreads(0)
+
 outcome_var <- c("any_educ_share", "bachelor_share", "master_share", 
                  "doctorate_share", "any_exp_share", "ave_exp", "fulltime_share",
                  "internship_share")

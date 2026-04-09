@@ -33,6 +33,9 @@ library(tibble)
 library(lubridate)
 library(fixest)
 
+# use all available cores assigned to the job/session
+setFixest_nthreads(0)
+
 # --- Load the data and prep the data ------------------------------------------
 
 salary_mn_analysis <- read_csv(file.path(data_analysis, "salary_mn_analysis.csv"))
