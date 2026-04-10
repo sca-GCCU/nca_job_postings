@@ -49,9 +49,10 @@ agg2_mn_analysis <- read_csv(file.path(data_analysis, "agg2_mn_analysis.csv"))
 # Transform treatment indicator to numeric for tables
 agg2_mn_analysis <- agg2_mn_analysis %>%
   mutate(
-    treated_eff_full = as.numeric(treated_eff_full),
-    treated_enact_full = as.numeric(treated_enact_full)
+    treated_eff_full = as.numeric(treated_eff_full)
   )
+# NOTE: Not using treated_eff_full right now: 
+# treated_enact_full = as.numeric(treated_enact_full)
 
 # Grab MN ban date
 ban_date <- agg2_mn_analysis %>%
