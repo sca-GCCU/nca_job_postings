@@ -137,7 +137,7 @@ etable(
   file = file.path(output_tables, "table_twfe_real_salary_salary_mn.tex")
 )
 
-rm(twfe_real_salary_1, twfe_real_salary_2, twfe_real_salary_3, twfe_real_salary_salary_mn)
+rm(twfe_real_salary_1, twfe_real_salary_2, twfe_real_salary_3)
 gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -420,7 +420,7 @@ etable(
   file = file.path(output_tables, "table_twfe_real_salary_from_salary_mn.tex")
 )
 
-rm(twfe_real_salary_from_1, twfe_real_salary_from_2, twfe_real_salary_from_3, twfe_real_salary_from_salary_mn)
+rm(twfe_real_salary_from_1, twfe_real_salary_from_2, twfe_real_salary_from_3)
 gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -703,7 +703,7 @@ etable(
   file = file.path(output_tables, "table_twfe_real_salary_to_salary_mn.tex")
 )
 
-rm(twfe_real_salary_to_1, twfe_real_salary_to_2, twfe_real_salary_to_3, twfe_real_salary_to_salary_mn)
+rm(twfe_real_salary_to_1, twfe_real_salary_to_2, twfe_real_salary_to_3)
 gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -1002,7 +1002,7 @@ etable(
   file = file.path(output_tables, "table_twfe_real_salary_exp_salary_mn.tex")
 )
 
-rm(twfe_real_salary_exp_1, twfe_real_salary_exp_2, twfe_real_salary_exp_3, twfe_real_salary_exp_salary_mn)
+rm(twfe_real_salary_exp_1, twfe_real_salary_exp_2, twfe_real_salary_exp_3)
 gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -1297,7 +1297,7 @@ etable(
   file = file.path(output_tables, "table_twfe_real_salary_no_exp_salary_mn.tex")
 )
 
-rm(twfe_real_salary_no_exp_1, twfe_real_salary_no_exp_2, twfe_real_salary_no_exp_3, twfe_real_salary_no_exp_salary_mn)
+rm(twfe_real_salary_no_exp_1, twfe_real_salary_no_exp_2, twfe_real_salary_no_exp_3)
 gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 

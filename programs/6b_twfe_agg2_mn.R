@@ -134,7 +134,7 @@ etable(
   file = file.path(output_tables, "table_twfe_total_postings_agg2_mn.tex")
 )
 
-rm(twfe_total_postings_1, twfe_total_postings_2, twfe_total_postings_3, twfe_total_postings_agg2_mn)
+rm(twfe_total_postings_1, twfe_total_postings_2, twfe_total_postings_3)
 gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
@@ -412,7 +412,7 @@ etable(
   file = file.path(output_tables, "table_twfe_any_educ_share_agg2_mn.tex")
 )
 
-rm(twfe_any_educ_share_1, twfe_any_educ_share_2, twfe_any_educ_share_3, twfe_any_educ_share_agg2_mn)
+rm(twfe_any_educ_share_1, twfe_any_educ_share_2, twfe_any_educ_share_3)
 gc()
 
 
@@ -685,7 +685,7 @@ etable(
   file = file.path(output_tables, "table_twfe_bachelor_share_agg2_mn.tex")
 )
 
-rm(twfe_bachelor_share_1, twfe_bachelor_share_2, twfe_bachelor_share_3, twfe_bachelor_share_agg2_mn)
+rm(twfe_bachelor_share_1, twfe_bachelor_share_2, twfe_bachelor_share_3)
 gc()
 
 
@@ -957,7 +957,7 @@ etable(
   file = file.path(output_tables, "table_twfe_master_share_agg2_mn.tex")
 )
 
-rm(twfe_master_share_1, twfe_master_share_2, twfe_master_share_3, twfe_master_share_agg2_mn)
+rm(twfe_master_share_1, twfe_master_share_2, twfe_master_share_3)
 gc()
 
 
@@ -1231,7 +1231,7 @@ etable(
   file = file.path(output_tables, "table_twfe_doctorate_share_agg2_mn.tex")
 )
 
-rm(twfe_doctorate_share_1, twfe_doctorate_share_2, twfe_doctorate_share_3, twfe_doctorate_share_agg2_mn)
+rm(twfe_doctorate_share_1, twfe_doctorate_share_2, twfe_doctorate_share_3)
 gc()
 
 
@@ -1504,7 +1504,7 @@ etable(
   file = file.path(output_tables, "table_twfe_any_exp_share_agg2_mn.tex")
 )
 
-rm(twfe_any_exp_share_1, twfe_any_exp_share_2, twfe_any_exp_share_3, twfe_any_exp_share_agg2_mn)
+rm(twfe_any_exp_share_1, twfe_any_exp_share_2, twfe_any_exp_share_3)
 gc()
 
 
@@ -1778,7 +1778,7 @@ etable(
   file = file.path(output_tables, "table_twfe_ave_exp_agg2_mn.tex")
 )
 
-rm(twfe_ave_exp_1, twfe_ave_exp_2, twfe_ave_exp_3, twfe_ave_exp_agg2_mn)
+rm(twfe_ave_exp_1, twfe_ave_exp_2, twfe_ave_exp_3)
 gc()
 
 
@@ -2054,7 +2054,7 @@ etable(
   file = file.path(output_tables, "table_twfe_fulltime_share_agg2_mn.tex")
 )
 
-rm(twfe_fulltime_share_1, twfe_fulltime_share_2, twfe_fulltime_share_3, twfe_fulltime_share_agg2_mn)
+rm(twfe_fulltime_share_1, twfe_fulltime_share_2, twfe_fulltime_share_3)
 gc()
 
 
@@ -2329,7 +2329,7 @@ etable(
   file = file.path(output_tables, "table_twfe_internship_share_agg2_mn.tex")
 )
 
-rm(twfe_internship_share_1, twfe_internship_share_2, twfe_internship_share_3, twfe_internship_share_agg2_mn)
+rm(twfe_internship_share_1, twfe_internship_share_2, twfe_internship_share_3)
 gc()
 
 
