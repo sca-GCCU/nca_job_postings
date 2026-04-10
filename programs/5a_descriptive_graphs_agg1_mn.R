@@ -4,7 +4,7 @@
 #
 # R Script: "descriptive_graphs_agg1_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 6, 2026
+# Date of this version: April 10, 2026
 #
 # Description: Creates occupation-state-month level descriptive graphs.
 #
@@ -81,7 +81,8 @@ p_amean_tot_post <- ggplot(tot_ann, aes(x = year,
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") +
   scale_x_continuous(breaks = years_vec) +
   scale_y_continuous(
-    breaks = seq(0, max(tot_ann$mean_yearly_total_postings, na.rm = TRUE), by = 1000)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) +
   scale_color_grey() + 
   theme_minimal() + 
@@ -93,7 +94,7 @@ p_amean_tot_post <- ggplot(tot_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_tot_post
+#p_amean_tot_post
 
 ggsave(
   file.path(output_figures, "plot_amean_tot_post_agg1_mn.pdf"),
@@ -114,7 +115,7 @@ rm(
 tot_mon <- agg1_mn_analysis %>%
   group_by(ban_full, state, date) %>%
   summarise(
-    sum_total_postings = sum(total_postings), # add up totals within state
+    sum_total_postings = sum(total_postings, na.rm = TRUE), # add up totals within state
     .groups = "drop"
   ) %>%
   group_by(ban_full, date) %>%
@@ -147,7 +148,8 @@ p_mmean_tot_post <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    breaks = seq(0, max(tot_mon$mean_total_postings, na.rm = TRUE), by = 500)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -159,7 +161,7 @@ p_mmean_tot_post <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_tot_post
+#p_mmean_tot_post
 
 ggsave(
   file.path(output_figures, "plot_mmean_tot_post_agg1_mn.pdf"),
@@ -209,7 +211,8 @@ p_amean_any_ed <- ggplot(any_ed_ann, aes(x = year,
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") +
   scale_x_continuous(breaks = years_vec) +
   scale_y_continuous(
-    breaks = seq(0, max(any_ed_ann$mean_yearly_any_ed, na.rm = TRUE), by = 1000)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) +
   scale_color_grey() + 
   theme_minimal() + 
@@ -221,7 +224,7 @@ p_amean_any_ed <- ggplot(any_ed_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_any_ed
+#p_amean_any_ed
 
 ggsave(
   file.path(output_figures, "plot_amean_any_ed_agg1_mn.pdf"),
@@ -242,7 +245,7 @@ rm(
 any_ed_mon <- agg1_mn_analysis %>%
   group_by(ban_full, state, date) %>%
   summarise(
-    sum_any_educ = sum(any_educ),
+    sum_any_educ = sum(any_educ, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, date) %>%
@@ -275,7 +278,8 @@ p_mmean_any_ed <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    breaks = seq(0, max(any_ed_mon$mean_any_educ, na.rm = TRUE), by = 500)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -287,7 +291,7 @@ p_mmean_any_ed <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_any_ed
+#p_mmean_any_ed
 
 ggsave(
   file.path(output_figures, "plot_mmean_any_ed_agg1_mn.pdf"),
@@ -338,7 +342,7 @@ p_amean_any_ed_share <- ggplot(share_any_ed_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_any_ed_share
+#p_amean_any_ed_share
 
 ggsave(
   file.path(output_figures, "plot_amean_any_ed_share_agg1_mn.pdf"),
@@ -395,7 +399,7 @@ p_mmean_any_ed_share <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_any_ed_share
+#p_mmean_any_ed_share
 
 ggsave(
   file.path(output_figures, "plot_mmean_any_ed_share_agg1_mn.pdf"),
@@ -417,7 +421,7 @@ rm(
 bachelors_ann <- agg1_mn_analysis %>%
   group_by(ban_full, state, year) %>%
   summarise(
-    bachelor = sum(bachelor),
+    bachelor = sum(bachelor, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, year) %>%
@@ -447,7 +451,10 @@ p_amean_bachelor <- ggplot(
   ) + 
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") + 
   scale_x_continuous(breaks = years_vec) + 
-  scale_y_continuous(breaks = seq(0, max(bachelors_ann$mean_bachelor), by = 1000)) + 
+  scale_y_continuous(
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
+  ) + 
   scale_color_grey() + 
   theme_minimal() + # has to be called before other theme() adjustments 
   theme(
@@ -458,7 +465,7 @@ p_amean_bachelor <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_bachelor
+#p_amean_bachelor
 
 ggsave(
   file.path(output_figures, "plot_amean_bachelor_agg1_mn.pdf"),
@@ -478,7 +485,7 @@ rm(
 bachelors_mon <- agg1_mn_analysis %>%
   group_by(ban_full, state, date) %>%
   summarise(
-    sum_bachelor = sum(bachelor),
+    sum_bachelor = sum(bachelor, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, date) %>%
@@ -515,7 +522,8 @@ p_mmean_bachelor <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    breaks = seq(0, max(bachelors_mon$mean_bachelor), by = 100)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -527,7 +535,7 @@ p_mmean_bachelor <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_mmean_bachelor
+#p_mmean_bachelor
 
 ggsave(
   file.path(output_figures, "plot_mmean_bachelor_agg1_mn.pdf"),
@@ -578,7 +586,7 @@ p_amean_bachelor_share <- ggplot(share_bachelors_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_bachelor_share
+#p_amean_bachelor_share
 
 ggsave(
   file.path(output_figures, "plot_amean_bachelor_share_agg1_mn.pdf"),
@@ -635,7 +643,7 @@ p_mmean_bachelor_share <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_bachelor_share
+#p_mmean_bachelor_share
 
 ggsave(
   file.path(output_figures, "plot_mmean_bachelor_share_agg1_mn.pdf"),
@@ -657,7 +665,7 @@ rm(
 master_ann <- agg1_mn_analysis %>%
   group_by(ban_full, state, year) %>%
   summarise(
-    master = sum(master),
+    master = sum(master, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, year) %>%
@@ -687,7 +695,10 @@ p_amean_master <- ggplot(
   ) + 
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") + 
   scale_x_continuous(breaks = years_vec) + 
-  scale_y_continuous(breaks = seq(0, max(master_ann$mean_master), by = 50)) + 
+  scale_y_continuous(
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
+  ) + 
   scale_color_grey() + 
   theme_minimal() + # has to be called before other theme() adjustments 
   theme(
@@ -698,7 +709,7 @@ p_amean_master <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_master
+#p_amean_master
 
 ggsave(
   file.path(output_figures, "plot_amean_master_agg1_mn.pdf"),
@@ -718,7 +729,7 @@ rm(
 master_mon <- agg1_mn_analysis %>%
   group_by(ban_full, state, date) %>%
   summarise(
-    master = sum(master),
+    master = sum(master, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, date) %>%
@@ -755,7 +766,8 @@ p_mmean_master <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    breaks = seq(0, max(master_mon$mean_master), by = 25)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -767,7 +779,7 @@ p_mmean_master <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_mmean_master
+#p_mmean_master
 
 ggsave(
   file.path(output_figures, "plot_mmean_master_agg1_mn.pdf"),
@@ -818,7 +830,7 @@ p_amean_master_share <- ggplot(share_master_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_master_share
+#p_amean_master_share
 
 ggsave(
   file.path(output_figures, "plot_amean_master_share_agg1_mn.pdf"),
@@ -875,7 +887,7 @@ p_mmean_master_share <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_master_share
+#p_mmean_master_share
 
 ggsave(
   file.path(output_figures, "plot_mmean_master_share_agg1_mn.pdf"),
@@ -899,7 +911,7 @@ rm(
 doctorate_ann <- agg1_mn_analysis %>%
   group_by(ban_full, state, year) %>%
   summarise(
-    doctorate = sum(doctorate),
+    doctorate = sum(doctorate, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, year) %>%
@@ -929,7 +941,10 @@ p_amean_doctorate <- ggplot(
   ) + 
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") + 
   scale_x_continuous(breaks = years_vec) + 
-  scale_y_continuous(breaks = seq(0, max(doctorate_ann$mean_doctorate), by = 50)) + 
+  scale_y_continuous(
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
+  ) + 
   scale_color_grey() + 
   theme_minimal() + # has to be called before other theme() adjustments 
   theme(
@@ -940,7 +955,7 @@ p_amean_doctorate <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_doctorate
+#p_amean_doctorate
 
 ggsave(
   file.path(output_figures, "plot_amean_doctorate_agg1_mn.pdf"),
@@ -960,7 +975,7 @@ rm(
 doctorate_mon <- agg1_mn_analysis %>%
   group_by(ban_full, state, date) %>%
   summarise(
-    doctorate = sum(doctorate),
+    doctorate = sum(doctorate, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, date) %>%
@@ -997,7 +1012,8 @@ p_mmean_doctorate <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    breaks = seq(0, max(doctorate_mon$mean_doctorate), by = 25)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -1009,7 +1025,7 @@ p_mmean_doctorate <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_mmean_doctorate
+#p_mmean_doctorate
 
 ggsave(
   file.path(output_figures, "plot_mmean_doctorate_agg1_mn.pdf"),
@@ -1060,7 +1076,7 @@ p_amean_doctorate_share <- ggplot(share_doctorate_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_doctorate_share
+#p_amean_doctorate_share
 
 ggsave(
   file.path(output_figures, "plot_amean_doctorate_share_agg1_mn.pdf"),
@@ -1117,7 +1133,7 @@ p_mmean_doctorate_share <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_doctorate_share
+#p_mmean_doctorate_share
 
 ggsave(
   file.path(output_figures, "plot_mmean_doctorate_share_agg1_mn.pdf"),
@@ -1140,7 +1156,7 @@ rm(
 any_exp_ann <- agg1_mn_analysis %>%
   group_by(ban_full, state, year) %>%
   summarise(
-    any_exp = sum(any_exp),
+    any_exp = sum(any_exp, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, year) %>%
@@ -1170,7 +1186,10 @@ p_amean_any_exp <- ggplot(
   ) + 
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") + 
   scale_x_continuous(breaks = years_vec) + 
-  scale_y_continuous(breaks = seq(0, max(any_exp_ann$mean_any_exp), by = 500)) + 
+  scale_y_continuous(
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
+  ) + 
   scale_color_grey() + 
   theme_minimal() + # has to be called before other theme() adjustments 
   theme(
@@ -1181,7 +1200,7 @@ p_amean_any_exp <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_any_exp
+#p_amean_any_exp
 
 ggsave(
   file.path(output_figures, "plot_amean_any_exp_agg1_mn.pdf"),
@@ -1201,7 +1220,7 @@ rm(
 any_exp_mon <- agg1_mn_analysis %>%
   group_by(ban_full, state, date) %>%
   summarise(
-    any_exp = sum(any_exp),
+    any_exp = sum(any_exp, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, date) %>%
@@ -1238,7 +1257,8 @@ p_mmean_any_exp <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    breaks = seq(0, max(any_exp_mon$mean_any_exp), by = 200)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -1250,7 +1270,7 @@ p_mmean_any_exp <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_mmean_any_exp
+#p_mmean_any_exp
 
 ggsave(
   file.path(output_figures, "plot_mmean_any_exp_agg1_mn.pdf"),
@@ -1301,7 +1321,7 @@ p_amean_any_exp_share <- ggplot(share_any_exp_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_any_exp_share
+#p_amean_any_exp_share
 
 ggsave(
   file.path(output_figures, "plot_amean_any_exp_share_agg1_mn.pdf"),
@@ -1357,7 +1377,7 @@ p_mmean_any_exp_share <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_any_exp_share
+#p_mmean_any_exp_share
 
 ggsave(
   file.path(output_figures, "plot_mmean_any_exp_share_agg1_mn.pdf"),
@@ -1413,7 +1433,7 @@ p_amean_ave_exp <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_ave_exp
+#p_amean_ave_exp
 
 ggsave(
   file.path(output_figures, "plot_amean_ave_exp_agg1_mn.pdf"),
@@ -1469,7 +1489,7 @@ p_mmean_ave_exp <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_ave_exp
+#p_mmean_ave_exp
 
 ggsave(
   file.path(output_figures, "plot_mmean_ave_exp_agg1_mn.pdf"),
@@ -1491,7 +1511,7 @@ rm(
 ft_ann <- agg1_mn_analysis %>%
   group_by(ban_full, state, year) %>%
   summarise(
-    fulltime = sum(fulltime),
+    fulltime = sum(fulltime, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, year) %>%
@@ -1521,7 +1541,10 @@ p_amean_ft <- ggplot(
   ) + 
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") + 
   scale_x_continuous(breaks = years_vec) + 
-  scale_y_continuous(breaks = seq(0, max(ft_ann$mean_ft), by = 1000)) + 
+  scale_y_continuous(
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
+  ) + 
   scale_color_grey() + 
   theme_minimal() + # has to be called before other theme() adjustments 
   theme(
@@ -1532,7 +1555,7 @@ p_amean_ft <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_ft
+#p_amean_ft
 
 ggsave(
   file.path(output_figures, "plot_amean_ft_agg1_mn.pdf"),
@@ -1552,7 +1575,7 @@ rm(
 ft_mon <- agg1_mn_analysis %>%
   group_by(ban_full, state, date) %>%
   summarise(
-    fulltime = sum(fulltime),
+    fulltime = sum(fulltime, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, date) %>%
@@ -1589,7 +1612,8 @@ p_mmean_ft <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    breaks = seq(0, max(ft_mon$mean_ft), by = 200)
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -1601,7 +1625,7 @@ p_mmean_ft <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_mmean_ft
+#p_mmean_ft
 
 ggsave(
   file.path(output_figures, "plot_mmean_ft_agg1_mn.pdf"),
@@ -1652,7 +1676,7 @@ p_amean_ft_share <- ggplot(share_ft_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_ft_share
+#p_amean_ft_share
 
 ggsave(
   file.path(output_figures, "plot_amean_ft_share_agg1_mn.pdf"),
@@ -1709,7 +1733,7 @@ p_mmean_ft_share <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_ft_share
+#p_mmean_ft_share
 
 ggsave(
   file.path(output_figures, "plot_mmean_ft_share_agg1_mn.pdf"),
@@ -1743,7 +1767,7 @@ rm(
 intern_ann <- agg1_mn_analysis %>%
   group_by(ban_full, state, year) %>%
   summarise(
-    internship = sum(internship),
+    internship = sum(internship, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, year) %>%
@@ -1783,7 +1807,7 @@ p_amean_intern <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_intern
+#p_amean_intern
 
 ggsave(
   file.path(output_figures, "plot_amean_intern_agg1_mn.pdf"),
@@ -1803,7 +1827,7 @@ rm(
 intern_mon <- agg1_mn_analysis %>%
   group_by(ban_full, state, date) %>%
   summarise(
-    internship = sum(internship),
+    internship = sum(internship, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   group_by(ban_full, date) %>%
@@ -1849,7 +1873,7 @@ p_mmean_intern <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_mmean_intern
+#p_mmean_intern
 
 ggsave(
   file.path(output_figures, "plot_mmean_intern_agg1_mn.pdf"),
@@ -1900,7 +1924,7 @@ p_amean_intern_share <- ggplot(share_intern_ann, aes(x = year,
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_intern_share
+#p_amean_intern_share
 
 ggsave(
   file.path(output_figures, "plot_amean_intern_share_agg1_mn.pdf"),
@@ -1957,7 +1981,7 @@ p_mmean_intern_share <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_intern_share
+#p_mmean_intern_share
 
 ggsave(
   file.path(output_figures, "plot_mmean_intern_share_agg1_mn.pdf"),

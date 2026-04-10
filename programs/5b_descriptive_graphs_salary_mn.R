@@ -4,7 +4,7 @@
 #
 # R Script: "descriptive_graphs_salary_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 6, 2026
+# Date of this version: April 10, 2026
 #
 # Description: Creates postings-level descriptive graphs of salary offers.
 #
@@ -82,7 +82,8 @@ p_amean_rsalary <- ggplot(
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") +
   scale_x_continuous(breaks = years_vec) +
   scale_y_continuous(
-    labels = comma
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) +
   scale_color_grey() + 
   theme_minimal() + 
@@ -94,7 +95,7 @@ p_amean_rsalary <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_rsalary
+#p_amean_rsalary
 
 ggsave(
   file.path(output_figures, "plot_amean_rsalary_mn.pdf"),
@@ -143,7 +144,8 @@ p_amean_rsalary_exp <- ggplot(
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") +
   scale_x_continuous(breaks = years_vec) +
   scale_y_continuous(
-    labels = comma
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) +
   scale_color_grey() + 
   theme_minimal() + 
@@ -155,7 +157,7 @@ p_amean_rsalary_exp <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_rsalary_exp
+#p_amean_rsalary_exp
 
 ggsave(
   file.path(output_figures, "plot_amean_rsalary_exp_mn.pdf"),
@@ -205,7 +207,8 @@ p_amean_rsalary_noexp <- ggplot(
   geom_vline(xintercept = 2023, linetype = "dashed", color = "black") +
   scale_x_continuous(breaks = years_vec) +
   scale_y_continuous(
-    labels = comma
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) +
   scale_color_grey() + 
   theme_minimal() + 
@@ -217,7 +220,7 @@ p_amean_rsalary_noexp <- ggplot(
     axis.ticks = element_line(color = "black")
   )
 
-p_amean_rsalary_noexp
+#p_amean_rsalary_noexp
 
 ggsave(
   file.path(output_figures, "plot_amean_rsalary_noexp_mn.pdf"),
@@ -276,7 +279,8 @@ p_mmean_rsalary <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    labels = comma
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -288,7 +292,7 @@ p_mmean_rsalary <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_rsalary
+#p_mmean_rsalary
 
 ggsave(
   file.path(output_figures, "plot_mmean_rsalary_mn.pdf"),
@@ -340,7 +344,8 @@ p_mmean_rsalary_exp <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    labels = comma
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -352,7 +357,7 @@ p_mmean_rsalary_exp <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_rsalary_exp
+#p_mmean_rsalary_exp
 
 ggsave(
   file.path(output_figures, "plot_mmean_rsalary_exp_mn.pdf"),
@@ -405,7 +410,8 @@ p_mmean_rsalary_noexp <- ggplot(
     labels = label_date("%Y-%m")
   ) +
   scale_y_continuous(
-    labels = comma
+    breaks = pretty_breaks(n = 6),
+    labels = label_comma()
   ) + 
   theme_minimal() + 
   theme(
@@ -417,7 +423,7 @@ p_mmean_rsalary_noexp <- ggplot(
     axis.ticks = element_line(color = "black")
   ) 
 
-p_mmean_rsalary_noexp
+#p_mmean_rsalary_noexp
 
 ggsave(
   file.path(output_figures, "plot_mmean_rsalary_noexp_mn.pdf"),
