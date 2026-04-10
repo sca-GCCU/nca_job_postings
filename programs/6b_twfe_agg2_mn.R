@@ -4,7 +4,7 @@
 #
 # R Script: "6b_twfe_agg2_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 6, 2026
+# Date of this version: April 10, 2026
 #
 # Description: Generates TWFE estimates and tables, as well as corresponding 
 # Event Study plots. 
@@ -71,6 +71,8 @@ et_lb <- -36  # create event time lower bound
 es_df <- agg2_mn_analysis %>%
   filter(event_time >= et_lb)
 
+gc()
+
 
 
 # --- TOTAL POSTINGS -----------------------------------------------------------
@@ -131,6 +133,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_total_postings_agg2_mn.tex")
 )
+
+rm(twfe_total_postings_1, twfe_total_postings_2, twfe_total_postings_3, twfe_total_postings_agg2_mn)
+gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
 # combine all of these results in a different table. This is fine for now.
@@ -207,6 +212,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_total_postings_1, es_total_postings_1_df, es_plot_total_postings_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -272,6 +280,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_total_postings_2, es_total_postings_2_df, es_plot_total_postings_2, ref_row)
+gc()
 
 
 # (iii) Spec 3: Add Firm FE 
@@ -339,6 +350,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_total_postings_3, es_total_postings_3_df, es_plot_total_postings_3, ref_row)
+gc()
+
 
 
 
@@ -397,6 +411,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_any_educ_share_agg2_mn.tex")
 )
+
+rm(twfe_any_educ_share_1, twfe_any_educ_share_2, twfe_any_educ_share_3, twfe_any_educ_share_agg2_mn)
+gc()
 
 
 
@@ -468,6 +485,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_any_educ_share_1, es_any_educ_share_1_df, es_plot_any_educ_share_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -533,6 +553,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_any_educ_share_2, es_any_educ_share_2_df, es_plot_any_educ_share_2, ref_row)
+gc()
 
 
 # (iii) Spec 3: Add Firm FE 
@@ -600,6 +623,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_any_educ_share_3, es_any_educ_share_3_df, es_plot_any_educ_share_3, ref_row)
+gc()
+
 
 
 
@@ -658,6 +684,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_bachelor_share_agg2_mn.tex")
 )
+
+rm(twfe_bachelor_share_1, twfe_bachelor_share_2, twfe_bachelor_share_3, twfe_bachelor_share_agg2_mn)
+gc()
 
 
 
@@ -728,6 +757,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_bachelor_share_1, es_bachelor_share_1_df, es_plot_bachelor_share_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -793,6 +825,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_bachelor_share_2, es_bachelor_share_2_df, es_plot_bachelor_share_2, ref_row)
+gc()
 
 
 # (iii) Spec 3: Add Firm FE 
@@ -860,6 +895,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_bachelor_share_3, es_bachelor_share_3_df, es_plot_bachelor_share_3, ref_row)
+gc()
+
 
 
 
@@ -918,6 +956,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_master_share_agg2_mn.tex")
 )
+
+rm(twfe_master_share_1, twfe_master_share_2, twfe_master_share_3, twfe_master_share_agg2_mn)
+gc()
 
 
 
@@ -990,6 +1031,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_master_share_1, es_master_share_1_df, es_plot_master_share_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -1055,6 +1099,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_master_share_2, es_master_share_2_df, es_plot_master_share_2, ref_row)
+gc()
 
 
 # (iii) Spec 3: Add Firm FE 
@@ -1122,6 +1169,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_master_share_3, es_master_share_3_df, es_plot_master_share_3, ref_row)
+gc()
+
 
 
 
@@ -1180,6 +1230,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_doctorate_share_agg2_mn.tex")
 )
+
+rm(twfe_doctorate_share_1, twfe_doctorate_share_2, twfe_doctorate_share_3, twfe_doctorate_share_agg2_mn)
+gc()
 
 
 
@@ -1252,6 +1305,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_doctorate_share_1, es_doctorate_share_1_df, es_plot_doctorate_share_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -1317,6 +1373,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_doctorate_share_2, es_doctorate_share_2_df, es_plot_doctorate_share_2, ref_row)
+gc()
 
 
 
@@ -1385,6 +1444,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_doctorate_share_3, es_doctorate_share_3_df, es_plot_doctorate_share_3, ref_row)
+gc()
+
 
 
 # --- ANY EXPERIENCE SHARE -----------------------------------------------------
@@ -1441,6 +1503,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_any_exp_share_agg2_mn.tex")
 )
+
+rm(twfe_any_exp_share_1, twfe_any_exp_share_2, twfe_any_exp_share_3, twfe_any_exp_share_agg2_mn)
+gc()
 
 
 
@@ -1513,6 +1578,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_any_exp_share_1, es_any_exp_share_1_df, es_plot_any_exp_share_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -1578,6 +1646,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_any_exp_share_2, es_any_exp_share_2_df, es_plot_any_exp_share_2, ref_row)
+gc()
 
 
 
@@ -1646,6 +1717,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_any_exp_share_3, es_any_exp_share_3_df, es_plot_any_exp_share_3, ref_row)
+gc()
+
 
 
 
@@ -1703,6 +1777,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_ave_exp_agg2_mn.tex")
 )
+
+rm(twfe_ave_exp_1, twfe_ave_exp_2, twfe_ave_exp_3, twfe_ave_exp_agg2_mn)
+gc()
 
 
 
@@ -1775,6 +1852,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_ave_exp_1, es_ave_exp_1_df, es_plot_ave_exp_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -1840,6 +1920,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_ave_exp_2, es_ave_exp_2_df, es_plot_ave_exp_2, ref_row)
+gc()
 
 
 
@@ -1908,6 +1991,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_ave_exp_3, es_ave_exp_3_df, es_plot_ave_exp_3, ref_row)
+gc()
+
 
 
 
@@ -1967,6 +2053,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_fulltime_share_agg2_mn.tex")
 )
+
+rm(twfe_fulltime_share_1, twfe_fulltime_share_2, twfe_fulltime_share_3, twfe_fulltime_share_agg2_mn)
+gc()
 
 
 
@@ -2040,6 +2129,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_fulltime_share_1, es_fulltime_share_1_df, es_plot_fulltime_share_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -2105,6 +2197,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_fulltime_share_2, es_fulltime_share_2_df, es_plot_fulltime_share_2, ref_row)
+gc()
 
 
 
@@ -2173,6 +2268,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_fulltime_share_3, es_fulltime_share_3_df, es_plot_fulltime_share_3, ref_row)
+gc()
+
 
 
 
@@ -2230,6 +2328,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_internship_share_agg2_mn.tex")
 )
+
+rm(twfe_internship_share_1, twfe_internship_share_2, twfe_internship_share_3, twfe_internship_share_agg2_mn)
+gc()
 
 
 
@@ -2302,6 +2403,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_internship_share_1, es_internship_share_1_df, es_plot_internship_share_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -2367,6 +2471,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_internship_share_2, es_internship_share_2_df, es_plot_internship_share_2, ref_row)
+gc()
 
 
 
@@ -2434,6 +2541,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_internship_share_3, es_internship_share_3_df, es_plot_internship_share_3, ref_row)
+gc()
 
 
 

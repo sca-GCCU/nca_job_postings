@@ -4,7 +4,7 @@
 #
 # R Script: "6c_twfe_salary_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 6, 2026
+# Date of this version: April 10, 2026
 #
 # Description: Generates TWFE estimates and tables, as well as corresponding 
 # Event Study plots. 
@@ -74,6 +74,8 @@ et_lb <- -36  # create event time lower bound
 es_df <- salary_mn_analysis %>%
   filter(event_time >= et_lb)
 
+gc()
+
 
 
 # --- Salary (Real) ------------------------------------------------------------
@@ -134,6 +136,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_real_salary_salary_mn.tex")
 )
+
+rm(twfe_real_salary_1, twfe_real_salary_2, twfe_real_salary_3, twfe_real_salary_salary_mn)
+gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
 # combine all of these results in a different table. This is fine for now.
@@ -210,6 +215,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_1, es_real_salary_1_df, es_plot_real_salary_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -275,6 +283,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_real_salary_2, es_real_salary_2_df, es_plot_real_salary_2, ref_row)
+gc()
 
 
 # (iii) Spec 3: Add Firm FE 
@@ -342,6 +353,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_3, es_real_salary_3_df, es_plot_real_salary_3, ref_row)
+gc()
+
 
 
 
@@ -405,6 +419,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_real_salary_from_salary_mn.tex")
 )
+
+rm(twfe_real_salary_from_1, twfe_real_salary_from_2, twfe_real_salary_from_3, twfe_real_salary_from_salary_mn)
+gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
 # combine all of these results in a different table. This is fine for now.
@@ -481,6 +498,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_from_1, es_real_salary_from_1_df, es_plot_real_salary_from_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -546,6 +566,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_real_salary_from_2, es_real_salary_from_2_df, es_plot_real_salary_from_2, ref_row)
+gc()
 
 
 # (iii) Spec 3: Add Firm FE 
@@ -613,6 +636,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_from_3, es_real_salary_from_3_df, es_plot_real_salary_from_3, ref_row)
+gc()
+
 
 
 
@@ -676,6 +702,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_real_salary_to_salary_mn.tex")
 )
+
+rm(twfe_real_salary_to_1, twfe_real_salary_to_2, twfe_real_salary_to_3, twfe_real_salary_to_salary_mn)
+gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
 # combine all of these results in a different table. This is fine for now.
@@ -752,6 +781,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_to_1, es_real_salary_to_1_df, es_plot_real_salary_to_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -818,6 +850,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_to_2, es_real_salary_to_2_df, es_plot_real_salary_to_2, ref_row)
+gc()
+
 
 # (iii) Spec 3: Add Firm FE 
 # Run event study specification 
@@ -883,6 +918,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_real_salary_to_3, es_real_salary_to_3_df, es_plot_real_salary_to_3, ref_row)
+gc()
 
 
 
@@ -964,6 +1002,9 @@ etable(
   file = file.path(output_tables, "table_twfe_real_salary_exp_salary_mn.tex")
 )
 
+rm(twfe_real_salary_exp_1, twfe_real_salary_exp_2, twfe_real_salary_exp_3, twfe_real_salary_exp_salary_mn)
+gc()
+
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
 # combine all of these results in a different table. This is fine for now.
 
@@ -1037,6 +1078,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_exp_1, es_real_salary_exp_1_df, es_plot_real_salary_exp_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -1102,6 +1146,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_real_salary_exp_2, es_real_salary_exp_2_df, es_plot_real_salary_exp_2, ref_row)
+gc()
 
 
 # (iii) Spec 3: Add Firm FE 
@@ -1169,6 +1216,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_exp_3, es_real_salary_exp_3_df, es_plot_real_salary_exp_3, ref_row)
+gc()
+
 
 
 
@@ -1185,6 +1235,9 @@ salary_mn_analysis_no_exp <- salary_mn_analysis %>%
 es_df_no_exp <- salary_mn_analysis %>%
   filter(any_exp == 0) %>%
   filter(event_time >= et_lb)
+
+rm(salary_mn_analysis, es_df)
+gc()
 
 
 # --- 3. Table ---  
@@ -1243,6 +1296,9 @@ etable(
   ),
   file = file.path(output_tables, "table_twfe_real_salary_no_exp_salary_mn.tex")
 )
+
+rm(twfe_real_salary_no_exp_1, twfe_real_salary_no_exp_2, twfe_real_salary_no_exp_3, twfe_real_salary_no_exp_salary_mn)
+gc()
 
 # NOTE: Once I'm performing other methods too, I may need to figure out how to 
 # combine all of these results in a different table. This is fine for now.
@@ -1318,6 +1374,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_no_exp_1, es_real_salary_no_exp_1_df, es_plot_real_salary_no_exp_1, ref_row)
+gc()
+
 
 # (ii) Spec 2: Add Occupation FE
 # Run event study specification 
@@ -1384,6 +1443,9 @@ ggsave(
   units = "in"
 )
 
+rm(es_real_salary_no_exp_2, es_real_salary_no_exp_2_df, es_plot_real_salary_no_exp_2, ref_row)
+gc()
+
 
 # (iii) Spec 3: Add Firm FE 
 # Run event study specification 
@@ -1449,6 +1511,9 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(es_real_salary_no_exp_3, es_real_salary_no_exp_3_df, es_plot_real_salary_no_exp_3, ref_row)
+gc()
 
 
 
