@@ -4,7 +4,7 @@
 #
 # R Script: "map_state_laws.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: March 11, 2026
+# Date of this version: April 11, 2026
 #
 # Description: This script generates a map of the NCA policies of the 50 states
 # and D.C.
@@ -42,7 +42,7 @@ state_nca_laws <- state_nca_laws %>%
 # NOTE: In practice, I will only use the date_ub to determine what states have 
 # bans in the map during the analysis period.
 date_lb <- make_date(2010, 1, 1)  
-date_ub <- make_date(2025, 1, 1)
+date_ub <- make_date(2025, 1, 31)
 
 # New analysis-window-specific treatment variables 
 state_nca_laws <- state_nca_laws %>%
@@ -115,7 +115,10 @@ ggplot(map_df) +
   geom_sf(aes(fill = policy_type)) + 
   theme_minimal() + 
   theme(panel.grid = element_blank(),
-        axis.text = element_blank()) +
+        axis.text = element_blank(),
+        legend.text = element_text(size = 8),
+        legend.key.size = unit(0.4, "cm"),
+        legend.box.margin = margin(l = -25)) +
   scale_fill_brewer(
     name = "",
     palette = "Greys", # Other interesting options: Blues, YlOrBr
