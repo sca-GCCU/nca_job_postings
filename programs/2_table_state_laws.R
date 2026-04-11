@@ -91,7 +91,7 @@ state_laws_ib <- state_laws_ib %>%
     relationship = "many-to-one"
   ) %>%
   mutate(
-    Date = sprintf("%s-%04d", month_abb, eff_inc1_year),
+    Date = sprintf("%s %04d", month_name, eff_inc1_year),
     inc_threshold1 = format(inc_threshold1, big.mark = ","),
     inc_threshold1_real = format(inc_threshold1_real, big.mark = ",")
   ) 
@@ -110,7 +110,8 @@ income_bans_tab <- state_laws_ib %>%
   kable(format = "latex", booktabs = TRUE, 
         linesep = "", align = c("llrr"),
         caption = "Noncompete Income Restrictions", label = "income_restrictions",
-        col.names = c("State", "Date", "Threshold", "Theshold (Real)")) %>%
+        col.names = c("State", "Date", "Threshold (\\$)", "Theshold (Real \\$)"),
+        escape = FALSE) %>%
   kable_styling(latex_options = c("hold_position")) %>%
   footnote(
     general_title = "",
