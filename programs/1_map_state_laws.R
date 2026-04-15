@@ -4,7 +4,7 @@
 #
 # R Script: "map_state_laws.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 11, 2026
+# Date of this version: April 15, 2026
 #
 # Description: This script generates a map of the NCA policies of the 50 states
 # and D.C.
@@ -119,6 +119,7 @@ ggplot(map_df) +
         legend.text = element_text(size = 8),
         legend.key.size = unit(0.4, "cm"),
         legend.box.margin = margin(l = -25)) +
+  coord_sf(expand = FALSE) +
   scale_fill_brewer(
     name = "",
     palette = "Greys", # Other interesting options: Blues, YlOrBr
@@ -129,7 +130,7 @@ ggplot(map_df) +
 ggsave(
   "output/figures/map_state_laws.pdf",
   width = 7,
-  height = 4.5,
+  height = 3.75,
   units = "in"
 )
 
