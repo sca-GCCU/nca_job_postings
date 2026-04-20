@@ -31,7 +31,8 @@ library(stringr)
 library(readr)
 library(lubridate)
 
-# 1. Restrict to occupation-state-month cells with at least 10 total listings. 
+# 1. Restrict to occupation-state-month cells with at least 10 listings. 
+# NOTE: Saying "total" listings here, seems misleading. 
 
 agg1_mn <- read_csv(file.path(data_raw, "anastasi_agg1_v2.csv"))
 
@@ -125,6 +126,7 @@ agg1_mn_treat <- agg1_mn %>%
 # Would be nice to have a method that's robust to adding more data.
 
 # A. Exclude income, hourly, and other-ban states
+# NOTE: ``Other'' should probably be dropped separately and reported separately. 
 
 # Create date variable 
 agg1_mn_treat <- agg1_mn_treat %>%

@@ -56,14 +56,14 @@ state_nca_laws <- state_nca_laws %>%
   )
 
   # Check WY ban is outside of range
-  # NOTE: If in range, I would have to decide how to treat their ban.
+  # NOTE: Not an issue now, but I will eventually treat this as a nearly full ban.
 state_nca_laws %>% filter(other)
 
 # Code up variables for different policy types
 state_nca_laws_map <- state_nca_laws %>%
   mutate(
     policy_type = case_when(
-      full ~ "Full",
+      (full | other) ~ "Full", # Will count WY ban as a full ban (once in range)
       ( inc | hourly ) & ( health | ind ) ~ "Income + Occupation/Industry",
       ( inc | hourly ) ~ "Income",
       ( health | ind ) ~ "Occupation/Industry",
