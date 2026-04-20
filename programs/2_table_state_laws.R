@@ -133,3 +133,64 @@ print(income_bans_tab)
 # ONLY HAPPENS WHEN STATE HAS IND-BAN AND HEALTH-BAN. 
 
 
+# MISCELLANEOUS 
+
+# Number of income bans 
+n_inc_ban <- state_laws %>%
+  filter(ban_inc1 == 1) %>%
+  summarise(N = n()) %>%
+  pull(N)
+n_inc_ban
+
+    # Number of income bans since 2019 
+    n_inc_ban_2019 <- state_laws %>%
+      filter(ban_inc1 == 1) %>%
+      filter(enact_inc1_year >= 2019 | enact_hourly_year >= 2019) %>%
+      summarise(N = n()) %>%
+      pull(N)
+    n_inc_ban_2019
+
+    # Minimum income ban year 
+    min_inc_ban_year <- state_laws %>%
+      filter(ban_inc1 == 1) %>%
+      summarise(
+        min_year_eff = min(eff_inc1_year),
+        min_year_enact = min(enact_inc1_year)
+      ) %>%
+      pull(min_year_eff, min_year_enact)
+    min_inc_ban_year
+
+# Number of hourly bans 
+n_hour_ban <- state_laws %>%
+  filter(ban_hourly == 1) %>%
+  summarise(
+    N = n(),
+    eff_hourly_year = eff_hourly_year,
+    state = state
+  )
+n_hour_ban
+
+# Number of other bans 
+n_other_ban <- state_laws %>%
+  filter(ban_other == 1) %>%
+  summarise(
+    N = n(),
+    eff_other_year = eff_other_year,
+    state = state
+  )
+n_other_ban
+
+# Number of occupation/industry restrictions (including health)
+n_ind_ban <- state_laws %>%
+  filter(ban_ind == 1 | ban_health1 == 1) %>%
+  summarise(
+    N = n()
+  ) %>%
+  pull(N)
+n_ind_ban
+
+# Retroactive bans 
+retro <- state_laws %>%
+  filter(retro_full == 1 | retro_inc1 == 1 | retro_inc2 == 1 | retro_hourly == 1 | 
+           retro_ind == 1 | retro_health1 == 1 | retro_health2 == 1 | retro_health3 == 1)
+
