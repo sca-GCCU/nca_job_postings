@@ -28,7 +28,8 @@ library(readr)
 library(Synth)
 library(SCtools)
 
-# Load analysis data 
+
+# ---- Load analysis data ----  
 agg1 <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
 
 # I NEED:
@@ -37,39 +38,201 @@ agg1 <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
 # - unit variable (statefip), but note that I need to collapse to state-date panel*
 # - name variable to go along with unit variable 
 
-outcome_var <- c("total_postings", "any_educ_share", "bachelor_share", "master_share", 
-                 "doctorate_share", "any_exp_share", "ave_exp", "fulltime_share",
-                 "internship_share")
 
-# Prep data for use with Synth 
+# ---- Prep data for use with Synth ---- 
+# NOTE: Time variable is currently "year" not "date" because I'm worried about 
+# matching on noise. 
 
+# Collapsing to state-year panel
 agg1_state <- agg1 %>%
-  group_by(state, date) %>%
+  group_by(state, year) %>%
   summarise(
     state_name = first(state_name, na_rm = TRUE),
     date_enact_full = first(date_enact_full, na_rm = TRUE),
     date_eff_full = first(date_eff_full, na_rm = TRUE),
-    total_postings = sum(total_postings, na.rm = TRUE),
-    any_educ_share = weighted.mean(any_educ_share, w = total_postings, na.rm = TRUE),
-    bachelor_share = weighted.mean(bachelor_share, w = total_postings, na.rm = TRUE),
-    master_share = weighted.mean(master_share, w = total_postings, na.rm = TRUE),
-    doctorate_share = weighted.mean(doctorate_share, w = total_postings, na.rm = TRUE),
-    any_exp_share = weighted.mean(any_exp_share, w = total_postings, na.rm = TRUE), 
-    ave_exp = weighted.mean(ave_exp, w = total_postings, na.rm = TRUE),
-    fulltime_share = weighted.mean(fulltime_share, w = total_postings, na.rm = TRUE),
-    internship_share = weighted.mean(internship_share, w = total_postings, na.rm = TRUE),
-    unemp_rate = first(unemp_rate, na_rm = TRUE),
+    total_postings_state = sum(total_postings, na.rm = TRUE),
+    any_exp_postings_state = sum(any_exp, na.rm = TRUE),
+    any_educ_share_state = weighted.mean(any_educ_share, w = total_postings, na.rm = TRUE),
+    bachelor_share_state = weighted.mean(bachelor_share, w = total_postings, na.rm = TRUE),
+    master_share_state = weighted.mean(master_share, w = total_postings, na.rm = TRUE),
+    doctorate_share_state = weighted.mean(doctorate_share, w = total_postings, na.rm = TRUE),
+    any_exp_share_state = weighted.mean(any_exp_share, w = total_postings, na.rm = TRUE), 
+    ave_exp_state = weighted.mean(ave_exp, w = total_postings, na.rm = TRUE),
+    fulltime_share_state = weighted.mean(fulltime_share, w = total_postings, na.rm = TRUE),
+    internship_share_state = weighted.mean(internship_share, w = total_postings, na.rm = TRUE),
+    unemp_rate = first(unemp_rate, na_rm = TRUE), # OK to do this because currently using annual state-level controls 
     frac_male = first(frac_male, na_rm = TRUE),
     frac_black = first(frac_black, na_rm = TRUE),
     frac_college = first(frac_college, na_rm = TRUE),
     mean_age = first(mean_age, na_rm = TRUE),
     real_income = first(real_income, na_rm = TRUE),
     real_hpi = first(real_hpi, na_rm = TRUE),
-    real_ave_salary = first(real_ave_salary, na_rm = TRUE)
-  )
+    real_ave_salary = first(real_ave_salary, na_rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(year != 2025)
+
+agg1_state <- agg1_state %>%
+  mutate(
+    state = as.numeric(state),
+    year = as.numeric(year)
+  ) %>%
+  as.data.frame() # this step was key for getting dataprep to recognize numeric variables 
+
+# Creating vector of control state fips 
+state_fip_vec <- agg1_state %>% 
+  group_by(state_name) %>%
+  summarise(
+    state_fip = first(state, na_rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  pull(state_fip)
+
+state_fip_vec_new <- state_fip_vec[state_fip_vec != 27]
+
+
+# ---- Total Postings ---- 
+
+# Feeding to dataprep  
+dataprep_out_tot_post <- dataprep(
+  foo = agg1_state, # Dataset to be prepped
   
+  # Predictor variables to be used
+  predictors = c("unemp_rate", "frac_male", "frac_black", "frac_college", 
+                 "mean_age", "real_income", "real_hpi", "real_ave_salary"),
+  
+  predictors.op = "mean", # operation to apply to predictors 
+  
+  time.predictors.prior = 2010:2022, # pre-intervention time period 
+  
+  dependent = "total_postings_state",
+  
+  unit.variable = "state",
+  
+  unit.names.variable = "state_name",
+  
+  time.variable = "year",
+  
+  treatment.identifier = 27, # Minnesota state FIP
+  
+  controls.identifier = state_fip_vec_new,
+  
+  time.optimize.ssr = 2010:2022,
+  
+  time.plot = 2010:2024
+)
+
+synth_out <- synth(data.prep.obj = dataprep_out_tot_post)
+
+path.plot(synth_out, dataprep_out_tot_post)
 
 
+# ---- Listings with Any Experience Requirement ----
+
+# Feeding to dataprep  
+dataprep_out_any_exp <- dataprep(
+  foo = agg1_state, # Dataset to be prepped
+  
+  # Predictor variables to be used
+  predictors = c("unemp_rate", "frac_male", "frac_black", "frac_college", 
+                 "mean_age", "real_income", "real_hpi", "real_ave_salary"),
+  
+  predictors.op = "mean", # operation to apply to predictors 
+  
+  time.predictors.prior = 2010:2022, # pre-intervention time period 
+  
+  dependent = "any_exp_postings_state",
+  
+  unit.variable = "state",
+  
+  unit.names.variable = "state_name",
+  
+  time.variable = "year",
+  
+  treatment.identifier = 27, # Minnesota state FIP
+  
+  controls.identifier = state_fip_vec_new,
+  
+  time.optimize.ssr = 2010:2022,
+  
+  time.plot = 2010:2024
+)
+
+synth_out <- synth(data.prep.obj = dataprep_out_any_exp)
+
+path.plot(synth_out, dataprep_out_any_exp)
+
+
+# ---- Any Experience Share ----
+
+# Feeding to dataprep  
+dataprep_out_any_exp <- dataprep(
+  foo = agg1_state, # Dataset to be prepped
+  
+  # Predictor variables to be used
+  predictors = c("unemp_rate", "frac_male", "frac_black", "frac_college", 
+                 "mean_age", "real_income", "real_hpi", "real_ave_salary"),
+  
+  predictors.op = "mean", # operation to apply to predictors 
+  
+  time.predictors.prior = 2010:2022, # pre-intervention time period 
+  
+  dependent = "any_exp_share_state",
+  
+  unit.variable = "state",
+  
+  unit.names.variable = "state_name",
+  
+  time.variable = "year",
+  
+  treatment.identifier = 27, # Minnesota state FIP
+  
+  controls.identifier = state_fip_vec_new,
+  
+  time.optimize.ssr = 2010:2022,
+  
+  time.plot = 2010:2024
+)
+
+synth_out <- synth(data.prep.obj = dataprep_out_any_exp)
+
+path.plot(synth_out, dataprep_out_any_exp)
+
+
+# ---- Average Experience Requirement ----
+
+# Feeding to dataprep  
+dataprep_out_any_exp <- dataprep(
+  foo = agg1_state, # Dataset to be prepped
+  
+  # Predictor variables to be used
+  predictors = c("unemp_rate", "frac_male", "frac_black", "frac_college", 
+                 "mean_age", "real_income", "real_hpi", "real_ave_salary"),
+  
+  predictors.op = "mean", # operation to apply to predictors 
+  
+  time.predictors.prior = 2010:2022, # pre-intervention time period 
+  
+  dependent = "ave_exp_state",
+  
+  unit.variable = "state",
+  
+  unit.names.variable = "state_name",
+  
+  time.variable = "year",
+  
+  treatment.identifier = 27, # Minnesota state FIP
+  
+  controls.identifier = state_fip_vec_new,
+  
+  time.optimize.ssr = 2010:2022,
+  
+  time.plot = 2010:2024
+)
+
+synth_out <- synth(data.prep.obj = dataprep_out_any_exp)
+
+path.plot(synth_out, dataprep_out_any_exp)
 
 
 
