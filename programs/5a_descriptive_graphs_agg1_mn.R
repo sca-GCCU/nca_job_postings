@@ -2,7 +2,7 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "descriptive_graphs_agg1_mn" 
+# R Script: "descriptive_graphs_agg1_mn.R" 
 # by: Sebastian C. Anastasi
 # Date of this version: April 10, 2026
 #
@@ -12,9 +12,6 @@
 #
 # Output: 
 ##############################################################################
-
-# NOTE: When run in the cluster, I will need to update paths and (I believe)
-# install the appropriate packages. 
 
 rm(list = ls())
 
