@@ -1,3 +1,4 @@
+##############################################################################
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
@@ -30,7 +31,7 @@ library(SCtools)
 
 
 # ---- Load analysis data ----  
-agg1 <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
+agg1_mn <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
 
 # I NEED:
 # - numeric predictors 
@@ -44,7 +45,7 @@ agg1 <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
 # matching on noise. 
 
 # Collapsing to state-year panel
-agg1_state <- agg1 %>%
+agg1_state <- agg1_mn %>%
   group_by(state, year) %>%
   summarise(
     state_name = first(state_name, na_rm = TRUE),
@@ -91,6 +92,7 @@ state_fip_vec <- agg1_state %>%
 state_fip_vec_new <- state_fip_vec[state_fip_vec != 27]
 
 
+# ----------------------- Synth Control - Spec 1 -------------------------------
 # ---- Total Postings ---- 
 
 # Feeding to dataprep  
@@ -235,4 +237,193 @@ synth_out <- synth(data.prep.obj = dataprep_out_any_exp)
 path.plot(synth_out, dataprep_out_any_exp)
 
 
+# ------------------------- Synth Control - Spec 2 -----------------------------
+# ---- Total Postings ---- 
 
+# Feeding to dataprep  
+dataprep_out_tot_post_2 <- dataprep(
+  foo = agg1_state, # Dataset to be prepped
+  
+  predictors = NULL,
+  time.predictors.prior = 2010:2022, # pre-intervention time period 
+  
+  special.predictors = list(
+    list("total_postings_state", 2010, "mean"),
+    list("total_postings_state", 2011, "mean"),
+    list("total_postings_state", 2012, "mean"),
+    list("total_postings_state", 2013, "mean"),
+    list("total_postings_state", 2014, "mean"),
+    list("total_postings_state", 2015, "mean"),
+    list("total_postings_state", 2016, "mean"),
+    list("total_postings_state", 2017, "mean"),
+    list("total_postings_state", 2018, "mean"),
+    list("total_postings_state", 2019, "mean"),
+    list("total_postings_state", 2020, "mean"),
+    list("total_postings_state", 2021, "mean"),
+    list("total_postings_state", 2022, "mean")
+  ),
+  
+  dependent = "total_postings_state",
+  
+  unit.variable = "state",
+  
+  unit.names.variable = "state_name",
+  
+  time.variable = "year",
+  
+  treatment.identifier = 27, # Minnesota state FIP
+  
+  controls.identifier = state_fip_vec_new,
+  
+  time.optimize.ssr = 2010:2022,
+  
+  time.plot = 2010:2024
+)
+
+synth_out_tot_post_2 <- synth(data.prep.obj = dataprep_out_tot_post_2)
+
+path.plot(synth_out_tot_post_2, dataprep_out_tot_post_2)
+
+
+
+# ---- Listings with Any Experience Requirement ----
+
+dataprep_out_any_exp_post_2 <- dataprep(
+  foo = agg1_state, # Dataset to be prepped
+  
+  predictors = NULL,
+  time.predictors.prior = 2010:2022, # pre-intervention time period 
+  
+  special.predictors = list(
+    list("any_exp_postings_state", 2010, "mean"),
+    list("any_exp_postings_state", 2011, "mean"),
+    list("any_exp_postings_state", 2012, "mean"),
+    list("any_exp_postings_state", 2013, "mean"),
+    list("any_exp_postings_state", 2014, "mean"),
+    list("any_exp_postings_state", 2015, "mean"),
+    list("any_exp_postings_state", 2016, "mean"),
+    list("any_exp_postings_state", 2017, "mean"),
+    list("any_exp_postings_state", 2018, "mean"),
+    list("any_exp_postings_state", 2019, "mean"),
+    list("any_exp_postings_state", 2020, "mean"),
+    list("any_exp_postings_state", 2021, "mean"),
+    list("any_exp_postings_state", 2022, "mean")
+  ),
+  
+  dependent = "any_exp_postings_state",
+  
+  unit.variable = "state",
+  
+  unit.names.variable = "state_name",
+  
+  time.variable = "year",
+  
+  treatment.identifier = 27, # Minnesota state FIP
+  
+  controls.identifier = state_fip_vec_new,
+  
+  time.optimize.ssr = 2010:2022,
+  
+  time.plot = 2010:2024
+)
+
+synth_out_any_exp_post_2 <- synth(data.prep.obj = dataprep_out_any_exp_post_2)
+
+path.plot(synth_out_any_exp_post_2, dataprep_out_any_exp_post_2)
+
+
+# ---- Any Experience Share ----
+
+
+dataprep_out_any_exp_share_2 <- dataprep(
+  foo = agg1_state, # Dataset to be prepped
+  
+  predictors = NULL,
+  time.predictors.prior = 2010:2022, # pre-intervention time period 
+  
+  special.predictors = list(
+    list("any_exp_share_state", 2010, "mean"),
+    list("any_exp_share_state", 2011, "mean"),
+    list("any_exp_share_state", 2012, "mean"),
+    list("any_exp_share_state", 2013, "mean"),
+    list("any_exp_share_state", 2014, "mean"),
+    list("any_exp_share_state", 2015, "mean"),
+    list("any_exp_share_state", 2016, "mean"),
+    list("any_exp_share_state", 2017, "mean"),
+    list("any_exp_share_state", 2018, "mean"),
+    list("any_exp_share_state", 2019, "mean"),
+    list("any_exp_share_state", 2020, "mean"),
+    list("any_exp_share_state", 2021, "mean"),
+    list("any_exp_share_state", 2022, "mean")
+  ),
+  
+  dependent = "any_exp_share_state",
+  
+  unit.variable = "state",
+  
+  unit.names.variable = "state_name",
+  
+  time.variable = "year",
+  
+  treatment.identifier = 27, # Minnesota state FIP
+  
+  controls.identifier = state_fip_vec_new,
+  
+  time.optimize.ssr = 2010:2022,
+  
+  time.plot = 2010:2024
+)
+
+synth_out_any_exp_share_2 <- synth(data.prep.obj = dataprep_out_any_exp_share_2)
+
+path.plot(synth_out_any_exp_share_2, dataprep_out_any_exp_share_2)
+
+
+
+# ---- Average Experience Requirement ----
+
+dataprep_out_ave_exp_2 <- dataprep(
+  foo = agg1_state, # Dataset to be prepped
+  
+  predictors = NULL,
+  time.predictors.prior = 2010:2022, # pre-intervention time period 
+  
+  special.predictors = list(
+    list("ave_exp_state", 2010, "mean"),
+    list("ave_exp_state", 2011, "mean"),
+    list("ave_exp_state", 2012, "mean"),
+    list("ave_exp_state", 2013, "mean"),
+    list("ave_exp_state", 2014, "mean"),
+    list("ave_exp_state", 2015, "mean"),
+    list("ave_exp_state", 2016, "mean"),
+    list("ave_exp_state", 2017, "mean"),
+    list("ave_exp_state", 2018, "mean"),
+    list("ave_exp_state", 2019, "mean"),
+    list("ave_exp_state", 2020, "mean"),
+    list("ave_exp_state", 2021, "mean"),
+    list("ave_exp_state", 2022, "mean")
+  ),
+  
+  dependent = "ave_exp_state",
+  
+  unit.variable = "state",
+  
+  unit.names.variable = "state_name",
+  
+  time.variable = "year",
+  
+  treatment.identifier = 27, # Minnesota state FIP
+  
+  controls.identifier = state_fip_vec_new,
+  
+  time.optimize.ssr = 2010:2022,
+  
+  time.plot = 2010:2024
+)
+
+synth_out_ave_exp_2 <- synth(data.prep.obj = dataprep_out_ave_exp_2)
+
+path.plot(synth_out_ave_exp_2, dataprep_out_ave_exp_2)
+
+
+# NOTE: Still need to run all of this in the Cluster before making judgements.
