@@ -25,6 +25,7 @@ library(data.table)
 library(readr)
 library(tidyr)
 library(dplyr)
+library(zoo)
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 
@@ -71,9 +72,7 @@ agg2_mn <- agg2_mn %>%
 
 
 # ----------------------------- TOTAL POSTINGS ---------------------------------
-
 # --- Prep Mini-Panel --- 
-
 agg2_mn_tot_post <- agg2_mn %>%
   select(
     state_name,
@@ -83,27 +82,309 @@ agg2_mn_tot_post <- agg2_mn %>%
   )
 agg2_mn_tot_post <- as.data.frame(agg2_mn_tot_post)
 
+# --- Create Balanced Panel --- 
 # Checking for states without listings in the sample (they exist)
 print(n=37, agg2_mn_tot_post %>%
   group_by(state_name) %>%
   summarise(n_periods = n_distinct(date)) %>%
   arrange(n_periods)
 )
-bad_states <- c("Wyoming", "Montana", "South Dakota", "Alaska", "Hawaii", "Idaho", 
-                "Kansas", "Kentucky", "Vermont")
+bad_states_tot_post <- c("Wyoming", "Montana", "South Dakota", "Alaska",   
+                         "Hawaii", "Idaho", "Kansas", "Kentucky", "Vermont")
 
 # Filtering out missing states to create balance for test run
 # NOTE: Will need to add them back in once we switch to the full sample.
 agg2_mn_tot_post <- agg2_mn_tot_post %>%
   filter(!state_name %in% bad_states)
 
+# --- SDID Run --- 
+# Create matrices 
 setup_tot_post = panel.matrices(agg2_mn_tot_post)
 # NOTE: Since I have things ordered properly, I technically don't have to 
 # specify each argument. 
 
+# Estimate SDID 
 estimate_tot_post = synthdid_estimate(setup_tot_post$Y, setup_tot_post$N0,
                                       setup_tot_post$T0)
 
-plot(estimate_tot_post)
+# Plot SDID 
+sdid_plot_tot_post <- plot(estimate_tot_post, se.method = 'placebo')
+
+# Control Unit Contribution Plot 
+synthdid_units_plot(estimate_tot_post, se.method = 'placebo')
+
+rm(agg2_mn_tot_post)
+
+# NOTE: Eventually calulcate and produce the tables of results. 
+
+
+# ----------------------- ANY EXP LISTINGS -------------------------------------
+# --- Prep Mini-Panel --- 
+agg2_mn_any_exp <- agg2_mn %>%
+  select(
+    state_name,
+    date,
+    any_exp_state,
+    treated_eff_full
+  )
+agg2_mn_any_exp <- as.data.frame(agg2_mn_any_exp)
+
+# --- Create Balanced Panel --- 
+# Checking for "bad" states 
+print(
+  n=37, agg2_mn_any_exp %>%
+    group_by(state_name) %>%
+    summarise(n_periods = n_distinct(date)) %>%
+    arrange(n_periods)
+)
+# NOTE: Turns out these are the same "bad states" as with total postings. 
+bad_states_any_exp <- c("Wyoming", "Montana", "South Dakota", "Alaska",   
+                        "Hawaii", "Idaho", "Kansas", "Kentucky", "Vermont")
+
+# Filtering out "bad" states 
+agg2_mn_any_exp <- agg2_mn_any_exp %>%
+  filter(!state_name %in% bad_states_any_exp)
+
+# --- SDID Run --- 
+# Create matrices 
+setup_any_exp = panel.matrices(agg2_mn_any_exp)
+
+# Estimate SDID 
+estimate_any_exp = synthdid_estimate(setup_any_exp$Y, setup_any_exp$N0,
+                                     setup_any_exp$T0)
+
+# Plot SDID 
+sdid_plot_any_exp = plot(estimate_any_exp, se.method = 'placebo')
+sdid_plot_any_exp
+
+# Control Unit Contribution Plot 
+synthdid_units_plot(estimate_any_exp, se.method = 'placebo')
+
+rm(agg2_mn_any_exp)
+
+# ----------------------- ANY EXP SHARE ----------------------------------------
+# --- Prep Mini-Panel --- 
+agg2_mn_share_exp <- agg2_mn %>%
+  select(
+    state_name,
+    date,
+    share_exp_state,
+    treated_eff_full
+  )
+agg2_mn_share_exp <- as.data.frame(agg2_mn_share_exp)
+
+# --- Create Balanced Panel --- 
+# Checking for "bad" states 
+print(
+  n=37, agg2_mn_share_exp %>%
+    group_by(state_name) %>%
+    summarise(n_periods = n_distinct(date)) %>%
+    arrange(n_periods)
+)
+# NOTE: Turns out these are the same "bad states" as with total postings. 
+bad_states_share_exp <- c("Wyoming", "Montana", "South Dakota", "Alaska",   
+                        "Hawaii", "Idaho", "Kansas", "Kentucky", "Vermont")
+
+# Filtering out "bad" states 
+agg2_mn_share_exp <- agg2_mn_share_exp %>%
+  filter(!state_name %in% bad_states_share_exp)
+
+# --- SDID Run --- 
+# Create matrices 
+setup_share_exp = panel.matrices(agg2_mn_share_exp)
+
+# Estimate SDID 
+estimate_share_exp = synthdid_estimate(setup_share_exp$Y, setup_share_exp$N0,
+                                     setup_share_exp$T0)
+
+# Plot SDID 
+sdid_plot_share_exp = plot(estimate_share_exp, se.method = 'placebo')
+sdid_plot_share_exp
+
+# Control Unit Contribution Plot 
+synthdid_units_plot(estimate_share_exp, se.method = 'placebo')
+
+rm(agg2_mn_share_exp)
+
+# ----------------------- AVE EXP ----------------------------------------------
+# --- Prep Mini-Panel --- 
+agg2_mn_ave_exp <- agg2_mn %>%
+  select(
+    state_name,
+    date,
+    ave_exp_state,
+    treated_eff_full
+  )
+agg2_mn_ave_exp <- as.data.frame(agg2_mn_ave_exp)
+
+# --- Create Balanced Panel --- 
+# Checking for "bad" states 
+print(
+  n=37, agg2_mn_ave_exp %>%
+    group_by(state_name) %>%
+    summarise(n_periods = n_distinct(date)) %>%
+    arrange(n_periods)
+)
+# NOTE: Bad states from total postings, plus West Virginia, Arkansas, Delaware,
+# and New Mexico have missing values for the share variable. 
+bad_states_ave_exp <- c("Wyoming", "Montana", "South Dakota", "Alaska",   
+                          "Hawaii", "Idaho", "Kansas", "Kentucky", "Vermont",
+                        "Arkansas", "Delaware", "New Mexico", "West Virginia")
+
+# Filtering out "bad" states 
+agg2_mn_ave_exp <- agg2_mn_ave_exp %>%
+  filter(!state_name %in% bad_states_ave_exp)
+
+# --- SDID Run --- 
+# Create matrices 
+setup_ave_exp = panel.matrices(agg2_mn_ave_exp)
+
+# Estimate SDID 
+estimate_ave_exp = synthdid_estimate(setup_ave_exp$Y, setup_ave_exp$N0,
+                                       setup_ave_exp$T0)
+
+# Plot SDID 
+sdid_plot_ave_exp = plot(estimate_ave_exp, se.method = 'placebo')
+sdid_plot_ave_exp
+
+# Control Unit Contribution Plot 
+synthdid_units_plot(estimate_ave_exp, se.method = 'placebo')
+
+rm(agg2_mn_ave_exp)
+
+# ------------------------ FULLTIME LISTINGS -----------------------------------
+# --- Prep Mini-Panel --- 
+agg2_mn_fulltime <- agg2_mn %>%
+  select(
+    state_name,
+    date,
+    fulltime_state,
+    treated_eff_full
+  )
+agg2_mn_fulltime <- as.data.frame(agg2_mn_fulltime)
+
+# --- Create Balanced Panel --- 
+# Checking for "bad" states 
+print(
+  n=37, agg2_mn_fulltime %>%
+    group_by(state_name) %>%
+    summarise(n_periods = n_distinct(date)) %>%
+    arrange(n_periods)
+)
+# NOTE: Turns out these are the same "bad states" as with total postings. 
+bad_states_fulltime <- c("Wyoming", "Montana", "South Dakota", "Alaska",   
+                          "Hawaii", "Idaho", "Kansas", "Kentucky", "Vermont")
+
+# Filtering out "bad" states 
+agg2_mn_fulltime <- agg2_mn_fulltime %>%
+  filter(!state_name %in% bad_states_fulltime)
+
+# --- SDID Run --- 
+# Create matrices 
+setup_fulltime = panel.matrices(agg2_mn_fulltime)
+
+# Estimate SDID 
+estimate_fulltime = synthdid_estimate(setup_fulltime$Y, setup_fulltime$N0,
+                                       setup_fulltime$T0)
+
+# Plot SDID 
+sdid_plot_fulltime = plot(estimate_fulltime, se.method = 'placebo')
+sdid_plot_fulltime
+
+# Control Unit Contribution Plot 
+synthdid_units_plot(estimate_fulltime, se.method = 'placebo')
+
+rm(agg2_mn_fulltime)
+
+# Other clean-up
+rm(setup_tot_post, setup_any_exp, setup_share_exp, setup_ave_exp, setup_fulltime)
+
+
+# ------------------------ FULLTIME SHARE --------------------------------------
+# --- Prep Mini-Panel --- 
+agg2_mn_share_fulltime <- agg2_mn %>%
+  select(
+    state_name,
+    date,
+    share_fulltime_state,
+    treated_eff_full
+  )
+agg2_mn_share_fulltime <- as.data.frame(agg2_mn_share_fulltime)
+
+# --- Create Balanced Panel --- 
+# Checking for "bad" states 
+print(
+  n=37, agg2_mn_share_fulltime %>%
+    group_by(state_name) %>%
+    summarise(n_periods = n_distinct(date)) %>%
+    arrange(n_periods)
+)
+# NOTE: Turns out these are the same "bad states" as with total postings. 
+bad_states_share_fulltime <- c("Wyoming", "Montana", "South Dakota", "Alaska",   
+                         "Hawaii", "Idaho", "Kansas", "Kentucky", "Vermont")
+
+# Filtering out "bad" states 
+agg2_mn_share_fulltime <- agg2_mn_share_fulltime %>%
+  filter(!state_name %in% bad_states_share_fulltime)
+
+# --- SDID Run --- 
+# Create matrices 
+setup_share_fulltime = panel.matrices(agg2_mn_share_fulltime)
+
+# Estimate SDID 
+estimate_share_fulltime = synthdid_estimate(setup_share_fulltime$Y, setup_share_fulltime$N0,
+                                      setup_share_fulltime$T0)
+
+# Plot SDID 
+sdid_plot_share_fulltime = plot(estimate_share_fulltime, se.method = 'placebo')
+sdid_plot_share_fulltime
+
+# Control Unit Contribution Plot 
+synthdid_units_plot(estimate_share_fulltime, se.method = 'placebo')
+
+rm(agg2_mn_share_fulltime)
+
+
+
+# ------------------------ PARTTIME LISTINGS -----------------------------------
+# --- Prep Mini-Panel --- 
+
+
+# --- Create Balanced Panel --- 
+# Checking for "bad" states 
+
+# Filtering out "bad" states 
+
+
+# --- SDID Run --- 
+# Create matrices 
+
+# Estimate SDID 
+
+# Plot SDID 
+
+# Control Unit Contribution Plot 
+
+
+
+# ------------------------ PARTTIME SHARE --------------------------------------
+# --- Prep Mini-Panel --- 
+
+
+# --- Create Balanced Panel --- 
+# Checking for "bad" states 
+
+# Filtering out "bad" states 
+
+
+# --- SDID Run --- 
+# Create matrices 
+
+# Estimate SDID 
+
+# Plot SDID 
+
+# Control Unit Contribution Plot 
+
 
 
