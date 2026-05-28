@@ -4,7 +4,7 @@
 #
 # R Script: "8a_sdid_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: May 25, 2026
+# Date of this version: May 28, 2026
 #
 # Description:  
 #
@@ -348,43 +348,93 @@ rm(agg2_mn_share_fulltime)
 
 # ------------------------ PARTTIME LISTINGS -----------------------------------
 # --- Prep Mini-Panel --- 
-
+agg2_mn_parttime <- agg2_mn %>%
+  select(
+    state_name,
+    date,
+    parttime_state,
+    treated_eff_full
+  )
+agg2_mn_parttime <- as.data.frame(agg2_mn_parttime)
 
 # --- Create Balanced Panel --- 
 # Checking for "bad" states 
+print(
+  n=37, agg2_mn_parttime %>%
+    group_by(state_name) %>%
+    summarise(n_periods = n_distinct(date)) %>%
+    arrange(n_periods)
+)
+# NOTE: Turns out these are the same "bad states" as with total postings. 
+bad_states_parttime <- c("Wyoming", "Montana", "South Dakota", "Alaska",   
+                         "Hawaii", "Idaho", "Kansas", "Kentucky", "Vermont")
 
 # Filtering out "bad" states 
-
+agg2_mn_parttime <- agg2_mn_parttime %>%
+  filter(!state_name %in% bad_states_parttime)
 
 # --- SDID Run --- 
 # Create matrices 
+setup_parttime = panel.matrices(agg2_mn_parttime)
 
 # Estimate SDID 
+estimate_parttime = synthdid_estimate(setup_parttime$Y, setup_parttime$N0,
+                                      setup_parttime$T0)
 
 # Plot SDID 
+sdid_plot_parttime = plot(estimate_parttime, se.method = 'placebo')
+sdid_plot_parttime
 
 # Control Unit Contribution Plot 
+synthdid_units_plot(estimate_parttime, se.method = 'placebo')
 
+rm(agg2_mn_parttime)
 
 
 # ------------------------ PARTTIME SHARE --------------------------------------
 # --- Prep Mini-Panel --- 
-
+agg2_mn_share_parttime <- agg2_mn %>%
+  select(
+    state_name,
+    date,
+    share_parttime_state,
+    treated_eff_full
+  )
+agg2_mn_share_parttime <- as.data.frame(agg2_mn_share_parttime)
 
 # --- Create Balanced Panel --- 
 # Checking for "bad" states 
+print(
+  n=37, agg2_mn_share_parttime %>%
+    group_by(state_name) %>%
+    summarise(n_periods = n_distinct(date)) %>%
+    arrange(n_periods)
+)
+# NOTE: Turns out these are the same "bad states" as with total postings. 
+bad_states_share_parttime <- c("Wyoming", "Montana", "South Dakota", "Alaska",   
+                         "Hawaii", "Idaho", "Kansas", "Kentucky", "Vermont")
 
 # Filtering out "bad" states 
-
+agg2_mn_share_parttime <- agg2_mn_share_parttime %>%
+  filter(!state_name %in% bad_states_share_parttime)
 
 # --- SDID Run --- 
 # Create matrices 
+setup_share_parttime = panel.matrices(agg2_mn_share_parttime)
 
 # Estimate SDID 
+estimate_share_parttime = synthdid_estimate(setup_share_parttime$Y, setup_share_parttime$N0,
+                                      setup_share_parttime$T0)
 
 # Plot SDID 
+sdid_plot_share_parttime = plot(estimate_share_parttime, se.method = 'placebo')
+sdid_plot_share_parttime
 
 # Control Unit Contribution Plot 
+synthdid_units_plot(estimate_share_parttime, se.method = 'placebo')
+
+rm(agg2_mn_share_parttime)
+
 
 
 
