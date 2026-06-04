@@ -585,7 +585,7 @@ rm(agg2_mn_treat, covariates_base)
 gc()
 
 
-# 5. Convert average_salary to a real measure using CPI. All in 2022 dollars 
+# 6. Convert average_salary to a real measure using CPI. All in 2022 dollars 
 # (to match the base period).
 
 cpi <- read_csv(file.path(data_clean, "cpi_clean.csv"))
