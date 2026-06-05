@@ -440,7 +440,8 @@ agg2_treat <- agg2_treat %>%
     -starts_with("eff_full"),
     -starts_with("eff_h"),
     -starts_with("eff_ind"),
-    -starts_with("eff_other")
+    -starts_with("eff_other"),
+    -internship # this variable appears to have pretty spotty coverage
   )
 
 # NOTE: I don't think I do actually need to create share variables at this 
@@ -458,5 +459,9 @@ agg2_treat <- agg2_treat %>%
 # NOTE: Income income thresholds should be converted by hand, as they don't vary
 # with the date variable in the panel. 
 
+
+# -------------------------- Save Analysis Data -------------------------------- 
+
+write_csv(agg2_treat, "data/analysis-data/agg2_analysis.csv")
 
 
