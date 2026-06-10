@@ -19,6 +19,7 @@
 rm(list = ls())
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # Cluster
 
 #install.packages("Synth")
 #install.packages("SCtools")

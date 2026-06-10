@@ -16,6 +16,7 @@
 rm(list = ls())
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # Cluster
 
 library(did)        # Callaway & Sant'Anna estimator 
 library(panelView)  # Visualize treatment rollout  
@@ -209,7 +210,7 @@ treatment_rollout <- panelview(
   data = df_state,
   index = c("state_name", "year"),
   pre.post = TRUE,
-  main = "NCA Bans",
+  main = "", # currently not creating title 
   xlab = "Year", ylab = "State"
 )
 
@@ -217,7 +218,7 @@ ggsave(
   "output/figures/treatment_rollout_all_bans.pdf",
   treatment_rollout,
   width = 7,
-  height = 7,
+  height = 5,
   units = "in"
 )
 
@@ -290,11 +291,11 @@ ggsave(
   units = "in"
 )
 
-# Average Experience Required 
+# Experience Required (Average) 
 mean_ave_exp <- panelview(ave_exp_state ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
-          xlab = "Year", ylab = "Average Experience Required")
+          xlab = "Year", ylab = "Experience Required (Average)")
 ggsave(
   "output/figures/mean_ave_exp_all_bans.pdf",
   mean_ave_exp,
@@ -306,7 +307,7 @@ ggsave(
 mean_ave_exp_cohort <- panelview(ave_exp_state ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
-          xlab = "Year", ylab = "Average Experience Required",
+          xlab = "Year", ylab = "Experience Required (Average)",
           by.cohort = TRUE)
 ggsave(
   "output/figures/mean_ave_exp_cohort_all_bans.pdf",
@@ -528,7 +529,7 @@ cs_tot_post <- att_gt(
   tname = "year",
   idname = "company_state_id",
   gname = "cohort",
-  panel = FALSE,
+  panel = FALSE, # makes this repeated cross-sections
   data = df_firm,
   control_group = "nevertreated",
   est_method = "dr",
@@ -539,7 +540,22 @@ cs_tot_post <- att_gt(
   anticipation = 0
 )
 summary(cs_tot_post)
-ggdid(cs_tot_post, title = "Total Postings", grtitle = "Ban")
+csdid_cohort_tot_post <- ggdid(
+  cs_tot_post, 
+  xlab = "Year", 
+  ylab = "Total Postings", 
+  title = "",
+  grtitle = "Ban in"
+)
+# NOTE: Seeing more of an effect in the 2022 cohort (where 
+# inc_threshold was high).
+ggsave(
+  "output/figures/csdid_cohort_tot_post.pdf",
+  csdid_cohort_tot_post,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 es_tot_post <- aggte(
   cs_tot_post,
@@ -548,7 +564,20 @@ es_tot_post <- aggte(
   balance_e = 2
 )
 summary(es_tot_post)
-ggdid(es_tot_post, title = "Total Postings")
+csdid_es_tot_post <- ggdid(
+  es_tot_post, 
+  xlab = "Event Time", 
+  ylab = "Total Postings",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_tot_post.pdf",
+  csdid_es_tot_post,
+  width = 7,
+  height = 5,
+  units = "in"
+)
+
 
 # --- Any Experience --- 
 
@@ -568,7 +597,20 @@ cs_any_exp <- att_gt(
   anticipation = 0
 )
 summary(cs_any_exp)
-ggdid(cs_any_exp, title = "Experience Required", grtitle = "Ban")
+csdid_cohort_exp <- ggdid(
+  cs_any_exp, 
+  xlab = "Year",
+  ylab = "Experience Required (Postings)",
+  title = "", 
+  grtitle = "Ban in"
+)
+ggsave(
+  "output/figures/csdid_cohort_exp.pdf",
+  csdid_cohort_exp,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 es_any_exp <- aggte(
   cs_any_exp,
@@ -577,7 +619,20 @@ es_any_exp <- aggte(
   balance_e = 2
 )
 summary(es_any_exp)
-ggdid(es_any_exp, title = "Experience Required")
+csdid_es_exp <- ggdid(
+  es_any_exp, 
+  xlab = "Event Time",
+  ylab = "Experience Required (Postings)",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_exp.pdf",
+  csdid_es_exp,
+  width = 7,
+  height = 5,
+  units = "in"
+)
+
 
 # --- Share Experience --- 
 
@@ -597,7 +652,21 @@ cs_share_exp <- att_gt(
   anticipation = 0
 )
 summary(cs_share_exp)
-ggdid(cs_share_exp, title = "Experience Required (Share)", grtitle = "Ban")
+csdid_cohort_exp_share <- ggdid(
+  cs_share_exp, 
+  xlab = "Year",
+  ylab = "Experience Required (Share)",
+  title = "", 
+  grtitle = "Ban in"
+)
+# NOTE: Again, I'm seeing the biggest effect in CO and DC.
+ggsave(
+  "output/figures/csdid_cohort_exp_share.pdf",
+  csdid_cohort_exp_share,
+  height = 8,
+  width = 8,
+  units = "in"
+)
 
 es_share_exp <- aggte(
   cs_share_exp,
@@ -606,7 +675,19 @@ es_share_exp <- aggte(
   balance_e = 2
 )
 summary(es_share_exp)
-ggdid(es_share_exp, title = "Experience Required (Share)")
+csdid_es_exp_share <- ggdid(
+  es_share_exp, 
+  xlab = "Event Time",
+  ylab = "Experience Required (Share)",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_exp_share.pdf",
+  csdid_es_exp_share,
+  height = 5,
+  width = 7,
+  units = "in"
+)
 
 # --- Average Experience --- 
 
@@ -626,7 +707,20 @@ cs_ave_exp <- att_gt(
   anticipation = 0
 )
 summary(cs_ave_exp)
-ggdid(cs_ave_exp, title = "Average Experience Required", grtitle = "Ban")
+csdid_cohort_exp_ave <- ggdid(
+  cs_ave_exp, 
+  xlab = "Year",
+  ylab = "Experience Required (Average)",
+  title = "", 
+  grtitle = "Ban in"
+)
+ggsave(
+  "output/figures/csdid_cohort_exp_ave.pdf",
+  csdid_cohort_exp_ave,
+  height = 8,
+  width = 8,
+  units = "in"
+)
 
 es_ave_exp <- aggte(
   cs_ave_exp,
@@ -635,7 +729,19 @@ es_ave_exp <- aggte(
   balance_e = 2
 )
 summary(es_ave_exp)
-ggdid(es_ave_exp, title = "Average Experience Required")
+csdid_es_exp_ave <- ggdid(
+  es_ave_exp, 
+  xlab = "Event Time",
+  ylab = "Experience Required (Average)",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_exp_ave.pdf",
+  csdid_es_exp_ave,
+  height = 5,
+  width = 7,
+  units = "in"
+)
 
 
 # --- Any Bachelor's Degree ---- 
@@ -656,7 +762,20 @@ cs_bachelor <- att_gt(
   anticipation = 0
 )
 summary(cs_bachelor)
-ggdid(cs_bachelor, title = "Bachelor's Required", grtitle = "Ban")
+csdid_cohort_bachelor <- ggdid(
+  cs_bachelor,
+  xlab = "Year",
+  ylab = "Bachelor's Required (Postings)",
+  title = "", 
+  grtitle = "Ban in"
+)
+ggsave(
+  "output/figures/csdid_cohort_bachelor.pdf",
+  csdid_cohort_bachelor,
+  height = 8,
+  width = 8,
+  units = "in"
+)
 
 es_bachelor <- aggte(
   cs_bachelor,
@@ -665,8 +784,19 @@ es_bachelor <- aggte(
   balance_e = 2
 )
 summary(es_bachelor)
-ggdid(es_bachelor, title = "Bachelor's Required")
-
+csdid_es_bachelor <- ggdid(
+  es_bachelor, 
+  xlab = "Event Time",
+  ylab = "Bachelor's Required (Postings)",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_bachelor.pdf",
+  csdid_es_bachelor,
+  height = 5,
+  width = 7,
+  units = "in"
+)
 
 # --- Share Bachelor's Degree ---- 
 
@@ -686,7 +816,20 @@ cs_bachelor_share <- att_gt(
   anticipation = 0
 )
 summary(cs_bachelor_share)
-ggdid(cs_bachelor_share, title = "Bachelor's Required (Share)", grtitle = "Ban")
+csdid_cohort_bachelor_share <- ggdid(
+  cs_bachelor_share, 
+  xlab = "Year",
+  ylab = "Bachelor's Required (Share)",
+  title = "", 
+  grtitle = "Ban in"
+)
+ggsave(
+  "output/figures/csdid_cohort_bachelor_share.pdf",
+  csdid_cohort_bachelor_share,
+  height = 8,
+  width = 8,
+  units = "in"
+)
 
 es_bachelor_share <- aggte(
   cs_bachelor_share,
@@ -695,7 +838,19 @@ es_bachelor_share <- aggte(
   balance_e = 2
 )
 summary(es_bachelor_share)
-ggdid(es_bachelor_share, title = "Bachelor's Required (Share)")
+csdid_es_bachelor_share <- ggdid(
+  es_bachelor_share, 
+  xlab = "Event Time",
+  ylab = "Bachelor's Required (Share)",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_bachelor_share.pdf",
+  csdid_es_bachelor_share,
+  height = 5,
+  width = 7,
+  units = "in"
+)
 
 
 # --- Fulltime --- 
@@ -716,7 +871,20 @@ cs_fulltime <- att_gt(
   anticipation = 0
 )
 summary(cs_fulltime)
-ggdid(cs_fulltime, title = "Full-Time Postings", grtitle = "Ban")
+csdid_cohort_fulltime <- ggdid(
+  cs_fulltime, 
+  xlab = "Year",
+  ylab = "Full-Time Postings",
+  title = "", 
+  grtitle = "Ban in"
+)
+ggsave(
+  "output/figures/csdid_cohort_fulltime.pdf",
+  csdid_cohort_fulltime,
+  height = 8,
+  width = 8,
+  units = "in"
+)
 
 es_fulltime <- aggte(
   cs_fulltime,
@@ -725,7 +893,19 @@ es_fulltime <- aggte(
   balance_e = 2
 )
 summary(es_fulltime)
-ggdid(es_fulltime, title = "Full-Time Postings")
+csdid_es_fulltime <- ggdid(
+  es_fulltime, 
+  xlab = "Event Time",
+  ylab = "Full-Time Postings",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_fulltime.pdf",
+  csdid_es_fulltime,
+  height = 5,
+  width = 7,
+  units = "in"
+)
 
 # --- Fulltime (Share) --- 
 
@@ -745,7 +925,20 @@ cs_fulltime_share <- att_gt(
   anticipation = 0
 )
 summary(cs_fulltime_share)
-ggdid(cs_fulltime_share, title = "Full-Time Postings (Share)", grtitle = "Ban")
+csdid_cohort_fulltime_share <- ggdid(
+  cs_fulltime_share, 
+  xlab = "Year",
+  ylab = "Full-Time Postings (Share)",
+  title = " ", 
+  grtitle = "Ban in"
+)
+ggsave(
+  "output/figures/csdid_cohort_fulltime_share.pdf",
+  csdid_cohort_fulltime_share,
+  height = 8,
+  width = 8,
+  units = "in"
+)
 
 es_fulltime_share <- aggte(
   cs_fulltime_share,
@@ -754,8 +947,19 @@ es_fulltime_share <- aggte(
   balance_e = 2
 )
 summary(es_fulltime_share)
-ggdid(es_fulltime_share, title = "Full-Time Postings (Share)")
-
+csdid_es_fulltime_share <- ggdid(
+  es_fulltime_share, 
+  xlab = "Event Time",
+  ylab = "Full-Time Postings (Share)",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_fulltime_share.pdf",
+  csdid_es_fulltime_share,
+  height = 5,
+  width = 7,
+  units = "in"
+)
 
 # --- Parttime --- 
 
@@ -775,7 +979,20 @@ cs_parttime <- att_gt(
   anticipation = 0
 )
 summary(cs_parttime)
-ggdid(cs_parttime, title = "Part-Time Postings", grtitle = "Ban")
+csdid_cohort_parttime <- ggdid(
+  cs_parttime, 
+  xlab = "Year",
+  ylab = "Part-Time Postings",
+  title = " ", 
+  grtitle = "Ban in"
+)
+ggsave(
+  "output/figures/csdid_cohort_parttime.pdf",
+  csdid_cohort_parttime,
+  height = 8,
+  width = 8, 
+  units = "in"
+)
 
 es_parttime <- aggte(
   cs_parttime,
@@ -784,7 +1001,19 @@ es_parttime <- aggte(
   balance_e = 2
 )
 summary(es_parttime)
-ggdid(es_parttime, title = "Part-Time Postings")
+csdid_es_parttime <- ggdid(
+  es_parttime, 
+  xlab = "Event Time",
+  ylab = "Part-Time Postings",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_parttime.pdf",
+  csdid_es_parttime,
+  height = 5,
+  width = 7,
+  units = "in"
+)
 
 # --- Parttime (Share) --- 
 
@@ -804,7 +1033,20 @@ cs_parttime_share <- att_gt(
   anticipation = 0
 )
 summary(cs_parttime_share)
-ggdid(cs_parttime_share, title = "Part-Time Postings (Share)", grtitle = "Ban")
+csdid_cohort_parttime_share <- ggdid(
+  cs_parttime_share, 
+  xlab = "Year",
+  ylab = "Part-Time Postings (Share)",
+  title = " ", 
+  grtitle = "Ban in"
+)
+ggsave(
+  "output/figures/csdid_cohort_parttime_share.pdf",
+  csdid_cohort_parttime_share,
+  height = 8,
+  width = 8,
+  units = "in"
+)
 
 es_parttime_share <- aggte(
   cs_parttime_share,
@@ -813,6 +1055,17 @@ es_parttime_share <- aggte(
   balance_e = 2
 )
 summary(es_parttime_share)
-ggdid(es_parttime_share, title = "Part-Time Postings (Share)")
-
+csdid_es_parttime_share <- ggdid(
+  es_parttime_share, 
+  xlab = "Event Time",
+  ylab = "Part-Time Postings (Share)",
+  title = " "
+)
+ggsave(
+  "output/figures/csdid_es_parttime_share.pdf",
+  csdid_es_parttime_share,
+  height = 5, 
+  width = 7,
+  units = "in"
+)
 

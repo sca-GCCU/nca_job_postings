@@ -28,6 +28,7 @@ library(dplyr)
 library(zoo)
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # Cluster
 
 agg2_mn <- read_csv("data/analysis-data/agg2_mn_analysis.csv")
 
