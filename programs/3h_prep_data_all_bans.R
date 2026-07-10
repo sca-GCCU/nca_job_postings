@@ -13,9 +13,12 @@
 # Output:
 ##############################################################################
 
+# NOTE: Change to actual dataset and not sample version for cluster run.
+
 rm(list = ls())
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
 library(readr)
 library(tidyr)
@@ -26,11 +29,9 @@ library(stringr)
 # -------------------- Import & Preliminary Restrictions -----------------------
 # --- Import Lightcast data ---
 
-agg2 <- read_csv("data/raw-data/sample_anastasi_agg2_v2.csv")
+agg2 <- read_csv("data/raw-data/sample_anastasi_agg2_v2.csv") # change in cluster
 
-n_start <- agg2 %>%
-  summarise(N = n()) %>%
-  pull(N)
+n_start <- nrow(agg2)
 n_start
 # NOTE: Ignore writing of output to output files for now.
 
@@ -40,21 +41,18 @@ agg2 <- agg2 %>%
   mutate(
     total_postings_ever = sum(total_postings, na.rm = TRUE)
   ) %>%
-  ungroup()
-
-agg2 <- agg2 %>%
+  ungroup() %>%
   mutate(
     drop_min_ads = (total_postings_ever < 10)
   )
 
-n_drop_noise <- agg2 %>%
-  filter(drop_min_ads) %>%
-  nrow()
+n_drop_noise <- sum(agg2$drop_min_ads)
 n_drop_noise
 
 agg2 <- agg2 %>%
   filter(!drop_min_ads) %>%
   select(-drop_min_ads, -total_postings_ever)
+gc()
 
 
 # ------------------- Merge Treatment Data ------------------------------------- 
@@ -83,7 +81,7 @@ agg2_treat <- agg2 %>%
   left_join(state_nca_laws %>% select(-state_name), by = "state")
 
 rm(agg2, state_nca_laws)
-
+gc()
 
 # ----------------- Impose Sample Restrictions ---------------------------------
 # NOTE: Use method that is robust to more states appearing as treated when the 
@@ -130,14 +128,10 @@ states_other <- agg2_treat %>%
 states_other
 
 # Count number of obs to be dropped 
-n_drop_hourly <- agg2_treat %>%
-  filter(state %in% states_hourly) %>%
-  nrow()
+n_drop_hourly <- sum(agg2_treat$state %in% states_hourly)
 n_drop_hourly
 
-n_drop_other <- agg2_treat %>%
-  filter(state %in% states_other) %>%
-  nrow()
+n_drop_other <- sum(agg2_treat$state %in% states_other)
 n_drop_other
 
 # Drop obs 
@@ -147,7 +141,7 @@ agg2_treat <- agg2_treat %>%
   )
 
 rm(states_hourly, states_other)
-
+gc()
 
 # --- Industry or occupation-based bans --- 
 # NOTE: Excluding listings from the ind/occ affected by the ban in the state 
@@ -158,11 +152,7 @@ rm(states_hourly, states_other)
 # NOTE: NCAs are universally banned for lawyers. Lawyer's SOC codes are 
 # 23-1010.
 
-n_drop_lawyers <- agg2_treat %>%
-  filter(
-    soc_4 == "23-1010"
-  ) %>%
-  nrow()
+n_drop_lawyers <- sum(agg2_treat$soc_4 == "23-1010")
 n_drop_lawyers
 
 agg2_treat <- agg2_treat %>%
@@ -218,18 +208,16 @@ states_ind_soc <- states_ind_expansion %>%
 # NCAs for some health occupations. Hence I do drop some health occupation 
 # listings here already. 
 
-n_drop_ind_soc <- agg2_treat %>%
-  semi_join(
-    states_ind_soc,
-    by = c("state", "soc_4")
-  ) %>%
-  nrow()
+n_before_ind_soc <- nrow(agg2_treat)
 
 agg2_treat <- agg2_treat %>%
   anti_join(
     states_ind_soc,
     by = c("state", "soc_4")
   )
+
+n_drop_ind_soc <- n_before_ind_soc - nrow(agg2_treat)
+n_drop_ind_soc
 
     # --- NAICS-based restrictions --- 
 
@@ -247,12 +235,7 @@ states_ind_naics <- states_ind_expansion %>%
   select(-ever_ind, -note) %>%
   filter(!is.na(naics4))
 
-n_drop_ind_naics <- agg2_treat %>%
-  semi_join(
-    states_ind_naics,
-    by = c("state", "naics4")
-  ) %>%
-  nrow()
+n_before_ind_naics <- nrow(agg2_treat)
 
 agg2_treat <- agg2_treat %>%
   anti_join(
@@ -260,8 +243,10 @@ agg2_treat <- agg2_treat %>%
     by = c("state", "naics4")
   )
 
-rm(states_ind_soc, states_ind_naics, states_ind, states_ind_expansion)
+n_drop_ind_naics <- n_before_ind_naics - nrow(agg2_treat)
 
+rm(states_ind_soc, states_ind_naics, states_ind, states_ind_expansion)
+gc()
 
 # C. Health Bans 
 
@@ -296,12 +281,7 @@ state_health1_soc <- state_health1_expansion %>%
   select(-ever_health1, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_drop_health1 <- agg2_treat %>%
-  semi_join(
-    state_health1_soc,
-    by = c("state", "soc_4")
-  ) %>%
-  nrow()
+n_before_health1 <- nrow(agg2_treat)
 
 agg2_treat <- agg2_treat %>%
   anti_join(
@@ -309,8 +289,10 @@ agg2_treat <- agg2_treat %>%
     by = c("state", "soc_4")
   ) 
 
-rm(state_health1_soc, state_health1_expansion, state_health1)
+n_drop_health1 <- n_before_health1 - nrow(agg2_treat)
 
+rm(state_health1_soc, state_health1_expansion, state_health1)
+gc()
 
 # Filter: health2_ban
 
@@ -340,12 +322,7 @@ state_health2_soc <- state_health2_expansion %>%
   select(-ever_health2, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_drop_health2 <- agg2_treat %>%
-  semi_join(
-    state_health2_soc,
-    by = c("state", "soc_4")
-  ) %>%
-  nrow()
+n_before_health2 <- nrow(agg2_treat)
 
 agg2_treat <- agg2_treat %>%
   anti_join(
@@ -353,8 +330,10 @@ agg2_treat <- agg2_treat %>%
     by = c("state", "soc_4")
   ) 
 
-rm(state_health2_soc, state_health2_expansion, state_health2)
+n_drop_health2 <- n_before_health2 - nrow(agg2_treat)
 
+rm(state_health2_soc, state_health2_expansion, state_health2)
+gc()
 
 # Filter: health3_ban
 
@@ -384,12 +363,7 @@ state_health3_soc <- state_health3_expansion %>%
   select(-ever_health3, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_drop_health3 <- agg2_treat %>%
-  semi_join(
-    state_health3_soc,
-    by = c("state", "soc_4")
-  ) %>%
-  nrow()
+n_before_health3 <- nrow(agg2_treat)
 
 agg2_treat <- agg2_treat %>%
   anti_join(
@@ -397,8 +371,14 @@ agg2_treat <- agg2_treat %>%
     by = c("state", "soc_4")
   ) 
 
-rm(state_health3_soc, state_health3_expansion, state_health3)
-rm(soc_crosswalk, naics_crosswalk)
+n_drop_health3 <- n_before_health3 - nrow(agg2_treat)
+
+rm(state_health3_soc, 
+   state_health3_expansion, 
+   state_health3,
+   soc_crosswalk,
+   naics_crosswalk)
+gc()
 
 # --- Full ban states (CA, MN, ND, OK) --- 
 
@@ -419,13 +399,12 @@ states_full <- agg2_treat %>%
   filter(ever_full) %>%
   pull(var = state, name = state_name)
 
-n_drop_full <- agg2_treat %>%
-  filter(state %in% states_full) %>%
-  nrow()
+n_before_full <- nrow(agg2_treat)
 
 agg2_treat <- agg2_treat %>%
   filter(!state %in% states_full)
 
+n_drop_full <- n_before_full - nrow(agg2_treat)
 
 # --- Clean-up unneeded variables --- 
 
@@ -451,13 +430,16 @@ agg2_treat <- agg2_treat %>%
 
 # -------------------------- Merge Covariate Data ------------------------------
 
-# QUESTION: How to create baseline covariates in a staggered set-up?
+# QUESTION: How to create baseline covariates in a staggered set-up? 
+# ANSWER: I think that the CS DID package automatically converts the covariates
+# to baseline covariates. But this means I need to create different covariates
+# than hte baseline ones that I created for the MN analysis. 
 
 
 # --------------- Convert Nominal Variables to Real Variables ------------------
 
 # NOTE: Income income thresholds should be converted by hand, as they don't vary
-# with the date variable in the panel. 
+# with the date variable in the panel.
 
 
 # -------------------------- Save Analysis Data -------------------------------- 
