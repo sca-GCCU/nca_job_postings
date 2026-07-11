@@ -201,6 +201,10 @@ df_state <- df_state %>%
 df_state <- df_state %>%
   filter(year != 2025)
 
+# Drop raw data
+rm(df)
+gc()
+
 # ------------------------- 2. VISUALIZE ROLLOUT -------------------------------
 
 # NOTE: Only going to worry about year for the time being.
@@ -236,6 +240,9 @@ print(cohort_summary)
 
 # NOTE: Eventually construct histogram of this cohort_summary.
 
+rm(treatment_rollout, cohort_summary)
+gc()
+
 
 # ----------------------- 3. PLOT RAW MEANS ------------------------------------
 
@@ -252,6 +259,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_tot_post)
+gc()
+
 mean_tot_post_cohort <- panelview(total_postings_state ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -264,6 +274,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_tot_post_cohort)
+gc()
+
 
 # Any Experienced Required
 mean_any_exp <- panelview(any_exp_state ~ treated,
@@ -278,6 +292,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_any_exp)
+gc()
+
 mean_any_exp_cohort <- panelview(any_exp_state ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -290,6 +307,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_any_exp_cohort)
+gc()
+
 
 # Experience Required (Average) 
 mean_ave_exp <- panelview(ave_exp_state ~ treated,
@@ -304,6 +325,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_ave_exp)
+gc()
+
 mean_ave_exp_cohort <- panelview(ave_exp_state ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -316,6 +340,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_ave_exp_cohort)
+gc()
+
 
 # Share Experience Required 
 mean_share_exp <- panelview(share_exp ~ treated,
@@ -330,6 +358,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_share_exp)
+gc()
+
 mean_share_exp_cohort <- panelview(share_exp ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -342,6 +373,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_share_exp_cohort)
+gc()
+
 
 # Bachelor's 
 mean_bachelor <- panelview(bachelor_state ~ treated,
@@ -356,6 +391,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_bachelor)
+gc()
+
 mean_bachelor_cohort <- panelview(bachelor_state ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -368,6 +406,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_bachelor_cohort)
+gc()
+
 
 # Share Bachelor's
 mean_share_bachelor <- panelview(share_bachelor ~ treated,
@@ -382,6 +424,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_share_bachelor)
+gc()
+
 mean_share_bachelor_cohort <- panelview(share_bachelor ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -394,6 +439,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_share_bachelor_cohort)
+gc()
+
 
 # Fulltime 
 mean_fulltime <- panelview(fulltime_state ~ treated,
@@ -408,6 +457,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_fulltime)
+gc()
+
 mean_fulltime_cohort <- panelview(fulltime_state ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -420,6 +472,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_fulltime_cohort)
+gc()
+
 
 # Fulltime Share 
 mean_fulltime_share <- panelview(share_fulltime ~ treated,
@@ -434,6 +490,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_fulltime_share)
+gc()
+
 mean_fulltime_share_cohort <- panelview(share_fulltime ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -446,6 +505,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_fulltime_share_cohort)
+gc()
+
 
 # Parttime 
 mean_parttime <- panelview(parttime_state ~ treated,
@@ -460,6 +523,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_parttime)
+gc()
+
 mean_parttime_cohort <- panelview(parttime_state ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -472,6 +538,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_parttime_cohort)
+gc()
+
 
 # Parttime Share 
 mean_parttime_share <- panelview(share_parttime ~ treated,
@@ -486,6 +556,9 @@ ggsave(
   units = "in"
 )
 
+rm(mean_parttime_share)
+gc()
+
 mean_parttime_share_cohort <- panelview(share_parttime ~ treated,
           data = df_state, index = c("state", "year"),
           type = "outcome", main = "",
@@ -498,6 +571,10 @@ ggsave(
   height = 4.5,
   units = "in"
 )
+
+rm(mean_parttime_share_cohort)
+gc()
+
 
 # ------------------------- 4. CS DID ANALYSIS ---------------------------------
 
@@ -578,6 +655,9 @@ ggsave(
   units = "in"
 )
 
+rm(cs_tot_post, csdid_cohort_tot_post, es_tot_post, csdid_es_tot_post)
+gc()
+
 
 # --- Any Experience --- 
 
@@ -632,6 +712,9 @@ ggsave(
   height = 5,
   units = "in"
 )
+
+rm(cs_any_exp, csdid_cohort_exp, es_any_exp, csdid_es_exp)
+gc()
 
 
 # --- Share Experience --- 
@@ -689,6 +772,10 @@ ggsave(
   units = "in"
 )
 
+rm(cs_share_exp, csdid_cohort_exp_share, es_share_exp, csdid_es_exp_share)
+rm()
+
+
 # --- Average Experience --- 
 
 cs_ave_exp <- att_gt(
@@ -742,6 +829,9 @@ ggsave(
   width = 7,
   units = "in"
 )
+
+rm(cs_ave_exp, csdid_cohort_exp_ave, es_ave_exp, csdid_es_exp_ave)
+gc()
 
 
 # --- Any Bachelor's Degree ---- 
@@ -798,6 +888,10 @@ ggsave(
   units = "in"
 )
 
+rm(cs_bachelor, csdid_cohort_bachelor, es_bachelor, csdid_es_bachelor)
+gc()
+
+
 # --- Share Bachelor's Degree ---- 
 
 cs_bachelor_share <- att_gt(
@@ -851,6 +945,12 @@ ggsave(
   width = 7,
   units = "in"
 )
+
+rm(cs_bachelor_share, 
+   csdid_cohort_bachelor_share, 
+   es_bachelor_share, 
+   csdid_es_bachelor_share)
+gc()
 
 
 # --- Fulltime --- 
@@ -907,6 +1007,10 @@ ggsave(
   units = "in"
 )
 
+rm(cs_fulltime, csdid_cohort_fulltime, es_fulltime, csdid_es_fulltime)
+gc()
+
+
 # --- Fulltime (Share) --- 
 
 cs_fulltime_share <- att_gt(
@@ -960,6 +1064,13 @@ ggsave(
   width = 7,
   units = "in"
 )
+
+rm(cs_fulltime_share, 
+   csdid_cohort_fulltime_share, 
+   es_fulltime_share, 
+   csdid_es_fulltime_share)
+gc()
+
 
 # --- Parttime --- 
 
@@ -1015,6 +1126,10 @@ ggsave(
   units = "in"
 )
 
+rm(cs_parttime, csdid_cohort_parttime, es_parttime, csdid_es_parttime)
+gc()
+
+
 # --- Parttime (Share) --- 
 
 cs_parttime_share <- att_gt(
@@ -1068,4 +1183,10 @@ ggsave(
   width = 7,
   units = "in"
 )
+
+rm(cs_parttime_share, 
+   csdid_cohort_parttime_share,
+   es_parttime_share,
+   csdid_es_parttime_share)
+gc()
 
