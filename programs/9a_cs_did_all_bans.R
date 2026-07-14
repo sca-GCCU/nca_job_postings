@@ -4,9 +4,9 @@
 #
 # R Script: "9a_cs_did_all_bans.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: June 8, 2026
+# Date of this version: July 14, 2026
 #
-# Description:  
+# Description: Runs CS DID analysis of states staggered noncompete bans.
 #
 # Dependencies:  
 #

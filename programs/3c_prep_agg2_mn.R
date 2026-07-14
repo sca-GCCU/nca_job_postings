@@ -39,6 +39,43 @@ library(lubridate)
 
 agg2_mn <- read_csv("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data/raw-data/sample_anastasi_agg2_v2.csv") # FOR LOCAL DEBUG.
 
+# ind_check <- agg2_mn %>%
+#   group_by(company, year, month) %>%
+#   mutate(
+#     naics_count = n_distinct(naics4)
+#   ) %>%
+#   filter(naics_count > 1) S%>%
+#   nrow()
+# # NOTE: NAICS are not uniquely associated with company.
+# 
+# ind_check_2 <- agg2_mn %>%
+#   group_by(company, soc_4, year, month) %>%
+#   mutate(
+#     naics_count = n_distinct(naics4)
+#   ) %>%
+#   filter(naics_count > 1) %>%
+#   nrow()
+# # NOTE: NAICS unique.
+# 
+# ind_check_3 <- agg2_mn %>%
+#   group_by(company, state, year, month) %>%
+#   mutate(
+#     naics_count = n_distinct(naics4)
+#   ) %>%
+#   filter(naics_count > 1) %>%
+#   nrow()
+# # NOTE: NAICS unique.
+# 
+# ind_check_4 <- agg2_mn %>%
+#   group_by(company, soc_4, state, year, month) %>%
+#   mutate(
+#     naics_count = n_distinct(naics4)
+#   ) %>%
+#   filter(naics_count > 1) %>%
+#   nrow()
+# # NOTE: NAICS unique. 
+
+
 # Total starting observations 
 n_start_a2_mn <- agg2_mn %>%
   summarise(N = n()) %>%
@@ -585,8 +622,7 @@ rm(agg2_mn_treat, covariates_base)
 gc()
 
 
-# 6. Convert average_salary to a real measure using CPI. All in 2022 dollars 
-# (to match the base period).
+# 6. Convert average_salary to a real measure using CPI. 
 
 cpi <- read_csv(file.path(data_clean, "cpi_clean.csv"))
 

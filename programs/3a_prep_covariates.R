@@ -41,6 +41,9 @@ date_ub <- make_date(2025, 1, 1)
 year_lb <- 2010
 year_ub <- 2025
 
+base_period <- 2024 # for CPI calculations; last year of our sample 
+
+
 # 1.A CPI data for deflating variables 
 # NOTE: The exact dataset ("Historical CPI-U, January 2026") is found here: 
 # https://www.bls.gov/cpi/tables/supplemental-files/. CPI-U is the CPI for 
@@ -79,8 +82,6 @@ cpi_long <- cpi %>%
   )
 
 rm(cpi)
-
-base_period <- 2022
 
 base_cpi <- cpi_long %>%
   filter(year == base_period) %>%
