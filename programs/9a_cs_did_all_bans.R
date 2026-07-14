@@ -575,6 +575,8 @@ ggsave(
 rm(mean_parttime_share_cohort)
 gc()
 
+rm(df_state) # using firm level aggregation below 
+gc()
 
 # ------------------------- 4. CS DID ANALYSIS ---------------------------------
 

@@ -19,6 +19,9 @@ rm(list = ls())
 #install.packages("devtools")
 #devtools::install_github("synth-inference/synthdid")
 
+# install.packages("remotes")
+# remotes::install_github("synth-inference/synthdid")
+
 library(synthdid)
 library(ggplot2)
 library(data.table)
