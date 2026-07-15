@@ -2,13 +2,13 @@
 # Project Title: "Noncompete Bans and Early-Career Workers"
 # Project Collaborators: Sebastian C. Anastasi and Vitor Melo 
 #
-# R Script: "3h_prep_data_all_bans.R" 
+# R Script: "3h_prep_firm_data_all_bans.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: July 14, 2026
+# Date of this version: July 15, 2026
 #
-# Description: Generates the analysis data to be used to evaluate states
-# staggered NCA bans. This data will be used to generate summary statistics, 
-# plot raw means, and run the CS DID analysis.
+# Description: Generates the firm-occ-state-year level analysis data to be used 
+# to evaluate states' staggered NCA bans. Also creates a crude state-year level
+# dataset for plotting raw means and treatment rollout. 
 #
 # Dependencies:  
 #
@@ -41,6 +41,11 @@ agg2 <- read_csv("data/raw-data/sample_anastasi_agg2_v2.csv") # change in cluste
 
 
 # ----------------- AGGREGATE TO FIRM-OCC-STATE-YEAR LEVEL ---------------------
+# NOTE: Need this level of aggregation if the new dataset is given to me at the
+# firm-naics-occ-state-year level. Currently, I believe this may be irrelevant... 
+# I also worry that the NAICS may no longer be unique at the firm-naics-occ-
+# state-year level once I receive the new aggregation from Cody. 
+
 # --- Load Data --- 
 agg2 <- agg2 %>% # overwriting agg2 to save memory in cluster run
   group_by(company, soc_4, state, year) %>%
@@ -49,14 +54,19 @@ agg2 <- agg2 %>% # overwriting agg2 to save memory in cluster run
     soc_4_name = first(soc_4_name),
     state_name = first(state_name), 
     
+    naics4 = first(naics4),
+    naics4_name = first(naics4_name),
+
     any_educ_firm = sum(any_educ, na.rm = TRUE),
     bachelor_firm = sum(bachelor, na.rm = TRUE),
     master_firm = sum(master, na.rm = TRUE),
     doctorate_firm = sum(doctorate, na.rm = TRUE),
     
     any_exp_firm = sum(any_exp, na.rm = TRUE),
-    ave_exp_firm = na_if(
-      weighted.mean(ave_exp, total_postings, na.rm = TRUE), NaN),
+    
+    ave_exp_num = sum(ave_exp * total_postings, na.rm = TRUE),
+    ave_exp_den = sum(total_postings[!is.na(ave_exp)], na.rm = TRUE),
+    ave_exp_firm = na_if(ave_exp_num / ave_exp_den, NaN),
     
     fulltime_firm = sum(fulltime, na.rm = TRUE),
     parttime_firm = sum(parttime, na.rm = TRUE),
@@ -79,7 +89,7 @@ n_start <- nrow(agg2)
 save_stat(n_start, "n_start")
 
 # --- Starting Postings --- 
-postings_start <- sum(agg2$total_postings_firm)
+postings_start <- sum(agg2$total_postings_firm, na.rm = TRUE)
 save_stat(postings_start, "postings_start")
 
 
@@ -100,7 +110,8 @@ n_drop_noise <- sum(agg2$drop_min_ads)
 save_stat(n_drop_noise, "n_drop_noise")
 
 # Postings to drop
-postings_drop_noise <- sum(agg2$total_postings_firm[agg2$drop_min_ads])
+postings_drop_noise <- sum(agg2$total_postings_firm[agg2$drop_min_ads],
+                           na.rm = TRUE)
 save_stat(postings_drop_noise, "postings_drop_noise")
 
 # Drop 
@@ -174,6 +185,7 @@ agg2 <- agg2 %>%
 rm(states_hourly)
 gc()
 
+
 # --- Exclude "Other" Ban State(s) --- 
 states_other <- agg2 %>%
   mutate(
@@ -205,45 +217,32 @@ rm(states_other)
 gc()
 
 
-# ---------------------------- MERGE COVARIATES --------------------------------
-
-
-# ----------------- SAVE FIRM-OCC-STATE-YEAR AGGREGATION -----------------------
-
-
-# --------------------- AGGREGATE TO STATE-YEAR LEVEL --------------------------
-# NOTE: For use in basic descriptive graphs. 
-
-
-# ------------------------------------------------------------------------------
-# ------------------------------ **OLD VERSION** -------------------------------
-# ------------------------------------------------------------------------------
-
-
-# --- Industry or occupation-based bans --- 
-# NOTE: Excluding listings from the ind/occ affected by the ban in the state 
-# with the ban. 
-
-
+# --- Industry or Occupation-Based Bans --- 
 # A. Lawyers 
-# NOTE: NCAs are universally banned for lawyers. Lawyer's SOC codes are 
-# 23-1010.
+# NOTE: NCAs are universally banned for lawyers. Lawyer's SOC code: 23-1010.
 
-n_drop_lawyers <- sum(agg2_treat$soc_4 == "23-1010")
-n_drop_lawyers
+# Obs to drop
+n_drop_lawyers <- sum(agg2$soc_4 == "23-1010")
+save_stat(n_drop_lawyers, "n_drop_lawyers")
 
-agg2_treat <- agg2_treat %>%
+# Postings to drop
+postings_drop_lawyers <- sum(agg2$total_postings_firm[agg2$soc_4 == "23-1010"],
+                             na.rm = TRUE)
+save_stat(postings_drop_lawyers, "postings_drop_lawyers")
+
+# Drop
+agg2 <- agg2 %>%
   filter(soc_4 != "23-1010")
 
 
-# B. Industry Bans
+#B. Industry Bans 
+# NOTE: Excluding listings from the ind/occ affected by the ban in the state 
+# with the ban. 
 
-    # --- SOC-based restrictions --- 
-
-states_ind <- agg2_treat %>%
+# 1. SOC-based restrictions --- 
+states_ind <- agg2 %>%
   mutate(
-    date_eff_ind = make_date(eff_ind_year, eff_ind_month, 1),
-    treated_eff_ind = !is.na(date_eff_ind) & date >= date_eff_ind
+    treated_eff_ind = !is.na(eff_ind_year) & year >= eff_ind_year
   ) %>%
   group_by(state) %>%
   summarise(
@@ -260,9 +259,7 @@ states_ind_expansion <- states_ind %>%
   )
 
 # Find the SOC-4 codes 
-
 # NOTE: Lightcast's "SOC-4" appears to be the "broad occupation" group.
-
 soc_crosswalk <- read_csv("data/raw-data/ban_occ_soc_crosswalk.csv") %>%
   mutate(
     ban_occ = str_trim(ban_occ)
@@ -285,19 +282,30 @@ states_ind_soc <- states_ind_expansion %>%
 # NCAs for some health occupations. Hence I do drop some health occupation 
 # listings here already. 
 
-n_before_ind_soc <- nrow(agg2_treat)
+n_before_ind_soc <- nrow(agg2)
+postings_before_ind_soc <- sum(agg2$total_postings_firm, na.rm = TRUE)
 
-agg2_treat <- agg2_treat %>%
+agg2 <- agg2 %>%
   anti_join(
     states_ind_soc,
     by = c("state", "soc_4")
   )
 
-n_drop_ind_soc <- n_before_ind_soc - nrow(agg2_treat)
-n_drop_ind_soc
+# Obs dropped 
+n_drop_ind_soc <- n_before_ind_soc - nrow(agg2)
+save_stat(n_drop_ind_soc, "n_drop_ind_soc")
 
-    # --- NAICS-based restrictions --- 
+# Postings dropped
+postings_drop_ind_soc <- postings_before_ind_soc - sum(agg2$total_postings_firm,
+                                                       na.rm = TRUE)
+save_stat(postings_drop_ind_soc, "postings_drop_ind_soc")
 
+# Drop some saved stats 
+rm(list = ls(pattern = "^(n_|postings_)"))
+gc()
+
+
+# 2. NAICS-based restrictions --- 
 naics_crosswalk <- read_csv("data/raw-data/ban_ind_naics_crosswalk.csv") %>%
   mutate(
     ban_desc = str_trim(ban_desc)
@@ -312,29 +320,35 @@ states_ind_naics <- states_ind_expansion %>%
   select(-ever_ind, -note) %>%
   filter(!is.na(naics4))
 
-n_before_ind_naics <- nrow(agg2_treat)
+n_before_ind_naics <- nrow(agg2)
+postings_before_ind_naics <- sum(agg2$total_postings_firm, na.rm = TRUE)
 
-agg2_treat <- agg2_treat %>%
+agg2 <- agg2 %>%
   anti_join(
     states_ind_naics,
     by = c("state", "naics4")
   )
 
-n_drop_ind_naics <- n_before_ind_naics - nrow(agg2_treat)
+# Obs to drop
+n_drop_ind_naics <- n_before_ind_naics - nrow(agg2)
+save_stat(n_drop_ind_naics, "n_drop_ind_naics")
 
-rm(states_ind_soc, states_ind_naics, states_ind, states_ind_expansion)
+# Postings to drop
+postings_drop_ind_naics <- postings_before_ind_naics - sum(agg2$total_postings_firm,
+                                                           na.rm = TRUE)
+save_stat(postings_drop_ind_naics, "postings_drop_ind_naics")
+
+rm(list = ls(pattern = "^(states_|n_|postings_)"))
 gc()
 
-# C. Health Bans 
 
+# C. Health Bans ---
 # NOTE: All of the health ban restrictions are based on SOC codes, not NAICS. 
 
-# Filter: health1_ban
-
-state_health1 <- agg2_treat %>%
+# Filter: health1_ban --- 
+state_health1 <- agg2 %>%
   mutate(
-    date_eff_health1 = make_date(eff_health1_year, eff_health1_month, 1),
-    treated_eff_health1 = !is.na(date_eff_health1) & date >= date_eff_health1
+    treated_eff_health1 = !is.na(eff_health1_year) & year >= eff_health1_year
   ) %>%
   group_by(state) %>%
   summarise(
@@ -358,25 +372,32 @@ state_health1_soc <- state_health1_expansion %>%
   select(-ever_health1, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_before_health1 <- nrow(agg2_treat)
+n_before_health1 <- nrow(agg2)
+postings_before_health1 <- sum(agg2$total_postings_firm, na.rm = TRUE)
 
-agg2_treat <- agg2_treat %>%
+agg2 <- agg2 %>%
   anti_join(
     state_health1_soc,
     by = c("state", "soc_4")
   ) 
 
-n_drop_health1 <- n_before_health1 - nrow(agg2_treat)
+# Obs dropped 
+n_drop_health1 <- n_before_health1 - nrow(agg2)
+save_stat(n_drop_health1, "n_drop_health1")
+
+# Postings dropped 
+postings_drop_health1 <- postings_before_health1 - sum(agg2$total_postings_firm,
+                                                       na.rm = TRUE)
+save_stat(postings_drop_health1, "postings_drop_health1")
 
 rm(state_health1_soc, state_health1_expansion, state_health1)
 gc()
 
-# Filter: health2_ban
 
-state_health2 <- agg2_treat %>%
+# Filter: health2_ban ---
+state_health2 <- agg2 %>%
   mutate(
-    date_eff_health2 = make_date(eff_health2_year, eff_health2_month, 1),
-    treated_eff_health2 = !is.na(date_eff_health2) & date >= date_eff_health2
+    treated_eff_health2 = !is.na(eff_health2_year) & year >= eff_health2_year
   ) %>%
   group_by(state) %>%
   summarise(
@@ -399,25 +420,31 @@ state_health2_soc <- state_health2_expansion %>%
   select(-ever_health2, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_before_health2 <- nrow(agg2_treat)
+n_before_health2 <- nrow(agg2)
+postings_before_health2 <- sum(agg2$total_postings_firm, na.rm = TRUE)
 
-agg2_treat <- agg2_treat %>%
+agg2 <- agg2 %>%
   anti_join(
     state_health2_soc,
     by = c("state", "soc_4")
   ) 
 
-n_drop_health2 <- n_before_health2 - nrow(agg2_treat)
+# Obs dropped
+n_drop_health2 <- n_before_health2 - nrow(agg2)
+save_stat(n_drop_health2, "n_drop_health2")
+
+# Postings dropped 
+postings_drop_health2 <- postings_before_health2 - sum(agg2$total_postings_firm,
+                                                       na.rm = TRUE)
+save_stat(postings_drop_health2, "postings_drop_health2")
 
 rm(state_health2_soc, state_health2_expansion, state_health2)
 gc()
 
-# Filter: health3_ban
-
-state_health3 <- agg2_treat %>%
+# Filter: health3_ban ---
+state_health3 <- agg2 %>%
   mutate(
-    date_eff_health3 = make_date(eff_health3_year, eff_health3_month, 1),
-    treated_eff_health3 = !is.na(date_eff_health3) & date >= date_eff_health3
+    treated_eff_health3 = !is.na(eff_health3_year) & year >= eff_health3_year
   ) %>%
   group_by(state) %>%
   summarise(
@@ -440,33 +467,32 @@ state_health3_soc <- state_health3_expansion %>%
   select(-ever_health3, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_before_health3 <- nrow(agg2_treat)
+n_before_health3 <- nrow(agg2)
+postings_before_health3 <- sum(agg2$total_postings_firm, na.rm = TRUE)
 
-agg2_treat <- agg2_treat %>%
+agg2 <- agg2 %>%
   anti_join(
     state_health3_soc,
     by = c("state", "soc_4")
   ) 
 
-n_drop_health3 <- n_before_health3 - nrow(agg2_treat)
+# Obs dropped
+n_drop_health3 <- n_before_health3 - nrow(agg2)
+save_stat(n_drop_health3, "n_drop_health3")
 
-rm(state_health3_soc, 
-   state_health3_expansion, 
-   state_health3,
-   soc_crosswalk,
-   naics_crosswalk)
+# Postings dropped 
+postings_drop_health3 <- postings_before_health3 - sum(agg2$total_postings_firm,
+                                                       na.rm = TRUE)
+save_stat(postings_drop_health3, "postings_drop_health3")
+
+rm(list = ls(pattern = "^(state_|n_|postings_|soc_|naics_)"))
 gc()
 
-# --- Full ban states (CA, MN, ND, OK) --- 
 
-states_full <- agg2_treat %>%
+# --- Full ban states (CA, MN, ND, OK) --- 
+states_full <- agg2 %>%
   mutate(
-    date_eff_full = make_date(
-      eff_full_year,
-      coalesce(eff_full_month, 1),
-      1
-    ),
-    treated_eff_full = !is.na(date_eff_full) & date >= date_eff_full
+    treated_eff_full = !is.na(eff_full_year) & year >= eff_full_year
   ) %>%
   group_by(state) %>%
   summarise(
@@ -476,16 +502,27 @@ states_full <- agg2_treat %>%
   filter(ever_full) %>%
   pull(var = state, name = state_name)
 
-n_before_full <- nrow(agg2_treat)
+n_before_full <- nrow(agg2)
+postings_before_full <- sum(agg2$total_postings_firm)
 
-agg2_treat <- agg2_treat %>%
+agg2 <- agg2 %>%
   filter(!state %in% states_full)
 
-n_drop_full <- n_before_full - nrow(agg2_treat)
+# Obs dropped
+n_drop_full <- n_before_full - nrow(agg2)
+save_stat(n_drop_full, "n_drop_full")
+
+# Postings dropped 
+postings_drop_full <- postings_before_full - sum(agg2$total_postings_firm)
+save_stat(postings_drop_full, "postings_drop_full")
+
+rm(list = ls(pattern = "^n_|postings_|states_"))
+gc()
+
 
 # --- Clean-up unneeded variables --- 
 
-agg2_treat <- agg2_treat %>%
+agg2 <- agg2 %>%
   select(
     -ban_full, 
     -starts_with("ban_h"),
@@ -496,48 +533,128 @@ agg2_treat <- agg2_treat %>%
     -starts_with("eff_full"),
     -starts_with("eff_h"),
     -starts_with("eff_ind"),
-    -starts_with("eff_other"),
-    -internship # this variable appears to have pretty spotty coverage
+    -starts_with("eff_other")
   )
+gc()
 
 # NOTE: I don't think I do actually need to create share variables at this 
 # stage. How I construct them may be slightly dependent on the level of 
 # aggregation at which I run the analysis.
 
 
-# -------------------------- Merge Covariate Data ------------------------------
+# --- Create share variables ---  
+agg2 <- agg2 %>%
+  mutate(
+    share_any_educ = any_educ_firm / total_postings_firm, 
+    share_bachelor = bachelor_firm / total_postings_firm,
+    share_master = master_firm / total_postings_firm, 
+    share_doctorate = doctorate_firm / total_postings_firm, 
+    
+    share_exp = any_exp_firm / total_postings_firm,
+    
+    share_fulltime = fulltime_firm / total_postings_firm,
+    share_parttime = parttime_firm / total_postings_firm,
+    flextime_firm = flextime_firm / total_postings_firm
+  )
 
-# QUESTION: How to create baseline covariates in a staggered set-up? 
-# ANSWER: I think that the CS DID package automatically converts the covariates
-# to baseline covariates. But this means I need to create different covariates
-# than hte baseline ones that I created for the MN analysis. 
+
+# --- Create treatment indicator ---  
+agg2 <- agg2 %>%
+  mutate(
+    treated = as.integer(!is.na(eff_inc1_year) & year >= eff_inc1_year)
+  )
 
 
-# --------------- Convert Nominal Variables to Real Variables ------------------
+# --- Create unique unit (company-by-state-by-soc) identifier ---  
+agg2 <- agg2 %>% 
+  mutate(
+    company_state_soc_id = as.integer(interaction(company, state, soc_4, drop = TRUE))
+  )
+
+
+# --- Create a cohort variable (year must be 0 for never-treated) --- 
+agg2 <- agg2 %>%
+  mutate(
+    cohort = ifelse(is.na(eff_inc1_year), 0, eff_inc1_year)
+  )
+
+
+# ---------------------------- MERGE COVARIATES --------------------------------
+covariates <- read_csv("data/clean-data/covariates_a_clean.csv")
+
+agg2 <- agg2 %>%
+  left_join(
+    covariates,
+    by = c("state", "year")
+  ) %>%
+  select(
+    -state_name.y
+  ) %>%
+  rename(
+    state_name = state_name.x
+  )
+  
+rm(covariates)
+gc()
 
 # NOTE: Income income thresholds should be converted by hand, as they don't vary
-# with the date variable in the panel.
+# with the date variable in the panel. But the inc_threshold_2024 will match
+# the real variables since the base year is 2024. 
 
 
-# -------------------------- Save Analysis Data -------------------------------- 
+# ----------------- SAVE FIRM-OCC-STATE-YEAR AGGREGATION -----------------------
+write_csv(agg2, "data/analysis-data/agg2_ab_analysis.csv") # ab = all ban
 
-write_csv(agg2_treat, "data/analysis-data/agg2_analysis.csv")
 
-
-# -------------------------- Generate Aggregations ----------------------------- 
-
-# --- Firm --- 
+# ---------------------- AGGREGATE TO STATE-YEAR LEVEL -------------------------
+agg2_state <- agg2 %>%
+  group_by(state, year) %>%
+  summarise(
+    state_name = first(state_name),
+    
+    any_educ_state = sum(any_educ_firm, na.rm = TRUE),
+    bachelor_state = sum(bachelor_firm, na.rm = TRUE),
+    master_state = sum(master_firm, na.rm = TRUE),
+    doctorate_state = sum(doctorate_firm, na.rm = TRUE),
+    
+    any_exp_state = sum(any_exp_firm, na.rm = TRUE),
+    ave_exp_state = sum(ave_exp_num) / sum(ave_exp_den),
+    
+    total_postings_state = sum(total_postings_firm, na.rm = TRUE),
+    
+    fulltime_state = sum(fulltime_firm, na.rm = TRUE),
+    parttime_state = sum(parttime_firm, na.rm = TRUE),
+    flextime_state = sum(flextime_firm, na.rm = TRUE),
+    
+    treated = first(treated),
+    cohort = first(cohort),
+    
+    .groups = "drop"
+  ) %>%
+  mutate(
+    share_any_educ = any_educ_state / total_postings_state, 
+    share_bachelor = bachelor_state / total_postings_state,
+    share_master = master_state / total_postings_state, 
+    share_doctorate = doctorate_state / total_postings_state, 
+    
+    share_exp = any_exp_state / total_postings_state,
+    
+    share_fulltime = fulltime_state / total_postings_state,
+    share_parttime = parttime_state / total_postings_state,
+    flextime_state = flextime_state / total_postings_state
+  ) %>%
+  mutate(
+    state_name = if_else(
+      state_name == "Washington, D.C. (District of Columbia)",
+      "District of Columbia",
+      state_name
+    )
+  )
 
 # Save 
 
-# Remove 
+# RESUME HERE!!! 
 
-
-# --- State --- 
-
-# Save 
-
-# Remove 
 
 
 

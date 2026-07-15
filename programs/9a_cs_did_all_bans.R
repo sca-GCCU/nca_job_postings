@@ -4,7 +4,7 @@
 #
 # R Script: "9a_cs_did_all_bans.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: July 14, 2026
+# Date of this version: July 15, 2026
 #
 # Description: Runs CS DID analysis of states staggered noncompete bans.
 #
@@ -32,37 +32,37 @@ df <- read_csv("data/analysis-data/agg2_analysis.csv")
 
 # ------------------------ 1. PREP AGGREGATIONS --------------------------------
 # --- FIRM-STATE LEVEL AGGREGATION --- 
-
-# Collapse to firm-by-state-by-year panel 
-df_firm <- df %>%
-  group_by(company, state, year) %>% 
-  summarise(
-    state_name = first(state_name),
-    
-    any_educ_firm = sum(any_educ, na.rm = TRUE),
-    bachelor_firm = sum(bachelor, na.rm = TRUE),
-    master_firm = sum(master, na.rm = TRUE),
-    doctorate_firm = sum(doctorate, na.rm = TRUE),
-    
-    any_exp_firm = sum(any_exp, na.rm = TRUE),
-    ave_exp_firm = weighted.mean(ave_exp, total_postings, na.rm = TRUE),
-    
-    total_postings_firm = sum(total_postings, na.rm = TRUE),
-    
-    fulltime_firm = sum(fulltime, na.rm = TRUE),
-    parttime_firm = sum(parttime, na.rm = TRUE),
-    flextime_firm = sum(flextime, na.rm = TRUE),
-    
-    ban_inc1 = first(ban_inc1),
-    ban_inc2 = first(ban_inc2),
-    eff_inc1_year = first(eff_inc1_year),
-    eff_inc2_year = first(eff_inc2_year),
-    inc_threshold1 = first(inc_threshold1),
-    inc_threshold2 = first(inc_threshold2),
-    inc_threshold_2024 = first(inc_threshold_2024),
-    
-    .groups = "drop"
-  )
+# 
+# # Collapse to firm-by-state-by-year panel 
+# df_firm <- df %>%
+#   group_by(company, state, year) %>% 
+#   summarise(
+#     state_name = first(state_name),
+#     
+#     any_educ_firm = sum(any_educ, na.rm = TRUE),
+#     bachelor_firm = sum(bachelor, na.rm = TRUE),
+#     master_firm = sum(master, na.rm = TRUE),
+#     doctorate_firm = sum(doctorate, na.rm = TRUE),
+#     
+#     any_exp_firm = sum(any_exp, na.rm = TRUE),
+#     ave_exp_firm = weighted.mean(ave_exp, total_postings, na.rm = TRUE),
+#     
+#     total_postings_firm = sum(total_postings, na.rm = TRUE),
+#     
+#     fulltime_firm = sum(fulltime, na.rm = TRUE),
+#     parttime_firm = sum(parttime, na.rm = TRUE),
+#     flextime_firm = sum(flextime, na.rm = TRUE),
+#     
+#     ban_inc1 = first(ban_inc1),
+#     ban_inc2 = first(ban_inc2),
+#     eff_inc1_year = first(eff_inc1_year),
+#     eff_inc2_year = first(eff_inc2_year),
+#     inc_threshold1 = first(inc_threshold1),
+#     inc_threshold2 = first(inc_threshold2),
+#     inc_threshold_2024 = first(inc_threshold_2024),
+#     
+#     .groups = "drop"
+#   )
 
 # Checking whether some values of ave_exp SHOULD be NA and why they are NA 
 # test <- read_csv("data/analysis-data/agg2_analysis.csv")
@@ -79,10 +79,10 @@ df_firm <- df %>%
 #   )
 
 # Replace NaN values in ave_exp_firm
-df_firm <- df_firm %>%
-  mutate(
-    ave_exp_firm = ifelse(is.nan(ave_exp_firm), NA, ave_exp_firm)
-  )
+# df_firm <- df_firm %>%
+#   mutate(
+#     ave_exp_firm = ifelse(is.nan(ave_exp_firm), NA, ave_exp_firm)
+#   )
 
 # Create share variables 
 df_firm <- df_firm %>%
@@ -117,9 +117,9 @@ df_firm <- df_firm %>%
     cohort = ifelse(is.na(eff_inc1_year), 0, eff_inc1_year)
   )
 
-# Drop 2025 because not full year 
-df_firm <- df_firm %>%
-  filter(year != 2025)
+# # Drop 2025 because not full year 
+# df_firm <- df_firm %>%
+#   filter(year != 2025)
 
 
 # --- STATE LEVEL AGGREGATION --- 
