@@ -743,7 +743,7 @@ gc()
 
 # --- Any Experience --- 
 
-cs_any_exp <- att_gt(
+cs_any_exp_cond <- att_gt(
   yname = "any_exp_firm",
   tname = "year",
   idname = "company_state_id",
@@ -761,50 +761,50 @@ cs_any_exp <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_any_exp)
-csdid_cohort_exp <- ggdid(
-  cs_any_exp, 
+summary(cs_any_exp_cond)
+csdid_cond_cohort_exp <- ggdid(
+  cs_any_exp_cond, 
   xlab = "Year",
   ylab = "Experience Required (Postings)",
   title = "", 
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_exp.pdf",
-  csdid_cohort_exp,
+  "output/figures/csdid_cond_cohort_exp.pdf",
+  csdid_cond_cohort_exp,
   width = 8,
   height = 8,
   units = "in"
 )
 
-es_any_exp <- aggte(
-  cs_any_exp,
+es_cond_any_exp <- aggte(
+  cs_any_exp_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_any_exp)
-csdid_es_exp <- ggdid(
-  es_any_exp, 
+summary(es_cond_any_exp)
+csdid_es_cond_exp <- ggdid(
+  es_cond_any_exp, 
   xlab = "Event Time",
   ylab = "Experience Required (Postings)",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_exp.pdf",
-  csdid_es_exp,
+  "output/figures/csdid_es_cond_exp.pdf",
+  csdid_es_cond_exp,
   width = 7,
   height = 5,
   units = "in"
 )
 
-rm(cs_any_exp, csdid_cohort_exp, es_any_exp, csdid_es_exp)
+rm(cs_any_exp_cond, csdid_cond_cohort_exp, es_cond_any_exp, csdid_es_cond_exp)
 gc()
 
 
 # --- Share Experience --- 
 
-cs_share_exp <- att_gt(
+cs_share_exp_cond <- att_gt(
   yname = "share_exp",
   tname = "year",
   idname = "company_state_id",
@@ -822,9 +822,9 @@ cs_share_exp <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_share_exp)
-csdid_cohort_exp_share <- ggdid(
-  cs_share_exp, 
+summary(cs_share_exp_cond)
+csdid_cond_cohort_exp_share <- ggdid(
+  cs_share_exp_cond, 
   xlab = "Year",
   ylab = "Experience Required (Share)",
   title = "", 
@@ -832,41 +832,41 @@ csdid_cohort_exp_share <- ggdid(
 )
 # NOTE: Again, I'm seeing the biggest effect in CO and DC.
 ggsave(
-  "output/figures/csdid_cohort_exp_share.pdf",
-  csdid_cohort_exp_share,
+  "output/figures/csdid_cond_cohort_exp_share.pdf",
+  csdid_cond_cohort_exp_share,
   height = 8,
   width = 8,
   units = "in"
 )
 
-es_share_exp <- aggte(
-  cs_share_exp,
+es_cond_share_exp <- aggte(
+  cs_share_exp_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_share_exp)
-csdid_es_exp_share <- ggdid(
-  es_share_exp, 
+summary(es_cond_share_exp)
+csdid_es_cond_exp_share <- ggdid(
+  es_cond_share_exp, 
   xlab = "Event Time",
   ylab = "Experience Required (Share)",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_exp_share.pdf",
-  csdid_es_exp_share,
+  "output/figures/csdid_es_cond_exp_share.pdf",
+  csdid_es_cond_exp_share,
   height = 5,
   width = 7,
   units = "in"
 )
 
-rm(cs_share_exp, csdid_cohort_exp_share, es_share_exp, csdid_es_exp_share)
-rm()
+rm(cs_share_exp_cond, csdid_cond_cohort_exp_share, es_cond_share_exp, csdid_es_cond_exp_share)
+gc()
 
 
 # --- Average Experience --- 
 
-cs_ave_exp <- att_gt(
+cs_ave_exp_cond <- att_gt(
   yname = "ave_exp_firm",
   tname = "year",
   idname = "company_state_id",
@@ -884,50 +884,50 @@ cs_ave_exp <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_ave_exp)
-csdid_cohort_exp_ave <- ggdid(
-  cs_ave_exp, 
+summary(cs_ave_exp_cond)
+csdid_cond_cohort_exp_ave <- ggdid(
+  cs_ave_exp_cond, 
   xlab = "Year",
   ylab = "Experience Required (Average)",
   title = "", 
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_exp_ave.pdf",
-  csdid_cohort_exp_ave,
+  "output/figures/csdid_cond_cohort_exp_ave.pdf",
+  csdid_cond_cohort_exp_ave,
   height = 8,
   width = 8,
   units = "in"
 )
 
-es_ave_exp <- aggte(
-  cs_ave_exp,
+es_cond_ave_exp <- aggte(
+  cs_ave_exp_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_ave_exp)
-csdid_es_exp_ave <- ggdid(
-  es_ave_exp, 
+summary(es_cond_ave_exp)
+csdid_es_cond_exp_ave <- ggdid(
+  es_cond_ave_exp, 
   xlab = "Event Time",
   ylab = "Experience Required (Average)",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_exp_ave.pdf",
-  csdid_es_exp_ave,
+  "output/figures/csdid_es_cond_exp_ave.pdf",
+  csdid_es_cond_exp_ave,
   height = 5,
   width = 7,
   units = "in"
 )
 
-rm(cs_ave_exp, csdid_cohort_exp_ave, es_ave_exp, csdid_es_exp_ave)
+rm(cs_ave_exp_cond, csdid_cond_cohort_exp_ave, es_cond_ave_exp, csdid_es_cond_exp_ave)
 gc()
 
 
 # --- Any Bachelor's Degree ---- 
 
-cs_bachelor <- att_gt(
+cs_bachelor_cond <- att_gt(
   yname = "bachelor_firm",
   tname = "year",
   idname = "company_state_id",
@@ -945,50 +945,50 @@ cs_bachelor <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_bachelor)
-csdid_cohort_bachelor <- ggdid(
-  cs_bachelor,
+summary(cs_bachelor_cond)
+csdid_cond_cohort_bachelor <- ggdid(
+  cs_bachelor_cond,
   xlab = "Year",
   ylab = "Bachelor's Required (Postings)",
   title = "", 
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_bachelor.pdf",
-  csdid_cohort_bachelor,
+  "output/figures/csdid_cond_cohort_bachelor.pdf",
+  csdid_cond_cohort_bachelor,
   height = 8,
   width = 8,
   units = "in"
 )
 
-es_bachelor <- aggte(
-  cs_bachelor,
+es_cond_bachelor <- aggte(
+  cs_bachelor_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_bachelor)
-csdid_es_bachelor <- ggdid(
-  es_bachelor, 
+summary(es_cond_bachelor)
+csdid_es_cond_bachelor <- ggdid(
+  es_cond_bachelor, 
   xlab = "Event Time",
   ylab = "Bachelor's Required (Postings)",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_bachelor.pdf",
-  csdid_es_bachelor,
+  "output/figures/csdid_es_cond_bachelor.pdf",
+  csdid_es_cond_bachelor,
   height = 5,
   width = 7,
   units = "in"
 )
 
-rm(cs_bachelor, csdid_cohort_bachelor, es_bachelor, csdid_es_bachelor)
+rm(cs_bachelor_cond, csdid_cond_cohort_bachelor, es_cond_bachelor, csdid_es_cond_bachelor)
 gc()
 
 
 # --- Share Bachelor's Degree ---- 
 
-cs_bachelor_share <- att_gt(
+cs_bachelor_share_cond <- att_gt(
   yname = "share_bachelor",
   tname = "year",
   idname = "company_state_id",
@@ -1006,53 +1006,53 @@ cs_bachelor_share <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_bachelor_share)
-csdid_cohort_bachelor_share <- ggdid(
-  cs_bachelor_share, 
+summary(cs_bachelor_share_cond)
+csdid_cond_cohort_bachelor_share <- ggdid(
+  cs_bachelor_share_cond, 
   xlab = "Year",
   ylab = "Bachelor's Required (Share)",
   title = "", 
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_bachelor_share.pdf",
-  csdid_cohort_bachelor_share,
+  "output/figures/csdid_cond_cohort_bachelor_share.pdf",
+  csdid_cond_cohort_bachelor_share,
   height = 8,
   width = 8,
   units = "in"
 )
 
-es_bachelor_share <- aggte(
-  cs_bachelor_share,
+es_cond_bachelor_share <- aggte(
+  cs_bachelor_share_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_bachelor_share)
-csdid_es_bachelor_share <- ggdid(
-  es_bachelor_share, 
+summary(es_cond_bachelor_share)
+csdid_es_cond_bachelor_share <- ggdid(
+  es_cond_bachelor_share, 
   xlab = "Event Time",
   ylab = "Bachelor's Required (Share)",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_bachelor_share.pdf",
-  csdid_es_bachelor_share,
+  "output/figures/csdid_es_cond_bachelor_share.pdf",
+  csdid_es_cond_bachelor_share,
   height = 5,
   width = 7,
   units = "in"
 )
 
-rm(cs_bachelor_share, 
-   csdid_cohort_bachelor_share, 
-   es_bachelor_share, 
-   csdid_es_bachelor_share)
+rm(cs_bachelor_share_cond, 
+   csdid_cond_cohort_bachelor_share, 
+   es_cond_bachelor_share, 
+   csdid_es_cond_bachelor_share)
 gc()
 
 
 # --- Fulltime --- 
 
-cs_fulltime <- att_gt(
+cs_fulltime_cond <- att_gt(
   yname = "fulltime_firm",
   tname = "year",
   idname = "company_state_id",
@@ -1070,50 +1070,50 @@ cs_fulltime <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_fulltime)
-csdid_cohort_fulltime <- ggdid(
-  cs_fulltime, 
+summary(cs_fulltime_cond)
+csdid_cond_cohort_fulltime <- ggdid(
+  cs_fulltime_cond, 
   xlab = "Year",
   ylab = "Full-Time Postings",
   title = "", 
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_fulltime.pdf",
-  csdid_cohort_fulltime,
+  "output/figures/csdid_cond_cohort_fulltime.pdf",
+  csdid_cond_cohort_fulltime,
   height = 8,
   width = 8,
   units = "in"
 )
 
-es_fulltime <- aggte(
-  cs_fulltime,
+es_cond_fulltime <- aggte(
+  cs_fulltime_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_fulltime)
-csdid_es_fulltime <- ggdid(
-  es_fulltime, 
+summary(es_cond_fulltime)
+csdid_es_cond_fulltime <- ggdid(
+  es_cond_fulltime, 
   xlab = "Event Time",
   ylab = "Full-Time Postings",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_fulltime.pdf",
-  csdid_es_fulltime,
+  "output/figures/csdid_es_cond_fulltime.pdf",
+  csdid_es_cond_fulltime,
   height = 5,
   width = 7,
   units = "in"
 )
 
-rm(cs_fulltime, csdid_cohort_fulltime, es_fulltime, csdid_es_fulltime)
+rm(cs_fulltime_cond, csdid_cond_cohort_fulltime, es_cond_fulltime, csdid_es_cond_fulltime)
 gc()
 
 
 # --- Fulltime (Share) --- 
 
-cs_fulltime_share <- att_gt(
+cs_fulltime_share_cond <- att_gt(
   yname = "share_fulltime",
   tname = "year",
   idname = "company_state_id",
@@ -1131,53 +1131,53 @@ cs_fulltime_share <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_fulltime_share)
-csdid_cohort_fulltime_share <- ggdid(
-  cs_fulltime_share, 
+summary(cs_fulltime_share_cond)
+csdid_cond_cohort_fulltime_share <- ggdid(
+  cs_fulltime_share_cond, 
   xlab = "Year",
   ylab = "Full-Time Postings (Share)",
   title = " ", 
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_fulltime_share.pdf",
-  csdid_cohort_fulltime_share,
+  "output/figures/csdid_cond_cohort_fulltime_share.pdf",
+  csdid_cond_cohort_fulltime_share,
   height = 8,
   width = 8,
   units = "in"
 )
 
-es_fulltime_share <- aggte(
-  cs_fulltime_share,
+es_cond_fulltime_share <- aggte(
+  cs_fulltime_share_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_fulltime_share)
-csdid_es_fulltime_share <- ggdid(
-  es_fulltime_share, 
+summary(es_cond_fulltime_share)
+csdid_es_cond_fulltime_share <- ggdid(
+  es_cond_fulltime_share, 
   xlab = "Event Time",
   ylab = "Full-Time Postings (Share)",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_fulltime_share.pdf",
-  csdid_es_fulltime_share,
+  "output/figures/csdid_es_cond_fulltime_share.pdf",
+  csdid_es_cond_fulltime_share,
   height = 5,
   width = 7,
   units = "in"
 )
 
-rm(cs_fulltime_share, 
-   csdid_cohort_fulltime_share, 
-   es_fulltime_share, 
-   csdid_es_fulltime_share)
+rm(cs_fulltime_share_cond, 
+   csdid_cond_cohort_fulltime_share, 
+   es_cond_fulltime_share, 
+   csdid_es_cond_fulltime_share)
 gc()
 
 
 # --- Parttime --- 
 
-cs_parttime <- att_gt(
+cs_parttime_cond <- att_gt(
   yname = "parttime_firm",
   tname = "year",
   idname = "company_state_id",
@@ -1195,50 +1195,50 @@ cs_parttime <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_parttime)
-csdid_cohort_parttime <- ggdid(
-  cs_parttime, 
+summary(cs_parttime_cond)
+csdid_cond_cohort_parttime <- ggdid(
+  cs_parttime_cond, 
   xlab = "Year",
   ylab = "Part-Time Postings",
   title = " ", 
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_parttime.pdf",
-  csdid_cohort_parttime,
+  "output/figures/csdid_cond_cohort_parttime.pdf",
+  csdid_cond_cohort_parttime,
   height = 8,
   width = 8, 
   units = "in"
 )
 
-es_parttime <- aggte(
-  cs_parttime,
+es_cond_parttime <- aggte(
+  cs_parttime_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_parttime)
-csdid_es_parttime <- ggdid(
-  es_parttime, 
+summary(es_cond_parttime)
+csdid_es_cond_parttime <- ggdid(
+  es_cond_parttime, 
   xlab = "Event Time",
   ylab = "Part-Time Postings",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_parttime.pdf",
-  csdid_es_parttime,
+  "output/figures/csdid_es_cond_parttime.pdf",
+  csdid_es_cond_parttime,
   height = 5,
   width = 7,
   units = "in"
 )
 
-rm(cs_parttime, csdid_cohort_parttime, es_parttime, csdid_es_parttime)
+rm(cs_parttime_cond, csdid_cond_cohort_parttime, es_cond_parttime, csdid_es_cond_parttime)
 gc()
 
 
 # --- Parttime (Share) --- 
 
-cs_parttime_share <- att_gt(
+cs_parttime_share_cond <- att_gt(
   yname = "share_parttime",
   tname = "year",
   idname = "company_state_id",
@@ -1256,48 +1256,47 @@ cs_parttime_share <- att_gt(
   pl = par_proc,
   cores = n_cores
 )
-summary(cs_parttime_share)
-csdid_cohort_parttime_share <- ggdid(
-  cs_parttime_share, 
+summary(cs_parttime_share_cond)
+csdid_cond_cohort_parttime_share <- ggdid(
+  cs_parttime_share_cond, 
   xlab = "Year",
   ylab = "Part-Time Postings (Share)",
   title = " ", 
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_parttime_share.pdf",
-  csdid_cohort_parttime_share,
+  "output/figures/csdid_cond_cohort_parttime_share.pdf",
+  csdid_cond_cohort_parttime_share,
   height = 8,
   width = 8,
   units = "in"
 )
 
-es_parttime_share <- aggte(
-  cs_parttime_share,
+es_cond_parttime_share <- aggte(
+  cs_parttime_share_cond,
   type = "dynamic",
   cband = TRUE,
   balance_e = 2
 )
-summary(es_parttime_share)
-csdid_es_parttime_share <- ggdid(
-  es_parttime_share, 
+summary(es_cond_parttime_share)
+csdid_es_cond_parttime_share <- ggdid(
+  es_cond_parttime_share, 
   xlab = "Event Time",
   ylab = "Part-Time Postings (Share)",
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_parttime_share.pdf",
-  csdid_es_parttime_share,
+  "output/figures/csdid_es_cond_parttime_share.pdf",
+  csdid_es_cond_parttime_share,
   height = 5, 
   width = 7,
   units = "in"
 )
 
-rm(cs_parttime_share, 
-   csdid_cohort_parttime_share,
-   es_parttime_share,
-   csdid_es_parttime_share)
+rm(cs_parttime_share_cond, 
+   csdid_cond_cohort_parttime_share,
+   es_cond_parttime_share,
+   csdid_es_cond_parttime_share)
 gc()
-
 
 
