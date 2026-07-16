@@ -46,28 +46,7 @@ df_firm <- read_csv("data/analysis-data/agg2_fab_analysis.csv")
 
 # -------------------- CS DID ANALYSIS (UNCONDITIONAL) -------------------------
 # --- Total Postings --- 
-
-# Balanced panel version
-# cs_tot_post_balanced <- att_gt(
-#   yname = "total_postings_firm",
-#   tname = "year",
-#   idname = "panel_id",
-#   gname = "cohort",
-#   data = df_firm,
-#   control_group = "nevertreated",
-#   est_method = "dr",
-#   bstrap = TRUE,
-#   cband = TRUE,
-#   clustervars = "state",
-#   base_period = "universal",
-#   anticipation = 0,
-#   pl = par_proc,
-#   cores = n_cores
-# )
-# summary(cs_tot_post_balanced)
-# NOTE: n = 431
-
-# Unbalanced panel version (repeated cross-sections)
+# NOTE: Unbalanced panel version (repeated cross-sections)
 cs_tot_post <- att_gt(
   yname = "total_postings_firm",
   tname = "year",
@@ -93,10 +72,8 @@ csdid_cohort_tot_post <- ggdid(
   title = "",
   grtitle = "Ban in"
 )
-# NOTE: Seeing more of an effect in the 2022 cohort (where 
-# inc_threshold was high).
 ggsave(
-  "output/figures/csdid_cohort_tot_post.pdf",
+  "output/figures/csdid_cohort_tot_post_fab.pdf",
   csdid_cohort_tot_post,
   width = 8,
   height = 8,
@@ -117,7 +94,7 @@ csdid_es_tot_post <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_tot_post.pdf",
+  "output/figures/csdid_es_tot_post_fab.pdf",
   csdid_es_tot_post,
   width = 7,
   height = 5,
@@ -156,7 +133,7 @@ csdid_cohort_exp <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_exp.pdf",
+  "output/figures/csdid_cohort_exp_fab.pdf",
   csdid_cohort_exp,
   width = 8,
   height = 8,
@@ -177,7 +154,7 @@ csdid_es_exp <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_exp.pdf",
+  "output/figures/csdid_es_exp_fab.pdf",
   csdid_es_exp,
   width = 7,
   height = 5,
@@ -215,9 +192,8 @@ csdid_cohort_exp_share <- ggdid(
   title = "", 
   grtitle = "Ban in"
 )
-# NOTE: Again, I'm seeing the biggest effect in CO and DC.
 ggsave(
-  "output/figures/csdid_cohort_exp_share.pdf",
+  "output/figures/csdid_cohort_exp_share_fab.pdf",
   csdid_cohort_exp_share,
   height = 8,
   width = 8,
@@ -238,7 +214,7 @@ csdid_es_exp_share <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_exp_share.pdf",
+  "output/figures/csdid_es_exp_share_fab.pdf",
   csdid_es_exp_share,
   height = 5,
   width = 7,
@@ -246,7 +222,7 @@ ggsave(
 )
 
 rm(cs_share_exp, csdid_cohort_exp_share, es_share_exp, csdid_es_exp_share)
-rm()
+gc()
 
 
 # --- Average Experience --- 
@@ -277,7 +253,7 @@ csdid_cohort_exp_ave <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_exp_ave.pdf",
+  "output/figures/csdid_cohort_exp_ave_fab.pdf",
   csdid_cohort_exp_ave,
   height = 8,
   width = 8,
@@ -298,7 +274,7 @@ csdid_es_exp_ave <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_exp_ave.pdf",
+  "output/figures/csdid_es_exp_ave_fab.pdf",
   csdid_es_exp_ave,
   height = 5,
   width = 7,
@@ -337,7 +313,7 @@ csdid_cohort_bachelor <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_bachelor.pdf",
+  "output/figures/csdid_cohort_bachelor_fab.pdf",
   csdid_cohort_bachelor,
   height = 8,
   width = 8,
@@ -358,7 +334,7 @@ csdid_es_bachelor <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_bachelor.pdf",
+  "output/figures/csdid_es_bachelor_fab.pdf",
   csdid_es_bachelor,
   height = 5,
   width = 7,
@@ -397,7 +373,7 @@ csdid_cohort_bachelor_share <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_bachelor_share.pdf",
+  "output/figures/csdid_cohort_bachelor_share_fab.pdf",
   csdid_cohort_bachelor_share,
   height = 8,
   width = 8,
@@ -418,7 +394,7 @@ csdid_es_bachelor_share <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_bachelor_share.pdf",
+  "output/figures/csdid_es_bachelor_share_fab.pdf",
   csdid_es_bachelor_share,
   height = 5,
   width = 7,
@@ -460,7 +436,7 @@ csdid_cohort_fulltime <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_fulltime.pdf",
+  "output/figures/csdid_cohort_fulltime_fab.pdf",
   csdid_cohort_fulltime,
   height = 8,
   width = 8,
@@ -481,7 +457,7 @@ csdid_es_fulltime <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_fulltime.pdf",
+  "output/figures/csdid_es_fulltime_fab.pdf",
   csdid_es_fulltime,
   height = 5,
   width = 7,
@@ -520,7 +496,7 @@ csdid_cohort_fulltime_share <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_fulltime_share.pdf",
+  "output/figures/csdid_cohort_fulltime_share_fab.pdf",
   csdid_cohort_fulltime_share,
   height = 8,
   width = 8,
@@ -541,7 +517,7 @@ csdid_es_fulltime_share <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_fulltime_share.pdf",
+  "output/figures/csdid_es_fulltime_share_fab.pdf",
   csdid_es_fulltime_share,
   height = 5,
   width = 7,
@@ -583,7 +559,7 @@ csdid_cohort_parttime <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_parttime.pdf",
+  "output/figures/csdid_cohort_parttime_fab.pdf",
   csdid_cohort_parttime,
   height = 8,
   width = 8, 
@@ -604,7 +580,7 @@ csdid_es_parttime <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_parttime.pdf",
+  "output/figures/csdid_es_parttime_fab.pdf",
   csdid_es_parttime,
   height = 5,
   width = 7,
@@ -643,7 +619,7 @@ csdid_cohort_parttime_share <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cohort_parttime_share.pdf",
+  "output/figures/csdid_cohort_parttime_share_fab.pdf",
   csdid_cohort_parttime_share,
   height = 8,
   width = 8,
@@ -664,7 +640,7 @@ csdid_es_parttime_share <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_parttime_share.pdf",
+  "output/figures/csdid_es_parttime_share_fab.pdf",
   csdid_es_parttime_share,
   height = 5, 
   width = 7,
@@ -706,10 +682,8 @@ csdid_cond_cohort_tot_post <- ggdid(
   title = "",
   grtitle = "Ban in"
 )
-# NOTE: Seeing more of an effect in the 2022 cohort (where 
-# inc_threshold was high).
 ggsave(
-  "output/figures/csdid_cond_cohort_tot_post.pdf",
+  "output/figures/csdid_cond_cohort_tot_post_fab.pdf",
   csdid_cond_cohort_tot_post,
   width = 8,
   height = 8,
@@ -730,7 +704,7 @@ csdid_es_cond_tot_post <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_tot_post.pdf",
+  "output/figures/csdid_es_cond_tot_post_fab.pdf",
   csdid_es_cond_tot_post,
   width = 7,
   height = 5,
@@ -770,7 +744,7 @@ csdid_cond_cohort_exp <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cond_cohort_exp.pdf",
+  "output/figures/csdid_cond_cohort_exp_fab.pdf",
   csdid_cond_cohort_exp,
   width = 8,
   height = 8,
@@ -791,7 +765,7 @@ csdid_es_cond_exp <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_exp.pdf",
+  "output/figures/csdid_es_cond_exp_fab.pdf",
   csdid_es_cond_exp,
   width = 7,
   height = 5,
@@ -830,9 +804,8 @@ csdid_cond_cohort_exp_share <- ggdid(
   title = "", 
   grtitle = "Ban in"
 )
-# NOTE: Again, I'm seeing the biggest effect in CO and DC.
 ggsave(
-  "output/figures/csdid_cond_cohort_exp_share.pdf",
+  "output/figures/csdid_cond_cohort_exp_share_fab.pdf",
   csdid_cond_cohort_exp_share,
   height = 8,
   width = 8,
@@ -853,7 +826,7 @@ csdid_es_cond_exp_share <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_exp_share.pdf",
+  "output/figures/csdid_es_cond_exp_share_fab.pdf",
   csdid_es_cond_exp_share,
   height = 5,
   width = 7,
@@ -893,7 +866,7 @@ csdid_cond_cohort_exp_ave <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cond_cohort_exp_ave.pdf",
+  "output/figures/csdid_cond_cohort_exp_ave_fab.pdf",
   csdid_cond_cohort_exp_ave,
   height = 8,
   width = 8,
@@ -914,7 +887,7 @@ csdid_es_cond_exp_ave <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_exp_ave.pdf",
+  "output/figures/csdid_es_cond_exp_ave_fab.pdf",
   csdid_es_cond_exp_ave,
   height = 5,
   width = 7,
@@ -954,7 +927,7 @@ csdid_cond_cohort_bachelor <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cond_cohort_bachelor.pdf",
+  "output/figures/csdid_cond_cohort_bachelor_fab.pdf",
   csdid_cond_cohort_bachelor,
   height = 8,
   width = 8,
@@ -975,7 +948,7 @@ csdid_es_cond_bachelor <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_bachelor.pdf",
+  "output/figures/csdid_es_cond_bachelor_fab.pdf",
   csdid_es_cond_bachelor,
   height = 5,
   width = 7,
@@ -1015,7 +988,7 @@ csdid_cond_cohort_bachelor_share <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cond_cohort_bachelor_share.pdf",
+  "output/figures/csdid_cond_cohort_bachelor_share_fab.pdf",
   csdid_cond_cohort_bachelor_share,
   height = 8,
   width = 8,
@@ -1036,7 +1009,7 @@ csdid_es_cond_bachelor_share <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_bachelor_share.pdf",
+  "output/figures/csdid_es_cond_bachelor_share_fab.pdf",
   csdid_es_cond_bachelor_share,
   height = 5,
   width = 7,
@@ -1079,7 +1052,7 @@ csdid_cond_cohort_fulltime <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cond_cohort_fulltime.pdf",
+  "output/figures/csdid_cond_cohort_fulltime_fab.pdf",
   csdid_cond_cohort_fulltime,
   height = 8,
   width = 8,
@@ -1100,7 +1073,7 @@ csdid_es_cond_fulltime <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_fulltime.pdf",
+  "output/figures/csdid_es_cond_fulltime_fab.pdf",
   csdid_es_cond_fulltime,
   height = 5,
   width = 7,
@@ -1140,7 +1113,7 @@ csdid_cond_cohort_fulltime_share <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cond_cohort_fulltime_share.pdf",
+  "output/figures/csdid_cond_cohort_fulltime_share_fab.pdf",
   csdid_cond_cohort_fulltime_share,
   height = 8,
   width = 8,
@@ -1161,7 +1134,7 @@ csdid_es_cond_fulltime_share <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_fulltime_share.pdf",
+  "output/figures/csdid_es_cond_fulltime_share_fab.pdf",
   csdid_es_cond_fulltime_share,
   height = 5,
   width = 7,
@@ -1204,7 +1177,7 @@ csdid_cond_cohort_parttime <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cond_cohort_parttime.pdf",
+  "output/figures/csdid_cond_cohort_parttime_fab.pdf",
   csdid_cond_cohort_parttime,
   height = 8,
   width = 8, 
@@ -1225,7 +1198,7 @@ csdid_es_cond_parttime <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_parttime.pdf",
+  "output/figures/csdid_es_cond_parttime_fab.pdf",
   csdid_es_cond_parttime,
   height = 5,
   width = 7,
@@ -1265,7 +1238,7 @@ csdid_cond_cohort_parttime_share <- ggdid(
   grtitle = "Ban in"
 )
 ggsave(
-  "output/figures/csdid_cond_cohort_parttime_share.pdf",
+  "output/figures/csdid_cond_cohort_parttime_share_fab.pdf",
   csdid_cond_cohort_parttime_share,
   height = 8,
   width = 8,
@@ -1286,7 +1259,7 @@ csdid_es_cond_parttime_share <- ggdid(
   title = " "
 )
 ggsave(
-  "output/figures/csdid_es_cond_parttime_share.pdf",
+  "output/figures/csdid_es_cond_parttime_share_fab.pdf",
   csdid_es_cond_parttime_share,
   height = 5, 
   width = 7,
