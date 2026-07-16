@@ -51,7 +51,7 @@ df_firm <- read_csv("data/analysis-data/agg2_fab_analysis.csv")
 # cs_tot_post_balanced <- att_gt(
 #   yname = "total_postings_firm",
 #   tname = "year",
-#   idname = "company_state_id",
+#   idname = "panel_id",
 #   gname = "cohort",
 #   data = df_firm,
 #   control_group = "nevertreated",
@@ -71,7 +71,7 @@ df_firm <- read_csv("data/analysis-data/agg2_fab_analysis.csv")
 cs_tot_post <- att_gt(
   yname = "total_postings_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE, # makes this repeated cross-sections
   data = df_firm,
@@ -133,7 +133,7 @@ gc()
 cs_any_exp <- att_gt(
   yname = "any_exp_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -193,7 +193,7 @@ gc()
 cs_share_exp <- att_gt(
   yname = "share_exp",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -254,7 +254,7 @@ rm()
 cs_ave_exp <- att_gt(
   yname = "ave_exp_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -314,7 +314,7 @@ gc()
 cs_bachelor <- att_gt(
   yname = "bachelor_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -374,7 +374,7 @@ gc()
 cs_bachelor_share <- att_gt(
   yname = "share_bachelor",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -437,7 +437,7 @@ gc()
 cs_fulltime <- att_gt(
   yname = "fulltime_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -497,7 +497,7 @@ gc()
 cs_fulltime_share <- att_gt(
   yname = "share_fulltime",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -560,7 +560,7 @@ gc()
 cs_parttime <- att_gt(
   yname = "parttime_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -620,7 +620,7 @@ gc()
 cs_parttime_share <- att_gt(
   yname = "share_parttime",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   panel = FALSE,
   data = df_firm,
@@ -683,7 +683,7 @@ gc()
 cs_tot_post_cond <- att_gt(
   yname = "total_postings_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE, # makes this repeated cross-sections
@@ -746,7 +746,7 @@ gc()
 cs_any_exp_cond <- att_gt(
   yname = "any_exp_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
@@ -807,7 +807,7 @@ gc()
 cs_share_exp_cond <- att_gt(
   yname = "share_exp",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
@@ -869,7 +869,7 @@ gc()
 cs_ave_exp_cond <- att_gt(
   yname = "ave_exp_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
@@ -930,7 +930,7 @@ gc()
 cs_bachelor_cond <- att_gt(
   yname = "bachelor_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
@@ -991,7 +991,7 @@ gc()
 cs_bachelor_share_cond <- att_gt(
   yname = "share_bachelor",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
@@ -1055,7 +1055,7 @@ gc()
 cs_fulltime_cond <- att_gt(
   yname = "fulltime_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
@@ -1116,7 +1116,7 @@ gc()
 cs_fulltime_share_cond <- att_gt(
   yname = "share_fulltime",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
@@ -1180,7 +1180,7 @@ gc()
 cs_parttime_cond <- att_gt(
   yname = "parttime_firm",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
@@ -1241,7 +1241,7 @@ gc()
 cs_parttime_share_cond <- att_gt(
   yname = "share_parttime",
   tname = "year",
-  idname = "company_state_id",
+  idname = "panel_id",
   gname = "cohort",
   xformla = ~soc_4,
   panel = FALSE,
