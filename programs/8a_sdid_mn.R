@@ -14,6 +14,7 @@
 ##############################################################################
 
 rm(list = ls())
+gc()
 
 #install.packages("rlang")
 #install.packages("devtools")
@@ -99,7 +100,7 @@ bad_states_tot_post <- c("Wyoming", "Montana", "South Dakota", "Alaska",
 # Filtering out missing states to create balance for test run
 # NOTE: Will need to add them back in once we switch to the full sample.
 agg2_mn_tot_post <- agg2_mn_tot_post %>%
-  filter(!state_name %in% bad_states)
+  filter(!state_name %in% bad_states_tot_post)
 
 # --- SDID Run --- 
 # Create matrices 
@@ -114,12 +115,33 @@ estimate_tot_post = synthdid_estimate(setup_tot_post$Y, setup_tot_post$N0,
 # Plot SDID 
 sdid_plot_tot_post <- plot(estimate_tot_post, se.method = 'placebo')
 
+ggsave(
+  "output/figures/sdid_plot_tot_post_mn.pdf",
+  sdid_plot_tot_post,
+  width = 8,
+  height = 8,
+  units = "in"
+)
+
 # Control Unit Contribution Plot 
-synthdid_units_plot(estimate_tot_post, se.method = 'placebo')
+sdid_contrib_tot_post <- synthdid_units_plot(estimate_tot_post, se.method = 'placebo')
 
-rm(agg2_mn_tot_post)
+ggsave(
+  "output/figures/sdid_contrib_tot_post_mn.pdf",
+  sdid_contrib_tot_post,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
-# NOTE: Eventually calulcate and produce the tables of results. 
+rm(setup_tot_post, 
+   agg2_mn_tot_post, 
+   bad_states_tot_post, 
+   sdid_plot_tot_post, 
+   sdid_contrib_tot_post)
+gc()
+
+# NOTE: Eventually calculate and produce the tables of results. 
 
 
 # ----------------------- ANY EXP LISTINGS -------------------------------------
@@ -158,13 +180,34 @@ estimate_any_exp = synthdid_estimate(setup_any_exp$Y, setup_any_exp$N0,
                                      setup_any_exp$T0)
 
 # Plot SDID 
-sdid_plot_any_exp = plot(estimate_any_exp, se.method = 'placebo')
-sdid_plot_any_exp
+sdid_plot_any_exp <- plot(estimate_any_exp, se.method = 'placebo')
+
+ggsave(
+  "output/figures/sdid_plot_any_exp_mn.pdf",
+  sdid_plot_any_exp,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 # Control Unit Contribution Plot 
-synthdid_units_plot(estimate_any_exp, se.method = 'placebo')
+sdid_contrib_any_exp <- synthdid_units_plot(estimate_any_exp, se.method = 'placebo')
 
-rm(agg2_mn_any_exp)
+ggsave(
+  "output/figures/sdid_contrib_any_exp_mn.pdf",
+  sdid_contrib_any_exp,
+  width = 8,
+  height = 8,
+  units = "in"
+)
+
+rm(setup_any_exp,
+   agg2_mn_any_exp, 
+   bad_states_any_exp, 
+   sdid_plot_any_exp, 
+   sdid_contrib_any_exp)
+gc()
+
 
 # ----------------------- ANY EXP SHARE ----------------------------------------
 # --- Prep Mini-Panel --- 
@@ -202,13 +245,34 @@ estimate_share_exp = synthdid_estimate(setup_share_exp$Y, setup_share_exp$N0,
                                      setup_share_exp$T0)
 
 # Plot SDID 
-sdid_plot_share_exp = plot(estimate_share_exp, se.method = 'placebo')
-sdid_plot_share_exp
+sdid_plot_share_exp <- plot(estimate_share_exp, se.method = 'placebo')
+
+ggsave(
+  "output/figures/sdid_plot_share_exp_mn.pdf",
+  sdid_plot_share_exp,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 # Control Unit Contribution Plot 
-synthdid_units_plot(estimate_share_exp, se.method = 'placebo')
+sdid_contrib_share_exp <- synthdid_units_plot(estimate_share_exp, se.method = 'placebo')
 
-rm(agg2_mn_share_exp)
+ggsave(
+  "output/figures/sdid_contrib_share_exp_mn.pdf",
+  sdid_contrib_share_exp,
+  width = 8,
+  height = 8,
+  units = "in"
+)
+
+rm(setup_share_exp,
+   agg2_mn_share_exp, 
+   bad_states_share_exp, 
+   sdid_plot_share_exp, 
+   sdid_contrib_share_exp)
+gc()
+
 
 # ----------------------- AVE EXP ----------------------------------------------
 # --- Prep Mini-Panel --- 
@@ -249,12 +313,33 @@ estimate_ave_exp = synthdid_estimate(setup_ave_exp$Y, setup_ave_exp$N0,
 
 # Plot SDID 
 sdid_plot_ave_exp = plot(estimate_ave_exp, se.method = 'placebo')
-sdid_plot_ave_exp
+
+ggsave(
+  "output/figures/sdid_plot_ave_exp_mn.pdf",
+  sdid_plot_ave_exp,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 # Control Unit Contribution Plot 
-synthdid_units_plot(estimate_ave_exp, se.method = 'placebo')
+sdid_contrib_ave_exp <- synthdid_units_plot(estimate_ave_exp, se.method = 'placebo')
 
-rm(agg2_mn_ave_exp)
+ggsave(
+  "output/figures/sdid_contrib_ave_exp_mn.pdf",
+  sdid_contrib_ave_exp,
+  width = 8,
+  height = 8,
+  units = "in"
+)
+
+rm(setup_ave_exp,
+   agg2_mn_ave_exp, 
+   bad_states_ave_exp, 
+   sdid_plot_ave_exp, 
+   sdid_contrib_ave_exp)
+gc()
+
 
 # ------------------------ FULLTIME LISTINGS -----------------------------------
 # --- Prep Mini-Panel --- 
@@ -292,16 +377,33 @@ estimate_fulltime = synthdid_estimate(setup_fulltime$Y, setup_fulltime$N0,
                                        setup_fulltime$T0)
 
 # Plot SDID 
-sdid_plot_fulltime = plot(estimate_fulltime, se.method = 'placebo')
-sdid_plot_fulltime
+sdid_plot_fulltime <- plot(estimate_fulltime, se.method = 'placebo')
+
+ggsave(
+  "output/figures/sdid_plot_fulltime_mn.pdf",
+  sdid_plot_fulltime,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 # Control Unit Contribution Plot 
-synthdid_units_plot(estimate_fulltime, se.method = 'placebo')
+sdid_contrib_fulltime <- synthdid_units_plot(estimate_fulltime, se.method = 'placebo')
 
-rm(agg2_mn_fulltime)
+ggsave(
+  "output/figures/sdid_contrib_fulltime_mn.pdf",
+  sdid_contrib_fulltime,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
-# Other clean-up
-rm(setup_tot_post, setup_any_exp, setup_share_exp, setup_ave_exp, setup_fulltime)
+rm(setup_fulltime, 
+   agg2_mn_fulltime,
+   bad_states_fulltime,
+   sdid_plot_fulltime,
+   sdid_contrib_fulltime)
+gc()
 
 
 # ------------------------ FULLTIME SHARE --------------------------------------
@@ -340,14 +442,33 @@ estimate_share_fulltime = synthdid_estimate(setup_share_fulltime$Y, setup_share_
                                       setup_share_fulltime$T0)
 
 # Plot SDID 
-sdid_plot_share_fulltime = plot(estimate_share_fulltime, se.method = 'placebo')
-sdid_plot_share_fulltime
+sdid_plot_share_fulltime <- plot(estimate_share_fulltime, se.method = 'placebo')
+
+ggsave(
+  "output/figures/sdid_plot_share_fulltime_mn.pdf",
+  sdid_plot_share_fulltime,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 # Control Unit Contribution Plot 
-synthdid_units_plot(estimate_share_fulltime, se.method = 'placebo')
+sdid_contrib_share_fulltime <- synthdid_units_plot(estimate_share_fulltime, se.method = 'placebo')
 
-rm(agg2_mn_share_fulltime)
+ggsave(
+  "output/figures/sdid_contrib_share_fulltime_mn.pdf",
+  sdid_contrib_share_fulltime,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
+rm(setup_share_fulltime,
+  agg2_mn_share_fulltime,
+  bad_states_share_fulltime,
+  sdid_plot_share_fulltime,
+  sdid_contrib_share_fulltime)
+gc()
 
 
 # ------------------------ PARTTIME LISTINGS -----------------------------------
@@ -386,13 +507,33 @@ estimate_parttime = synthdid_estimate(setup_parttime$Y, setup_parttime$N0,
                                       setup_parttime$T0)
 
 # Plot SDID 
-sdid_plot_parttime = plot(estimate_parttime, se.method = 'placebo')
-sdid_plot_parttime
+sdid_plot_parttime <- plot(estimate_parttime, se.method = 'placebo')
+
+ggsave(
+  "output/figures/sdid_plot_parttime_mn.pdf",
+  sdid_plot_parttime,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 # Control Unit Contribution Plot 
-synthdid_units_plot(estimate_parttime, se.method = 'placebo')
+sdid_contrib_parttime <- synthdid_units_plot(estimate_parttime, se.method = 'placebo')
 
-rm(agg2_mn_parttime)
+ggsave(
+  "output/figures/sdid_contrib_parttime_mn.pdf",
+  sdid_contrib_parttime,
+  width = 8,
+  height = 8,
+  units = "in"
+)
+
+rm(setup_parttime,
+  agg2_mn_parttime,
+  bad_states_parttime,
+  sdid_plot_parttime,
+  sdid_contrib_parttime)
+gc()
 
 
 # ------------------------ PARTTIME SHARE --------------------------------------
@@ -431,13 +572,33 @@ estimate_share_parttime = synthdid_estimate(setup_share_parttime$Y, setup_share_
                                       setup_share_parttime$T0)
 
 # Plot SDID 
-sdid_plot_share_parttime = plot(estimate_share_parttime, se.method = 'placebo')
-sdid_plot_share_parttime
+sdid_plot_share_parttime <- plot(estimate_share_parttime, se.method = 'placebo')
+
+ggsave(
+  "output/figures/sdid_plot_share_parttime_mn.pdf",
+  sdid_plot_share_parttime,
+  width = 8,
+  height = 8,
+  units = "in"
+)
 
 # Control Unit Contribution Plot 
-synthdid_units_plot(estimate_share_parttime, se.method = 'placebo')
+sdid_contrib_share_parttime <- synthdid_units_plot(estimate_share_parttime, se.method = 'placebo')
 
-rm(agg2_mn_share_parttime)
+ggsave(
+  "output/figures/sdid_contrib_share_parttime.pdf",
+  sdid_contrib_share_parttime,
+  width = 8,
+  height = 8,
+  units = "in"
+)
+
+rm(setup_share_parttime,
+   agg2_mn_share_parttime,
+   bad_states_share_parttime,
+   sdid_plot_share_parttime,
+   sdid_contrib_share_parttime)
+gc()
 
 
 

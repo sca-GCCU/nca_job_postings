@@ -17,6 +17,7 @@
 # install the appropriate packages. 
 
 rm(list = ls())
+gc()
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 #setwd("/home/scanast/nca_job_postings") # Cluster
@@ -127,11 +128,28 @@ dataprep_out_tot_post <- dataprep(
 
 synth_out <- synth(data.prep.obj = dataprep_out_tot_post)
 
-path.plot(synth_out, dataprep_out_tot_post)
+pdf(
+  "output/figures/scm_es_tot_post_agg1_mn.pdf",
+  width = 8,
+  height = 8
+)
+
+tryCatch(
+  {
+    path.plot(
+      synth_out,
+      dataprep_out_tot_post,
+      Legend.position = "topleft"
+    )
+  },
+  finally = dev.off()
+)
+
+rm(dataprep_out_tot_post, synth_out)
+gc()
 
 
 # ---- Listings with Any Experience Requirement ----
-
 # Feeding to dataprep  
 dataprep_out_any_exp <- dataprep(
   foo = agg1_state, # Dataset to be prepped
@@ -163,13 +181,30 @@ dataprep_out_any_exp <- dataprep(
 
 synth_out <- synth(data.prep.obj = dataprep_out_any_exp)
 
-path.plot(synth_out, dataprep_out_any_exp)
+pdf(
+  "output/figures/scm_es_any_exp_agg1_mn.pdf",
+  width = 8,
+  height = 8
+)
+
+tryCatch(
+  {
+    path.plot(
+      synth_out,
+      dataprep_out_any_exp,
+      Legend.position = "topleft"
+    )
+  },
+  finally = dev.off()
+)
+
+rm(dataprep_out_any_exp, synth_out)
+gc()
 
 
 # ---- Any Experience Share ----
-
 # Feeding to dataprep  
-dataprep_out_any_exp <- dataprep(
+dataprep_out_any_exp_share <- dataprep(
   foo = agg1_state, # Dataset to be prepped
   
   # Predictor variables to be used
@@ -197,15 +232,33 @@ dataprep_out_any_exp <- dataprep(
   time.plot = 2010:2024
 )
 
-synth_out <- synth(data.prep.obj = dataprep_out_any_exp)
+synth_out <- synth(data.prep.obj = dataprep_out_any_exp_share)
 
-path.plot(synth_out, dataprep_out_any_exp)
+pdf(
+  "output/figures/scm_es_any_exp_share_agg1_mn.pdf",
+  width = 8,
+  height = 8
+)
+
+tryCatch(
+  {
+    path.plot(
+      synth_out,
+      dataprep_out_any_exp_share,
+      Legend.position = "topleft"
+    )
+  },
+  finally = dev.off()
+)
+
+rm(dataprep_out_any_exp_share, synth_out)
+gc()
 
 
 # ---- Average Experience Requirement ----
 
 # Feeding to dataprep  
-dataprep_out_any_exp <- dataprep(
+dataprep_out_ave_exp <- dataprep(
   foo = agg1_state, # Dataset to be prepped
   
   # Predictor variables to be used
@@ -233,9 +286,27 @@ dataprep_out_any_exp <- dataprep(
   time.plot = 2010:2024
 )
 
-synth_out <- synth(data.prep.obj = dataprep_out_any_exp)
+synth_out <- synth(data.prep.obj = dataprep_out_ave_exp)
 
-path.plot(synth_out, dataprep_out_any_exp)
+pdf(
+  "output/figures/scm_es_ave_exp_agg1_mn.pdf",
+  width = 8,
+  height = 8
+)
+
+tryCatch(
+  {
+    path.plot(
+      synth_out,
+      dataprep_out_ave_exp,
+      Legend.position = "topleft"
+    )
+  },
+  finally = dev.off()
+)
+
+rm(dataprep_out_ave_exp, synth_out)
+gc()
 
 
 # ------------------------- Synth Control - Spec 2 -----------------------------
@@ -283,12 +354,28 @@ dataprep_out_tot_post_2 <- dataprep(
 
 synth_out_tot_post_2 <- synth(data.prep.obj = dataprep_out_tot_post_2)
 
-path.plot(synth_out_tot_post_2, dataprep_out_tot_post_2)
+pdf(
+  "output/figures/scm_es_tot_post_2_agg1_mn.pdf",
+  width = 8,
+  height = 8
+)
 
+tryCatch(
+  {
+    path.plot(
+      synth_out_tot_post_2,
+      dataprep_out_tot_post_2,
+      Legend.position = "topleft"
+    )
+  },
+  finally = dev.off()
+)
+
+rm(dataprep_out_tot_post_2, synth_out_tot_post_2)
+gc()
 
 
 # ---- Listings with Any Experience Requirement ----
-
 dataprep_out_any_exp_post_2 <- dataprep(
   foo = agg1_state, # Dataset to be prepped
   
@@ -330,12 +417,28 @@ dataprep_out_any_exp_post_2 <- dataprep(
 
 synth_out_any_exp_post_2 <- synth(data.prep.obj = dataprep_out_any_exp_post_2)
 
-path.plot(synth_out_any_exp_post_2, dataprep_out_any_exp_post_2)
+pdf(
+  "output/figures/scm_es_any_exp_2_agg1_mn.pdf",
+  width = 8,
+  height = 8
+)
+
+tryCatch(
+  {
+    path.plot(
+      synth_out_any_exp_post_2, 
+      dataprep_out_any_exp_post_2,
+      Legend.position = "topleft"
+    )
+  },
+  finally = dev.off()
+)
+
+rm(dataprep_out_any_exp_post_2, synth_out_any_exp_post_2)
+gc()
 
 
 # ---- Any Experience Share ----
-
-
 dataprep_out_any_exp_share_2 <- dataprep(
   foo = agg1_state, # Dataset to be prepped
   
@@ -377,8 +480,25 @@ dataprep_out_any_exp_share_2 <- dataprep(
 
 synth_out_any_exp_share_2 <- synth(data.prep.obj = dataprep_out_any_exp_share_2)
 
-path.plot(synth_out_any_exp_share_2, dataprep_out_any_exp_share_2)
+pdf(
+  "output/figures/scm_es_any_exp_share_2_agg1_mn.pdf",
+  width = 8,
+  height = 8
+)
 
+tryCatch(
+  {
+    path.plot(
+      synth_out_any_exp_share_2, 
+      dataprep_out_any_exp_share_2,
+      Legend.position = "topleft"
+    )
+  },
+  finally = dev.off()
+)
+
+rm(dataprep_out_any_exp_share_2, synth_out_any_exp_share_2)
+gc()
 
 
 # ---- Average Experience Requirement ----
@@ -424,7 +544,23 @@ dataprep_out_ave_exp_2 <- dataprep(
 
 synth_out_ave_exp_2 <- synth(data.prep.obj = dataprep_out_ave_exp_2)
 
-path.plot(synth_out_ave_exp_2, dataprep_out_ave_exp_2)
+pdf(
+  "output/figures/scm_es_ave_exp_2_agg1_mn.pdf",
+  width = 8,
+  height = 8
+)
 
+tryCatch(
+  {
+    path.plot(
+      synth_out_ave_exp_2, 
+      dataprep_out_ave_exp_2,
+      Legend.position = "topleft"
+    )
+  },
+  finally = dev.off()
+)
 
-# NOTE: Still need to run all of this in the Cluster before making judgements.
+rm(dataprep_out_ave_exp_2, synth_out_ave_exp_2)
+gc()
+
