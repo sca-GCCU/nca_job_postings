@@ -4,9 +4,9 @@
 #
 # R Script: "descriptive_graphs_agg1_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 10, 2026
+# Date of this version: July 17, 2026
 #
-# Description: Creates occupation-state-month level descriptive graphs.
+# Description: Creates occupation-state-date level descriptive graphs.
 #
 # Dependencies: 
 #
@@ -14,13 +14,12 @@
 ##############################################################################
 
 rm(list = ls())
+gc()
 
-# Load path helper 
-home <- path.expand("~")
-proj_root <- file.path(home, "nca_job_postings")
-programs_dir <- file.path(proj_root, "programs")
-source(file.path(programs_dir, "0c_paths.R"))
+setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
+# --- Load packages ---
 library(dplyr)
 library(ggplot2)
 library(readr)
@@ -28,7 +27,7 @@ library(lubridate)
 library(scales)
 
 # 1. Load analysis data 
-agg1_mn_analysis <- read_csv(file.path(data_analysis, "agg1_mn_analysis.csv"))
+agg1_mn_analysis <- read_csv("data/analysis-data/agg1_mn_analysis.csv")
 
 
 # 2. Create plots of raw means by treatment status 
@@ -94,7 +93,7 @@ p_amean_tot_post <- ggplot(tot_ann, aes(x = year,
 #p_amean_tot_post
 
 ggsave(
-  file.path(output_figures, "plot_amean_tot_post_agg1_mn.pdf"),
+  "output/figures/plot_amean_tot_post_agg1_mn.pdf",
   p_amean_tot_post,
   width = 7,
   height = 5,
@@ -161,7 +160,7 @@ p_mmean_tot_post <- ggplot(
 #p_mmean_tot_post
 
 ggsave(
-  file.path(output_figures, "plot_mmean_tot_post_agg1_mn.pdf"),
+  "output/figures/plot_mmean_tot_post_agg1_mn.pdf",
   p_mmean_tot_post,
   width = 11,
   height = 5,
@@ -224,7 +223,7 @@ p_amean_any_ed <- ggplot(any_ed_ann, aes(x = year,
 #p_amean_any_ed
 
 ggsave(
-  file.path(output_figures, "plot_amean_any_ed_agg1_mn.pdf"),
+  "output/figures/plot_amean_any_ed_agg1_mn.pdf",
   p_amean_any_ed,
   width = 7,
   height = 5,
@@ -291,7 +290,7 @@ p_mmean_any_ed <- ggplot(
 #p_mmean_any_ed
 
 ggsave(
-  file.path(output_figures, "plot_mmean_any_ed_agg1_mn.pdf"),
+  "output/figures/plot_mmean_any_ed_agg1_mn.pdf",
   p_mmean_any_ed,
   width = 11,
   height = 5,
@@ -342,7 +341,7 @@ p_amean_any_ed_share <- ggplot(share_any_ed_ann, aes(x = year,
 #p_amean_any_ed_share
 
 ggsave(
-  file.path(output_figures, "plot_amean_any_ed_share_agg1_mn.pdf"),
+  "output/figures/plot_amean_any_ed_share_agg1_mn.pdf",
   p_amean_any_ed_share,
   width = 7,
   height = 5,
@@ -399,7 +398,7 @@ p_mmean_any_ed_share <- ggplot(
 #p_mmean_any_ed_share
 
 ggsave(
-  file.path(output_figures, "plot_mmean_any_ed_share_agg1_mn.pdf"),
+  "output/figures/plot_mmean_any_ed_share_agg1_mn.pdf",
   p_mmean_any_ed_share,
   width = 11,
   height = 5,
@@ -465,7 +464,7 @@ p_amean_bachelor <- ggplot(
 #p_amean_bachelor
 
 ggsave(
-  file.path(output_figures, "plot_amean_bachelor_agg1_mn.pdf"),
+  "output/figures/plot_amean_bachelor_agg1_mn.pdf",
   p_amean_bachelor,
   width = 7,
   height = 5,
@@ -535,7 +534,7 @@ p_mmean_bachelor <- ggplot(
 #p_mmean_bachelor
 
 ggsave(
-  file.path(output_figures, "plot_mmean_bachelor_agg1_mn.pdf"),
+  "output/figures/plot_mmean_bachelor_agg1_mn.pdf",
   p_mmean_bachelor,
   width = 11,
   height = 5,
@@ -586,7 +585,7 @@ p_amean_bachelor_share <- ggplot(share_bachelors_ann, aes(x = year,
 #p_amean_bachelor_share
 
 ggsave(
-  file.path(output_figures, "plot_amean_bachelor_share_agg1_mn.pdf"),
+  "output/figures/plot_amean_bachelor_share_agg1_mn.pdf",
   p_amean_bachelor_share,
   width = 7,
   height = 5,
@@ -643,7 +642,7 @@ p_mmean_bachelor_share <- ggplot(
 #p_mmean_bachelor_share
 
 ggsave(
-  file.path(output_figures, "plot_mmean_bachelor_share_agg1_mn.pdf"),
+  "output/figures/plot_mmean_bachelor_share_agg1_mn.pdf",
   p_mmean_bachelor_share,
   width = 11,
   height = 5,
@@ -709,7 +708,7 @@ p_amean_master <- ggplot(
 #p_amean_master
 
 ggsave(
-  file.path(output_figures, "plot_amean_master_agg1_mn.pdf"),
+  "output/figures/plot_amean_master_agg1_mn.pdf",
   p_amean_master,
   width = 7,
   height = 5,
@@ -779,7 +778,7 @@ p_mmean_master <- ggplot(
 #p_mmean_master
 
 ggsave(
-  file.path(output_figures, "plot_mmean_master_agg1_mn.pdf"),
+  "output/figures/plot_mmean_master_agg1_mn.pdf",
   p_mmean_master,
   width = 11,
   height = 5,
@@ -830,7 +829,7 @@ p_amean_master_share <- ggplot(share_master_ann, aes(x = year,
 #p_amean_master_share
 
 ggsave(
-  file.path(output_figures, "plot_amean_master_share_agg1_mn.pdf"),
+  "output/figures/plot_amean_master_share_agg1_mn.pdf",
   p_amean_master_share,
   width = 7,
   height = 5,
@@ -887,7 +886,7 @@ p_mmean_master_share <- ggplot(
 #p_mmean_master_share
 
 ggsave(
-  file.path(output_figures, "plot_mmean_master_share_agg1_mn.pdf"),
+  "output/figures/plot_mmean_master_share_agg1_mn.pdf",
   p_mmean_master_share,
   width = 11,
   height = 5,
@@ -955,7 +954,7 @@ p_amean_doctorate <- ggplot(
 #p_amean_doctorate
 
 ggsave(
-  file.path(output_figures, "plot_amean_doctorate_agg1_mn.pdf"),
+  "output/figures/plot_amean_doctorate_agg1_mn.pdf",
   p_amean_doctorate,
   width = 7,
   height = 5,
@@ -1025,7 +1024,7 @@ p_mmean_doctorate <- ggplot(
 #p_mmean_doctorate
 
 ggsave(
-  file.path(output_figures, "plot_mmean_doctorate_agg1_mn.pdf"),
+  "output/figures/plot_mmean_doctorate_agg1_mn.pdf",
   p_mmean_doctorate,
   width = 11,
   height = 5,
@@ -1076,7 +1075,7 @@ p_amean_doctorate_share <- ggplot(share_doctorate_ann, aes(x = year,
 #p_amean_doctorate_share
 
 ggsave(
-  file.path(output_figures, "plot_amean_doctorate_share_agg1_mn.pdf"),
+  "output/figures/plot_amean_doctorate_share_agg1_mn.pdf",
   p_amean_doctorate_share,
   width = 7,
   height = 5,
@@ -1133,7 +1132,7 @@ p_mmean_doctorate_share <- ggplot(
 #p_mmean_doctorate_share
 
 ggsave(
-  file.path(output_figures, "plot_mmean_doctorate_share_agg1_mn.pdf"),
+  "output/figures/plot_mmean_doctorate_share_agg1_mn.pdf",
   p_mmean_doctorate_share,
   width = 11,
   height = 5,
@@ -1200,7 +1199,7 @@ p_amean_any_exp <- ggplot(
 #p_amean_any_exp
 
 ggsave(
-  file.path(output_figures, "plot_amean_any_exp_agg1_mn.pdf"),
+  "output/figures/plot_amean_any_exp_agg1_mn.pdf",
   p_amean_any_exp,
   width = 7,
   height = 5,
@@ -1270,7 +1269,7 @@ p_mmean_any_exp <- ggplot(
 #p_mmean_any_exp
 
 ggsave(
-  file.path(output_figures, "plot_mmean_any_exp_agg1_mn.pdf"),
+  "output/figures/plot_mmean_any_exp_agg1_mn.pdf",
   p_mmean_any_exp,
   width = 11,
   height = 5,
@@ -1321,7 +1320,7 @@ p_amean_any_exp_share <- ggplot(share_any_exp_ann, aes(x = year,
 #p_amean_any_exp_share
 
 ggsave(
-  file.path(output_figures, "plot_amean_any_exp_share_agg1_mn.pdf"),
+  "output/figures/plot_amean_any_exp_share_agg1_mn.pdf",
   p_amean_any_exp_share,
   width = 7,
   height = 5,
@@ -1377,7 +1376,7 @@ p_mmean_any_exp_share <- ggplot(
 #p_mmean_any_exp_share
 
 ggsave(
-  file.path(output_figures, "plot_mmean_any_exp_share_agg1_mn.pdf"),
+  "output/figures/plot_mmean_any_exp_share_agg1_mn.pdf",
   p_mmean_any_exp_share,
   width = 11,
   height = 5,
@@ -1433,7 +1432,7 @@ p_amean_ave_exp <- ggplot(
 #p_amean_ave_exp
 
 ggsave(
-  file.path(output_figures, "plot_amean_ave_exp_agg1_mn.pdf"),
+  "output/figures/plot_amean_ave_exp_agg1_mn.pdf",
   p_amean_ave_exp,
   width = 7,
   height = 5,
@@ -1489,7 +1488,7 @@ p_mmean_ave_exp <- ggplot(
 #p_mmean_ave_exp
 
 ggsave(
-  file.path(output_figures, "plot_mmean_ave_exp_agg1_mn.pdf"),
+  "output/figures/plot_mmean_ave_exp_agg1_mn.pdf",
   p_mmean_ave_exp,
   width = 11,
   height = 5,
@@ -1555,7 +1554,7 @@ p_amean_ft <- ggplot(
 #p_amean_ft
 
 ggsave(
-  file.path(output_figures, "plot_amean_ft_agg1_mn.pdf"),
+  "output/figures/plot_amean_ft_agg1_mn.pdf",
   p_amean_ft,
   width = 7,
   height = 5,
@@ -1625,7 +1624,7 @@ p_mmean_ft <- ggplot(
 #p_mmean_ft
 
 ggsave(
-  file.path(output_figures, "plot_mmean_ft_agg1_mn.pdf"),
+  "output/figures/plot_mmean_ft_agg1_mn.pdf",
   p_mmean_ft,
   width = 11,
   height = 5,
@@ -1676,7 +1675,7 @@ p_amean_ft_share <- ggplot(share_ft_ann, aes(x = year,
 #p_amean_ft_share
 
 ggsave(
-  file.path(output_figures, "plot_amean_ft_share_agg1_mn.pdf"),
+  "output/figures/plot_amean_ft_share_agg1_mn.pdf",
   p_amean_ft_share,
   width = 7,
   height = 5,
@@ -1733,7 +1732,7 @@ p_mmean_ft_share <- ggplot(
 #p_mmean_ft_share
 
 ggsave(
-  file.path(output_figures, "plot_mmean_ft_share_agg1_mn.pdf"),
+  "output/figures/plot_mmean_ft_share_agg1_mn.pdf",
   p_mmean_ft_share,
   width = 11,
   height = 5,
@@ -1807,7 +1806,7 @@ p_amean_intern <- ggplot(
 #p_amean_intern
 
 ggsave(
-  file.path(output_figures, "plot_amean_intern_agg1_mn.pdf"),
+  "output/figures/plot_amean_intern_agg1_mn.pdf",
   p_amean_intern,
   width = 7,
   height = 5,
@@ -1873,7 +1872,7 @@ p_mmean_intern <- ggplot(
 #p_mmean_intern
 
 ggsave(
-  file.path(output_figures, "plot_mmean_intern_agg1_mn.pdf"),
+  "output/figures/plot_mmean_intern_agg1_mn.pdf",
   p_mmean_intern,
   width = 11,
   height = 5,
@@ -1924,7 +1923,7 @@ p_amean_intern_share <- ggplot(share_intern_ann, aes(x = year,
 #p_amean_intern_share
 
 ggsave(
-  file.path(output_figures, "plot_amean_intern_share_agg1_mn.pdf"),
+  "output/figures/plot_amean_intern_share_agg1_mn.pdf",
   p_amean_intern_share,
   width = 7,
   height = 5,
@@ -1981,7 +1980,7 @@ p_mmean_intern_share <- ggplot(
 #p_mmean_intern_share
 
 ggsave(
-  file.path(output_figures, "plot_mmean_intern_share_agg1_mn.pdf"),
+  "output/figures/plot_mmean_intern_share_agg1_mn.pdf",
   p_mmean_intern_share,
   width = 11,
   height = 5,
@@ -1992,13 +1991,4 @@ rm(
   share_intern_mon,
   p_mmean_intern_share
 )
-
-
-
-
-
-
-
-
-
 

@@ -4,7 +4,7 @@
 #
 # R Script: "sumstats_agg2_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 6, 2026
+# Date of this version: July 17, 2026
 #
 # Description: Creates the firm-occupation-state-month level sumstats. 
 #
@@ -13,18 +13,13 @@
 # Output: 
 ##############################################################################
 
-# NOTE: When run in the cluster, I will need to update paths and (I believe)
-# install the appropriate packages. 
-
 rm(list = ls())
+gc()
 
-# Load path helper 
-home <- path.expand("~")
-proj_root <- file.path(home, "nca_job_postings")
-programs_dir <- file.path(proj_root, "programs")
-source(file.path(programs_dir, "0c_paths.R"))
+setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
-
+# --- Load packages ---
 library(dplyr)
 library(tidyr)
 library(readr)
@@ -33,7 +28,7 @@ library(stargazer) # necessary?
 library(scales) # necessary?
 
 # Load analysis data 
-agg2_mn_analysis <- read_csv(file.path(data_analysis, "agg2_mn_analysis.csv"))
+agg2_mn_analysis <- read_csv("data/analysis-data/agg2_mn_analysis.csv")
 
 
 # Create vectors of key variables  
@@ -151,7 +146,7 @@ table_sumstat_outcomes <- sumtab_out_final %>%
 print(table_sumstat_outcomes)
 
 # --- 6. Write table to a .tex file ---  
-writeLines(table_sumstat_outcomes, file.path(output_tables, "table_sumstat_outcomes_agg2_mn.tex"))
+writeLines(table_sumstat_outcomes, "output/tables/table_sumstat_outcomes_agg2_mn.tex")
 
 
 

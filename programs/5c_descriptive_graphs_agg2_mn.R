@@ -4,7 +4,7 @@
 #
 # R Script: "descriptive_graphs_agg2_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 10, 2026
+# Date of this version: July 17, 2026
 #
 # Description: Creates occupation-state-month level descriptive graphs.
 #
@@ -13,17 +13,22 @@
 # Output: 
 ##############################################################################
 
+# NOTE: Not really using this for descriptive graphs at the moment. Using 5a's
+# descriptive graphs instead. 
+  
 rm(list = ls())
+gc()
 
+setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
+
+# --- Load packages ---
 library(dplyr)
 library(ggplot2)
 library(readr)
 library(lubridate)
 library(scales)
 library(stringr)
-
-# Set working directory 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
 
 # Load the data 
 agg2 <- read_csv("data/analysis-data/agg2_mn_analysis.csv")

@@ -14,9 +14,12 @@
 # Output: "map_state_laws.pdf"
 ##############################################################################
 
+# ---------------------------- HOUSEKEEPING ------------------------------------
 rm(list = ls())
+gc()
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
 library(dplyr)
 library(ggplot2)

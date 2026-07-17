@@ -4,7 +4,7 @@
 #
 # R Script: "3b_prep_agg1_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 6, 2026
+# Date of this version: July 17, 2026
 #
 # Description: This script prepares the occupation-state-month level analysis 
 # data for analyzing Minnesota's full noncompete ban. 
@@ -14,17 +14,15 @@
 # Output: "agg1_mn_clean.csv," "agg1_mn_analysis.csv"
 ##############################################################################
 
-# NOTE: When run in the cluster, I will need to update paths and (I believe)
-# install the appropriate packages. 
+# NOTE: Change to actual dataset and not sample version for cluster run.
 
 rm(list = ls())
+gc()
 
-# Load path helper 
-home <- path.expand("~")
-proj_root <- file.path(home, "nca_job_postings")
-programs_dir <- file.path(proj_root, "programs")
-source(file.path(programs_dir, "0c_paths.R"))
+setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
+# --- Load packages ---
 library(dplyr)
 library(tidyr)
 library(stringr)
@@ -34,7 +32,7 @@ library(lubridate)
 # 1. Restrict to occupation-state-month cells with at least 10 listings. 
 # NOTE: Saying "total" listings here, seems misleading. 
 
-agg1_mn <- read_csv(file.path(data_raw, "anastasi_agg1_v2.csv"))
+agg1_mn <- read_csv("data/raw-data/sample_anastasi_agg1_v2.csv")
 
 # Total starting observations 
 n_start_a1_mn <- agg1_mn %>% # a1 for agg1 
@@ -45,7 +43,7 @@ n_start_a1_mn
 
 write_lines(
   format(n_start_a1_mn, big.mark = ","),
-  file.path(output_other, "n_start_a1_mn.tex")
+  "output/other/n_start_a1_mn.tex"
 )
 
 
@@ -62,7 +60,7 @@ n_drop_noise_a1_mn
 
 write_lines(
   format(n_drop_noise_a1_mn, big.mark = ","),
-  file.path(output_other, "n_drop_noise_a1_mn.tex")
+  "output/other/n_drop_noise_a1_mn.tex"
 )
 
 # Drop obs 
@@ -75,7 +73,7 @@ agg1_mn <- agg1_mn %>%
 # 2. Merge with NCA treatment panel.
 
 # Load treatment panel 
-state_nca_laws <- read.csv(file.path(data_raw, "state_nca_laws.csv"))
+state_nca_laws <- read_csv("data/raw-data/state_nca_laws.csv")
 
 # Convert year and month variables into date variables 
 state_nca_laws <- state_nca_laws %>%
@@ -203,7 +201,7 @@ n_drop_incb_a1_mn <- agg1_mn_treat %>%
 
 write_lines(
   format(n_drop_incb_a1_mn, big.mark = ","),
-  file.path(output_other, "n_drop_incb_a1_mn.tex")
+  "output/other/n_drop_incb_a1_mn.tex"
 )
 
 n_drop_hourb_a1_mn <- agg1_mn_treat %>%
@@ -213,7 +211,7 @@ n_drop_hourb_a1_mn <- agg1_mn_treat %>%
 
 write_lines(
   format(n_drop_hourb_a1_mn, big.mark = ","),
-  file.path(output_other, "n_drop_hourb_a1_mn.tex")
+  "output/other/n_drop_hourb_a1_mn.tex"
 )
 
 n_drop_otherb_a1_mn <- agg1_mn_treat %>%
@@ -223,7 +221,7 @@ n_drop_otherb_a1_mn <- agg1_mn_treat %>%
 
 write_lines(
   format(n_drop_otherb_a1_mn, big.mark = ","),
-  file.path(output_other, "n_drop_otherb_a1_mn.tex")
+  "output/other/n_drop_otherb_a1_mn.tex"
 )
 
 
@@ -255,7 +253,7 @@ states_ind <- agg1_mn_treat %>%
 
 # i.b. Find corresponding SOC-4 codes 
 # NOTE: SOC-4 here appears to be the "broad occupation" group.
-ind_crosswalk <- read.csv(file.path(data_raw, "ban_occ_soc_crosswalk.csv")) %>%
+ind_crosswalk <- read_csv("data/raw-data/ban_occ_soc_crosswalk.csv") %>%
   mutate(
     ban_occ = str_trim(ban_occ),
   )
@@ -366,7 +364,7 @@ n_drop_indb_a1_mn
 
 write_lines(
   format(n_drop_indb_a1_mn, big.mark = ","),
-  file.path(output_other, "n_drop_indb_a1_mn.tex")
+  "output/other/n_drop_indb_a1_mn.tex"
 )
 
 agg1_mn_treat <- agg1_mn_treat %>%
@@ -398,7 +396,7 @@ n_drop_healthb_a1_mn
 
 write_lines(
   format(n_drop_healthb_a1_mn, big.mark = ","),
-  file.path(output_other, "n_drop_healthb_a1_mn.tex")
+  "output/other/n_drop_healthb_a1_mn.tex"
 )
 
 agg1_mn_treat <- agg1_mn_treat %>%
@@ -429,7 +427,7 @@ n_drop_full_a1_mn
 
 write_lines(
   format(n_drop_full_a1_mn, big.mark = ","),
-  file.path(output_other, "n_drop_full_a1_mn.tex")
+  "output/other/n_drop_full_a1_mn.tex"
 )
 
 
@@ -479,7 +477,7 @@ agg1_mn_treat <- agg1_mn_treat %>%
     internship_share = internship / total_postings
   )
 
-write_csv(agg1_mn_treat, file.path(data_clean, "agg1_mn_clean.csv"))
+write_csv(agg1_mn_treat, "data/clean-data/agg1_mn_clean.csv")
 
 
 
@@ -492,7 +490,7 @@ write_csv(agg1_mn_treat, file.path(data_clean, "agg1_mn_clean.csv"))
 # NOTE: Baseline for the MN samples can be the year before MN's ban: 2022. 
 base_year <- 2022 # year before MN ban
 
-covariates <- read_csv(file.path(data_clean, "covariates_a_clean.csv"))
+covariates <- read_csv("data/clean-data/covariates_a_clean.csv")
 
 covariates_base <- covariates %>%
   filter(
@@ -524,7 +522,7 @@ rm(agg1_mn_treat, covariates, covariates_base)
 # 6. Convert average_salary to a real measure using CPI. All in 2022 dollars 
 # (to match the base period).
 
-cpi <- read_csv(file.path(data_clean, "cpi_clean.csv"))
+cpi <- read_csv("data/clean-data/cpi_clean.csv")
 
 agg1_mn_analysis <- agg1_mn_analysis %>%
   left_join(
@@ -552,4 +550,4 @@ agg1_mn_analysis <- agg1_mn_analysis %>%
 
 rm(cpi)
 
-write_csv(agg1_mn_analysis, file.path(data_analysis, "agg1_mn_analysis.csv"))
+write_csv(agg1_mn_analysis, "data/analysis-data/agg1_mn_analysis.csv")

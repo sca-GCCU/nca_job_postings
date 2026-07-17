@@ -13,9 +13,12 @@
 # Output: 
 ##############################################################################
 
+# ---------------------------- HOUSEKEEPING ------------------------------------
 rm(list = ls())
+gc()
 
 setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
 #install.packages("kableExtra")
 
@@ -27,10 +30,11 @@ library(kableExtra)
 library(lubridate)
 library(scales) 
 
+# ------------------------------ LOAD RAW DATA ---------------------------------
 state_laws <- read_csv("data/raw-data/state_nca_laws.csv")
 cpi <- read_csv("data/clean-data/cpi_clean.csv")
 
-# 1. INCOME BANS TABLE 
+# ---------------------------- INCOME BANS TABLE ------------------------------- 
 
 # A. States that update their wage thresholds 
 update_states <- state_laws %>%
@@ -49,8 +53,7 @@ state_laws_ib <- state_laws %>%
     date = make_date(eff_inc1_year, eff_inc1_month, 1)
   )
 
-# Merge to CPI data and convert to base year dollars 
-# NOTE: Base year is currently 2022 to match MN's ban year)
+# Merge to CPI data and convert to base year dollars (7/17/26: 2024 dollars)
 state_laws_ib <- state_laws_ib %>%
   left_join(
     cpi,
@@ -127,7 +130,7 @@ print(income_bans_tab)
 
 
 
-# 2. OCCUPATION/INDUSTRY BANS 
+# -------------------- OCCUPATION/INDUSTRY BANS --------------------------------
 
 # HAVE TO THINK ABOUT THE RIGHT WAY TO HANDLE MULTIPLE POTENTIAL BAN DATES.
 # ONLY HAPPENS WHEN STATE HAS IND-BAN AND HEALTH-BAN. 

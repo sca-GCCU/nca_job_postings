@@ -4,7 +4,7 @@
 #
 # R Script: "3g_prep_salary_placebo_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 6, 2026
+# Date of this version: July 17, 2026
 #
 # Description: This script prepares the placebo salary analysis data for 
 # examining Minnesota's full noncompete ban. 
@@ -14,17 +14,15 @@
 # Output: "salary_placebo_mn_analysis.csv"
 ##############################################################################
 
-# NOTE: When run in the cluster, I will need to update paths and (I believe)
-# install the appropriate packages. 
+# NOTE: Change to actual dataset and not sample version for cluster run.
 
 rm(list = ls())
+gc()
 
-# Load path helper 
-home <- path.expand("~")
-proj_root <- file.path(home, "nca_job_postings")
-programs_dir <- file.path(proj_root, "programs")
-source(file.path(programs_dir, "0c_paths.R"))
+setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
+# --- Load packages ---
 library(dplyr)
 library(tidyr)
 library(stringr)
@@ -32,7 +30,7 @@ library(readr)
 library(lubridate)
 
 # 1. Load data  
-salary_placebo <- read_csv(file.path(data_raw, "anastasi_salary_placebo.csv"))
+salary_placebo <- read_csv("data/raw-data/anastasi_salary_placebo.csv")
 
 # Starting observations 
 n_start_sal_p_mn <- salary_placebo %>% # sal_p for salary_placebo
@@ -43,14 +41,14 @@ n_start_sal_p_mn
 
 write_lines(
   format(n_start_sal_p_mn, big.mark = ","),
-  file.path(output_other, "n_start_sal_p_mn.tex")
+  "output/other/n_start_sal_p_mn.tex"
 )
 
 
 # 2. Merge with NCA treatment panel.
 
 # Load treatment panel 
-state_nca_laws <- read.csv(file.path(data_raw, "state_nca_laws.csv"))
+state_nca_laws <- read.csv("data/raw-data/state_nca_laws.csv")
 
 # Convert year and month variables into date variables 
 state_nca_laws <- state_nca_laws %>%
@@ -177,7 +175,7 @@ n_drop_incb_sal_p_mn <- salary_placebo_mn_treat %>%
 
 write_lines(
   format(n_drop_incb_sal_p_mn, big.mark = ","),
-  file.path(output_other, "n_drop_incb_sal_p_mn.tex")
+  "output/other/n_drop_incb_sal_p_mn.tex"
 )
 
 n_drop_hourb_sal_p_mn <- salary_placebo_mn_treat %>%
@@ -187,7 +185,7 @@ n_drop_hourb_sal_p_mn <- salary_placebo_mn_treat %>%
 
 write_lines(
   format(n_drop_hourb_sal_p_mn, big.mark = ","),
-  file.path(output_other, "n_drop_hourb_sal_p_mn.tex")
+  "output/other/n_drop_hourb_sal_p_mn.tex"
 )
 
 n_drop_otherb_sal_p_mn <- salary_placebo_mn_treat %>%
@@ -199,7 +197,7 @@ n_drop_otherb_sal_p_mn <- salary_placebo_mn_treat %>%
 
 write_lines(
   format(n_drop_otherb_sal_p_mn, big.mark = ","),
-  file.path(output_other, "n_drop_otherb_sal_p_mn.tex")
+  "output/other/n_drop_otherb_sal_p_mn.tex"
 )
 
 salary_placebo_mn_treat <- salary_placebo_mn_treat %>%
@@ -230,7 +228,7 @@ states_ind <- salary_placebo_mn_treat %>%
 
 # i.b. Find corresponding SOC-4 codes 
 # NOTE: SOC-4 here appears to be the "broad occupation" group.
-ind_crosswalk <- read.csv(file.path(data_raw, "ban_occ_soc_crosswalk.csv")) %>%
+ind_crosswalk <- read.csv("data/raw-data/ban_occ_soc_crosswalk.csv") %>%
   mutate(
     ban_occ = str_trim(ban_occ),
   )
@@ -341,7 +339,7 @@ n_drop_indb_sal_p_mn
 
 write_lines(
   format(n_drop_indb_sal_p_mn, big.mark = ","),
-  file.path(output_other, "n_drop_indb_sal_p_mn.tex")
+  "output/other/n_drop_indb_sal_p_mn.tex"
 )
 
 salary_placebo_mn_treat <- salary_placebo_mn_treat %>%
@@ -373,7 +371,7 @@ n_drop_healthb_sal_p_mn
 
 write_lines(
   format(n_drop_healthb_sal_p_mn, big.mark = ","),
-  file.path(output_other, "n_drop_healthb_sal_p_mn.tex")
+  "output/other/n_drop_healthb_sal_p_mn.tex"
 )
 
 salary_placebo_mn_treat <- salary_placebo_mn_treat %>%
@@ -404,7 +402,7 @@ n_drop_full_sal_p_mn
 
 write_lines(
   format(n_drop_full_sal_p_mn, big.mark = ","),
-  file.path(output_other, "n_drop_full_sal_p_mn.tex")
+  "output/other/n_drop_full_sal_p_mn.tex"
 )
 
 salary_placebo_mn_treat <- salary_placebo_mn_treat %>%
@@ -445,7 +443,7 @@ salary_placebo_mn_treat <- salary_placebo_mn_treat %>%
 # NOTE: Baseline for the MN samples can be the year before MN's ban: 2022. 
 base_year <- 2022 # year before MN ban
 
-covariates <- read_csv(file.path(data_clean, "covariates_a_clean.csv"))
+covariates <- read_csv("data/clean-data/covariates_a_clean.csv")
 
 covariates_base <- covariates %>%
   filter(
@@ -477,7 +475,7 @@ rm(salary_placebo_mn_treat, covariates, covariates_base)
 # 5. Convert salary info to a real dollars using CPI. All in 2022 dollars 
 # (to match the base period).
 
-cpi <- read_csv(file.path(data_clean, "cpi_clean.csv"))
+cpi <- read_csv("data/clean-data/cpi_clean.csv")
 
 salary_placebo_mn_analysis <- salary_placebo_mn_analysis %>%
   left_join(
@@ -507,7 +505,7 @@ salary_placebo_mn_analysis <- salary_placebo_mn_analysis %>%
 
 rm(cpi)
 
-write_csv(salary_placebo_mn_analysis, file.path(data_analysis, "salary_placebo_mn_analysis.csv"))
+write_csv(salary_placebo_mn_analysis, "data/analysis-data/salary_placebo_mn_analysis.csv")
 
 
 

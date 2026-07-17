@@ -4,7 +4,7 @@
 #
 # R Script: "descriptive_graphs_salary_mn" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 10, 2026
+# Date of this version: July 17, 2026
 #
 # Description: Creates postings-level descriptive graphs of salary offers.
 #
@@ -13,18 +13,13 @@
 # Output: 
 ##############################################################################
 
-# NOTE: When run in the cluster, I will need to update paths and (I believe)
-# install the appropriate packages.
-
-
 rm(list = ls())
+gc()
 
-# Load path helper 
-home <- path.expand("~")
-proj_root <- file.path(home, "nca_job_postings")
-programs_dir <- file.path(proj_root, "programs")
-source(file.path(programs_dir, "0c_paths.R"))
+setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
+# --- Load packages ---
 library(dplyr)
 library(ggplot2)
 library(readr)
@@ -32,7 +27,7 @@ library(lubridate)
 library(scales)
 
 # Load data 
-salary_df <- read_csv(file.path(data_analysis, "salary_mn_analysis.csv"))
+salary_df <- read_csv("data/analysis-data/salary_mn_analysis.csv")
 
 
 # --- Define Vectors for Plotting --- 
@@ -98,7 +93,7 @@ p_amean_rsalary <- ggplot(
 #p_amean_rsalary
 
 ggsave(
-  file.path(output_figures, "plot_amean_rsalary_mn.pdf"),
+  "output/figures/plot_amean_rsalary_mn.pdf",
   p_amean_rsalary,
   width = 7,
   height = 4.5,
@@ -160,7 +155,7 @@ p_amean_rsalary_exp <- ggplot(
 #p_amean_rsalary_exp
 
 ggsave(
-  file.path(output_figures, "plot_amean_rsalary_exp_mn.pdf"),
+  "output/figures/plot_amean_rsalary_exp_mn.pdf",
   p_amean_rsalary_exp,
   width = 7,
   height = 4.5,
@@ -223,7 +218,7 @@ p_amean_rsalary_noexp <- ggplot(
 #p_amean_rsalary_noexp
 
 ggsave(
-  file.path(output_figures, "plot_amean_rsalary_noexp_mn.pdf"),
+  "output/figures/plot_amean_rsalary_noexp_mn.pdf",
   p_amean_rsalary_noexp,
   width = 7,
   height = 4.5,
@@ -295,7 +290,7 @@ p_mmean_rsalary <- ggplot(
 #p_mmean_rsalary
 
 ggsave(
-  file.path(output_figures, "plot_mmean_rsalary_mn.pdf"),
+  "output/figures/plot_mmean_rsalary_mn.pdf",
   p_mmean_rsalary,
   width = 11,
   height = 5,
@@ -360,7 +355,7 @@ p_mmean_rsalary_exp <- ggplot(
 #p_mmean_rsalary_exp
 
 ggsave(
-  file.path(output_figures, "plot_mmean_rsalary_exp_mn.pdf"),
+  "output/figures/plot_mmean_rsalary_exp_mn.pdf",
   p_mmean_rsalary_exp,
   width = 11,
   height = 5,
@@ -426,7 +421,7 @@ p_mmean_rsalary_noexp <- ggplot(
 #p_mmean_rsalary_noexp
 
 ggsave(
-  file.path(output_figures, "plot_mmean_rsalary_noexp_mn.pdf"),
+  "output/figures/plot_mmean_rsalary_noexp_mn.pdf",
   p_mmean_rsalary_noexp,
   width = 11,
   height = 5,

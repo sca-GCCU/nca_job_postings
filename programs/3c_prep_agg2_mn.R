@@ -4,7 +4,7 @@
 #
 # R Script: "3c_prep_agg2_mn.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: April 6, 2026
+# Date of this version: July 17, 2026
 #
 # Description: This script prepares the firm-occupation-state-month level  
 # analysis data for analyzing Minnesota's full noncompete ban. 
@@ -14,19 +14,15 @@
 # Output: "agg2_mn_clean.csv," "agg2_mn_analysis.csv"
 ##############################################################################
 
-# NOTE: When run in the cluster, I will need to update paths and (I believe)
-# install the appropriate packages. 
+# NOTE: Change to actual dataset and not sample version for cluster run.
 
 rm(list = ls())
 gc()
 
-# Load path helper 
-#home <- path.expand("~") # NOTE: COMMENT OUT FOR DEBUG.
-#proj_root <- file.path(home, "nca_job_postings") # NOTE: COMMENT OUT FOR DEBUG.
-#programs_dir <- file.path(proj_root, "programs") # NOTE: COMMENT OUT FOR DEBUG.
-#source(file.path(programs_dir, "0c_paths.R")) # NOTE: COMMENT OUT FOR DEBUG.
-source("C:/Users/scana/Desktop/Github_projects/nca_job_postings/programs/0c_paths.R")
+setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+#setwd("/home/scanast/nca_job_postings") # for cluster run
 
+# --- Load packages ---
 library(dplyr)
 library(tidyr)
 library(stringr)
@@ -35,9 +31,7 @@ library(lubridate)
 
 # 1. Restrict to firms with at least 10 total listings. 
 
-#agg2_mn <- read_csv(file.path(data_raw, "anastasi_agg2_v2.csv")) # NOTE: COMMENT OUT FOR DEBUG.
-
-agg2_mn <- read_csv("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings/data/raw-data/sample_anastasi_agg2_v2.csv") # FOR LOCAL DEBUG.
+agg2_mn <- read_csv("data/raw-data/sample_anastasi_agg2_v2.csv") 
 
 # ind_check <- agg2_mn %>%
 #   group_by(company, year, month) %>%
@@ -85,7 +79,7 @@ n_start_a2_mn
 
 write_lines(
   format(n_start_a2_mn, big.mark = ","),
-  file.path(output_other, "n_start_a2_mn.tex")
+  "output/other/n_start_a2_mn.tex"
 )
 
 rm(n_start_a2_mn)
@@ -121,7 +115,7 @@ n_drop_noise_a2_mn
 
 write_lines(
   format(n_drop_noise_a2_mn, big.mark = ","),
-  file.path(output_other, "n_drop_noise_a2_mn.tex")
+  "output/other/n_drop_noise_a2_mn.tex"
 )
 
 rm(n_drop_noise_a2_mn)
@@ -139,7 +133,7 @@ gc()
 # 2. Merge with NCA treatment panel.
 
 # Load treatment panel 
-state_nca_laws <- read_csv(file.path(data_raw, "state_nca_laws.csv"))
+state_nca_laws <- read_csv("data/raw-data/state_nca_laws.csv")
 
 # Convert year and month variables into date variables 
 state_nca_laws <- state_nca_laws %>%
@@ -275,7 +269,7 @@ n_drop_incb_a2_mn <- agg2_mn_treat %>%
 
 write_lines(
   format(n_drop_incb_a2_mn, big.mark = ","),
-  file.path(output_other, "n_drop_incb_a2_mn.tex")
+  "output/other/n_drop_incb_a2_mn.tex"
 )
 
 
@@ -286,7 +280,7 @@ n_drop_hourb_a2_mn <- agg2_mn_treat %>%
 
 write_lines(
   format(n_drop_hourb_a2_mn, big.mark = ","),
-  file.path(output_other, "n_drop_hourb_a2_mn.tex")
+  "output/other/n_drop_hourb_a2_mn.tex"
 )
 
 
@@ -297,7 +291,7 @@ n_drop_otherb_a2_mn <- agg2_mn_treat %>%
 
 write_lines(
   format(n_drop_otherb_a2_mn, big.mark = ","),
-  file.path(output_other, "n_drop_otherb_a2_mn.tex")
+  "output/other/n_drop_otherb_a2_mn.tex"
 )
 
 
@@ -331,7 +325,7 @@ states_ind <- agg2_mn_treat %>%
 
 # i.b. Find corresponding SOC-4 codes 
 # NOTE: SOC-4 here appears to be the "broad occupation" group.
-ind_crosswalk <- read_csv(file.path(data_raw, "ban_occ_soc_crosswalk.csv")) %>%
+ind_crosswalk <- read_csv("data/raw-data/ban_occ_soc_crosswalk.csv") %>%
   mutate(
     ban_occ = str_trim(ban_occ),
   )
@@ -450,7 +444,7 @@ n_drop_indb_a2_mn
 
 write_lines(
   format(n_drop_indb_a2_mn, big.mark = ","),
-  file.path(output_other, "n_drop_indb_a2_mn.tex")
+  "output/other/n_drop_indb_a2_mn.tex"
 )
 
 agg2_mn_treat <- agg2_mn_treat %>%
@@ -485,7 +479,7 @@ n_drop_healthb_a2_mn
 
 write_lines(
   format(n_drop_healthb_a2_mn, big.mark = ","),
-  file.path(output_other, "n_drop_healthb_a2_mn.tex")
+  "output/other/n_drop_healthb_a2_mn.tex"
 )
 
 agg2_mn_treat <- agg2_mn_treat %>%
@@ -519,7 +513,7 @@ n_drop_full_a2_mn
 
 write_lines(
   format(n_drop_full_a2_mn, big.mark = ","),
-  file.path(output_other, "n_drop_full_a2_mn.tex")
+  "output/other/n_drop_full_a2_mn.tex"
 )
 
 agg2_mn_treat <- agg2_mn_treat %>%
@@ -577,7 +571,7 @@ agg2_mn_treat <- agg2_mn_treat %>%
     internship_share = internship / total_postings
   )
 
-write_csv(agg2_mn_treat, file.path(data_clean, "agg2_mn_clean.csv"))
+write_csv(agg2_mn_treat, "data/clean-data/agg2_mn_clean.csv")
 
 gc()
 
@@ -590,7 +584,7 @@ gc()
 # NOTE: Baseline for the MN samples can be the year before MN's ban: 2022. 
 base_year <- 2022 # year before MN ban
 
-covariates <- read_csv(file.path(data_clean, "covariates_a_clean.csv"))
+covariates <- read_csv("data/clean-data/covariates_a_clean.csv")
 
 covariates_base <- covariates %>%
   filter(
@@ -624,7 +618,7 @@ gc()
 
 # 6. Convert average_salary to a real measure using CPI. 
 
-cpi <- read_csv(file.path(data_clean, "cpi_clean.csv"))
+cpi <- read_csv("data/clean-data/cpi_clean.csv")
 
 agg2_mn_analysis <- agg2_mn_analysis %>%
   left_join(
@@ -652,4 +646,4 @@ agg2_mn_analysis <- agg2_mn_analysis %>%
 
 rm(cpi)
 
-write_csv(agg2_mn_analysis, file.path(data_analysis, "agg2_mn_analysis.csv"))
+write_csv(agg2_mn_analysis, "data/analysis-data/agg2_mn_analysis.csv")
