@@ -71,11 +71,7 @@ agg2_mn <- read_csv("data/raw-data/sample_anastasi_agg2_v2.csv")
 
 
 # Total starting observations 
-n_start_a2_mn <- agg2_mn %>%
-  summarise(N = n()) %>%
-  pull(N)
-
-n_start_a2_mn
+n_start_a2_mn <- nrow(agg2_mn)
 
 write_lines(
   format(n_start_a2_mn, big.mark = ","),
@@ -107,11 +103,7 @@ agg2_mn <- agg2_mn %>%
 #rm(agg2_mn_audit)
 
 # Count number dropped 
-n_drop_noise_a2_mn <- agg2_mn %>%
-  summarise(n_dropped = sum(drop_min_ads, na.rm = TRUE)) %>%
-  pull(n_dropped)
-
-n_drop_noise_a2_mn
+n_drop_noise_a2_mn <- sum(agg2_mn$drop_min_ads)
 
 write_lines(
   format(n_drop_noise_a2_mn, big.mark = ","),
@@ -179,7 +171,7 @@ state_nca_laws <- state_nca_laws %>%
 agg2_mn_treat <- agg2_mn %>%
   left_join(state_nca_laws %>% select(-state_name), by = "state")
 
-rm(agg2_mn)
+rm(agg2_mn, state_nca_laws)
 gc()
 
 
@@ -262,10 +254,7 @@ states_other <- agg2_mn_treat %>%
   pull(var = state, name = state_name)
 
 # Dropping obs from the states with income, hourly, or "other" bans.
-n_drop_incb_a2_mn <- agg2_mn_treat %>%
-  filter(state %in% states_inc1) %>%
-  summarise(N = n()) %>%
-  pull(N)
+n_drop_incb_a2_mn <- sum(agg2_mn_treat$state %in% states_inc1)
 
 write_lines(
   format(n_drop_incb_a2_mn, big.mark = ","),
@@ -273,10 +262,7 @@ write_lines(
 )
 
 
-n_drop_hourb_a2_mn <- agg2_mn_treat %>%
-  filter(state %in% states_hourly) %>%
-  summarise(N = n()) %>%
-  pull(N)
+n_drop_hourb_a2_mn <- sum(agg2_mn_treat$state %in% states_hourly)
 
 write_lines(
   format(n_drop_hourb_a2_mn, big.mark = ","),
@@ -284,10 +270,7 @@ write_lines(
 )
 
 
-n_drop_otherb_a2_mn <- agg2_mn_treat %>%
-  filter(state %in% states_other) %>%
-  summarise(N = n()) %>%
-  pull(N)
+n_drop_otherb_a2_mn <- sum(agg2_mn_treat$state %in% states_other)
 
 write_lines(
   format(n_drop_otherb_a2_mn, big.mark = ","),
@@ -432,20 +415,16 @@ missing_soc <- states_ind_soc %>%
 rm(missing_soc)
 
 # Dropping obs in treated occupations in states with ind_bans 
-n_drop_indb_a2_mn <- agg2_mn_treat %>%
-  semi_join(
-    states_ind_soc,
-    by = c("state", "soc_4")
-  ) %>%
-  summarise(N = n()) %>%
-  pull(N)
+# FORMER MORE MEMORY-INTENSE APPROACH.
+# n_drop_indb_a2_mn <- agg2_mn_treat %>%
+#   semi_join(
+#     states_ind_soc,
+#     by = c("state", "soc_4")
+#   ) %>%
+#   summarise(N = n()) %>%
+#   pull(N)
 
-n_drop_indb_a2_mn
-
-write_lines(
-  format(n_drop_indb_a2_mn, big.mark = ","),
-  "output/other/n_drop_indb_a2_mn.tex"
-)
+n_before_indb <- nrow(agg2_mn_treat)
 
 agg2_mn_treat <- agg2_mn_treat %>%
   anti_join(
@@ -453,7 +432,15 @@ agg2_mn_treat <- agg2_mn_treat %>%
     by = c("state", "soc_4")
   )
 
-rm(states_ind_soc, n_drop_indb_a2_mn)
+n_drop_indb_a2_mn <- n_before_indb - nrow(agg2_mn_treat)
+
+write_lines(
+  format(n_drop_indb_a2_mn, big.mark = ","),
+  "output/other/n_drop_indb_a2_mn.tex"
+)
+
+
+rm(n_before_indb, states_ind_soc, n_drop_indb_a2_mn, states_ind)
 gc()
 
 # Check that all soc_4 codes from states_health_soc have a match.
@@ -467,20 +454,7 @@ missing_soc <- states_health_soc %>%
 rm(missing_soc)
 
 # Dropping obs in treated occupations in states with health_bans
-n_drop_healthb_a2_mn <- agg2_mn_treat %>%
-  semi_join(
-    states_health_soc,
-    by = c("state", "soc_4")
-  ) %>%
-  summarise(N = n()) %>%
-  pull(N)
-
-n_drop_healthb_a2_mn
-
-write_lines(
-  format(n_drop_healthb_a2_mn, big.mark = ","),
-  "output/other/n_drop_healthb_a2_mn.tex"
-)
+n_before_healthb <- nrow(agg2_mn_treat)
 
 agg2_mn_treat <- agg2_mn_treat %>%
   anti_join(
@@ -488,7 +462,14 @@ agg2_mn_treat <- agg2_mn_treat %>%
     by = c("state", "soc_4")
   )
 
-rm(states_health_soc, n_drop_healthb_a2_mn)
+n_drop_healthb_a2_mn <- n_before_healthb - nrow(agg2_mn_treat)
+
+write_lines(
+  format(n_drop_healthb_a2_mn, big.mark = ","),
+  "output/other/n_drop_healthb_a2_mn.tex"
+)
+
+rm(n_before_healthb, states_health_soc, n_drop_healthb_a2_mn, states_health)
 gc()
 
 
@@ -504,12 +485,7 @@ states_full <- agg2_mn_treat %>%
   filter(!(state == 27)) %>% # filter out Minnesota 
   pull(state, state_name) # vectorize
 
-n_drop_full_a2_mn <- agg2_mn_treat %>%
-  filter(state %in% states_full) %>%
-  summarise(N = n()) %>%
-  pull(N)
-
-n_drop_full_a2_mn
+n_drop_full_a2_mn <- sum(agg2_mn_treat$state %in% states_full)
 
 write_lines(
   format(n_drop_full_a2_mn, big.mark = ","),
@@ -526,8 +502,7 @@ gc()
 # D. Clean up data frames and variables you don't need anymore 
 
 # Data frames 
-rm(ind_crosswalk, state_nca_laws)
-rm(list = ls(pattern = "^states"))
+rm(ind_crosswalk)
 gc()
 
 # Variables 
