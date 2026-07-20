@@ -655,6 +655,16 @@ gc()
 
 
 # -------------------- CS DID ANALYSIS (CONDITIONAL - SOC) ---------------------
+# NOTE: This part of the code is not working because it results in a singular 
+# regression matrix in the pre-treatment time period. 
+
+# Convert soc_4 from a character to a factor 
+df_soc <- df_soc %>%
+  mutate(
+    soc_4 = factor(soc_4)
+  )
+
+
 # --- Total Postings --- 
 cs_tot_post_cond <- att_gt(
   yname = "total_postings_soc",
