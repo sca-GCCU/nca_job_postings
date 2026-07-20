@@ -40,56 +40,16 @@ save_stat <- function(x, name, digits = 0, big_mark = ",", dir = "output/other")
 # ------------------------------ LOAD RAW DATA ---------------------------------
 agg2 <- read_csv("data/raw-data/sample_anastasi_agg2_v2.csv") # change in cluster
 
-
-# ----------------- AGGREGATE TO FIRM-OCC-STATE-YEAR LEVEL ---------------------
-# NOTE: Need this level of aggregation if the new dataset is given to me at the
-# firm-naics-occ-state-year level. Currently, I believe this may be irrelevant... 
-# I also worry that the NAICS may no longer be unique at the firm-naics-occ-
-# state-year level once I receive the new aggregation from Cody. 
-
-agg2 <- agg2 %>% # overwriting agg2 to save memory in cluster run
-  group_by(company, soc_4, state, year) %>%
-  summarise(
-    company_name = first(company_name),
-    soc_4_name = first(soc_4_name),
-    state_name = first(state_name), 
-    
-    naics4 = first(naics4),
-    naics4_name = first(naics4_name),
-
-    any_educ_firm = sum(any_educ, na.rm = TRUE),
-    bachelor_firm = sum(bachelor, na.rm = TRUE),
-    master_firm = sum(master, na.rm = TRUE),
-    doctorate_firm = sum(doctorate, na.rm = TRUE),
-    
-    any_exp_firm = sum(any_exp, na.rm = TRUE),
-    
-    ave_exp_num = sum(ave_exp * total_postings, na.rm = TRUE),
-    ave_exp_den = sum(total_postings[!is.na(ave_exp)], na.rm = TRUE),
-    ave_exp_firm = na_if(ave_exp_num / ave_exp_den, NaN),
-    
-    fulltime_firm = sum(fulltime, na.rm = TRUE),
-    parttime_firm = sum(parttime, na.rm = TRUE),
-    flextime_firm = sum(flextime, na.rm = TRUE),
-    
-    total_postings_firm = sum(total_postings, na.rm = TRUE),
-    
-    .groups = "drop"
-  ) %>% 
-  relocate(company_name, .after = company) %>%
-  relocate(soc_4_name, .after = soc_4) %>%
-  relocate(state_name, .after = state)
-
 # --- Drop Obs Outside Sample Window --- 
 # NOTE: Dropping 2025 because we don't currently have the whole year.
 agg2 <- agg2 %>% filter(year < 2025)
 
-# --- Starting Obs ---
-n_start <- nrow(agg2)
-save_stat(n_start, "n_start")
+# # --- Starting Obs ---
+# n_start <- nrow(agg2)
+# save_stat(n_start, "n_start")
 
 # --- Starting Postings --- 
-postings_start <- sum(agg2$total_postings_firm, na.rm = TRUE)
+postings_start <- sum(agg2$total_postings, na.rm = TRUE)
 save_stat(postings_start, "postings_start")
 
 
@@ -98,19 +58,19 @@ save_stat(postings_start, "postings_start")
 agg2 <- agg2 %>%
   group_by(company) %>%
   mutate(
-    total_postings_ever = sum(total_postings_firm, na.rm = TRUE)
+    total_postings_ever = sum(total_postings, na.rm = TRUE)
   ) %>%
   ungroup() %>%
   mutate(
     drop_min_ads = (total_postings_ever < 10)
   )
 
-# Obs to drop
-n_drop_noise <- sum(agg2$drop_min_ads)
-save_stat(n_drop_noise, "n_drop_noise")
+# # Obs to drop
+# n_drop_noise <- sum(agg2$drop_min_ads)
+# save_stat(n_drop_noise, "n_drop_noise")
 
 # Postings to drop
-postings_drop_noise <- sum(agg2$total_postings_firm[agg2$drop_min_ads],
+postings_drop_noise <- sum(agg2$total_postings[agg2$drop_min_ads],
                            na.rm = TRUE)
 save_stat(postings_drop_noise, "postings_drop_noise")
 
@@ -168,12 +128,12 @@ states_hourly <- agg2 %>%
   filter(ever_hourly) %>%
   pull(var = state, name = state_name)
 
-# Obs to drop
-n_drop_hourly <- sum(agg2$state %in% states_hourly)
-save_stat(n_drop_hourly, "n_drop_hourly")
+# # Obs to drop
+# n_drop_hourly <- sum(agg2$state %in% states_hourly)
+# save_stat(n_drop_hourly, "n_drop_hourly")
 
 # Postings to drop 
-postings_drop_hourly <- sum(agg2$total_postings_firm[agg2$state %in% states_hourly], 
+postings_drop_hourly <- sum(agg2$total_postings[agg2$state %in% states_hourly], 
                             na.rm = TRUE)
 save_stat(postings_drop_hourly, "postings_drop_hourly")
 
@@ -199,12 +159,12 @@ states_other <- agg2 %>%
   filter(ever_other) %>%
   pull(var = state, name = state_name)
 
-# Obs to drop
-n_drop_other <- sum(agg2$state %in% states_other)
-save_stat(n_drop_other, "n_drop_other")
+# # Obs to drop
+# n_drop_other <- sum(agg2$state %in% states_other)
+# save_stat(n_drop_other, "n_drop_other")
 
 # Postings to drop 
-postings_drop_other <- sum(agg2$total_postings_firm[agg2$state %in% states_other], 
+postings_drop_other <- sum(agg2$total_postings[agg2$state %in% states_other], 
                             na.rm = TRUE)
 save_stat(postings_drop_other, "postings_drop_other")
 
@@ -221,12 +181,12 @@ gc()
 # A. Lawyers 
 # NOTE: NCAs are universally banned for lawyers. Lawyer's SOC code: 23-1010.
 
-# Obs to drop
-n_drop_lawyers <- sum(agg2$soc_4 == "23-1010")
-save_stat(n_drop_lawyers, "n_drop_lawyers")
+# # Obs to drop
+# n_drop_lawyers <- sum(agg2$soc_4 == "23-1010")
+# save_stat(n_drop_lawyers, "n_drop_lawyers")
 
 # Postings to drop
-postings_drop_lawyers <- sum(agg2$total_postings_firm[agg2$soc_4 == "23-1010"],
+postings_drop_lawyers <- sum(agg2$total_postings[agg2$soc_4 == "23-1010"],
                              na.rm = TRUE)
 save_stat(postings_drop_lawyers, "postings_drop_lawyers")
 
@@ -282,8 +242,8 @@ states_ind_soc <- states_ind_expansion %>%
 # NCAs for some health occupations. Hence I do drop some health occupation 
 # listings here already. 
 
-n_before_ind_soc <- nrow(agg2)
-postings_before_ind_soc <- sum(agg2$total_postings_firm, na.rm = TRUE)
+# n_before_ind_soc <- nrow(agg2)
+postings_before_ind_soc <- sum(agg2$total_postings, na.rm = TRUE)
 
 agg2 <- agg2 %>%
   anti_join(
@@ -291,12 +251,12 @@ agg2 <- agg2 %>%
     by = c("state", "soc_4")
   )
 
-# Obs dropped 
-n_drop_ind_soc <- n_before_ind_soc - nrow(agg2)
-save_stat(n_drop_ind_soc, "n_drop_ind_soc")
+# # Obs dropped 
+# n_drop_ind_soc <- n_before_ind_soc - nrow(agg2)
+# save_stat(n_drop_ind_soc, "n_drop_ind_soc")
 
 # Postings dropped
-postings_drop_ind_soc <- postings_before_ind_soc - sum(agg2$total_postings_firm,
+postings_drop_ind_soc <- postings_before_ind_soc - sum(agg2$total_postings,
                                                        na.rm = TRUE)
 save_stat(postings_drop_ind_soc, "postings_drop_ind_soc")
 
@@ -320,8 +280,8 @@ states_ind_naics <- states_ind_expansion %>%
   select(-ever_ind, -note) %>%
   filter(!is.na(naics4))
 
-n_before_ind_naics <- nrow(agg2)
-postings_before_ind_naics <- sum(agg2$total_postings_firm, na.rm = TRUE)
+# n_before_ind_naics <- nrow(agg2)
+postings_before_ind_naics <- sum(agg2$total_postings, na.rm = TRUE)
 
 agg2 <- agg2 %>%
   anti_join(
@@ -329,12 +289,12 @@ agg2 <- agg2 %>%
     by = c("state", "naics4")
   )
 
-# Obs to drop
-n_drop_ind_naics <- n_before_ind_naics - nrow(agg2)
-save_stat(n_drop_ind_naics, "n_drop_ind_naics")
+# # Obs to drop
+# n_drop_ind_naics <- n_before_ind_naics - nrow(agg2)
+# save_stat(n_drop_ind_naics, "n_drop_ind_naics")
 
 # Postings to drop
-postings_drop_ind_naics <- postings_before_ind_naics - sum(agg2$total_postings_firm,
+postings_drop_ind_naics <- postings_before_ind_naics - sum(agg2$total_postings,
                                                            na.rm = TRUE)
 save_stat(postings_drop_ind_naics, "postings_drop_ind_naics")
 
@@ -372,8 +332,8 @@ state_health1_soc <- state_health1_expansion %>%
   select(-ever_health1, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_before_health1 <- nrow(agg2)
-postings_before_health1 <- sum(agg2$total_postings_firm, na.rm = TRUE)
+# n_before_health1 <- nrow(agg2)
+postings_before_health1 <- sum(agg2$total_postings, na.rm = TRUE)
 
 agg2 <- agg2 %>%
   anti_join(
@@ -381,12 +341,12 @@ agg2 <- agg2 %>%
     by = c("state", "soc_4")
   ) 
 
-# Obs dropped 
-n_drop_health1 <- n_before_health1 - nrow(agg2)
-save_stat(n_drop_health1, "n_drop_health1")
+# # Obs dropped 
+# n_drop_health1 <- n_before_health1 - nrow(agg2)
+# save_stat(n_drop_health1, "n_drop_health1")
 
 # Postings dropped 
-postings_drop_health1 <- postings_before_health1 - sum(agg2$total_postings_firm,
+postings_drop_health1 <- postings_before_health1 - sum(agg2$total_postings,
                                                        na.rm = TRUE)
 save_stat(postings_drop_health1, "postings_drop_health1")
 
@@ -420,8 +380,8 @@ state_health2_soc <- state_health2_expansion %>%
   select(-ever_health2, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_before_health2 <- nrow(agg2)
-postings_before_health2 <- sum(agg2$total_postings_firm, na.rm = TRUE)
+# n_before_health2 <- nrow(agg2)
+postings_before_health2 <- sum(agg2$total_postings, na.rm = TRUE)
 
 agg2 <- agg2 %>%
   anti_join(
@@ -429,12 +389,12 @@ agg2 <- agg2 %>%
     by = c("state", "soc_4")
   ) 
 
-# Obs dropped
-n_drop_health2 <- n_before_health2 - nrow(agg2)
-save_stat(n_drop_health2, "n_drop_health2")
+# # Obs dropped
+# n_drop_health2 <- n_before_health2 - nrow(agg2)
+# save_stat(n_drop_health2, "n_drop_health2")
 
 # Postings dropped 
-postings_drop_health2 <- postings_before_health2 - sum(agg2$total_postings_firm,
+postings_drop_health2 <- postings_before_health2 - sum(agg2$total_postings,
                                                        na.rm = TRUE)
 save_stat(postings_drop_health2, "postings_drop_health2")
 
@@ -467,8 +427,8 @@ state_health3_soc <- state_health3_expansion %>%
   select(-ever_health3, -note) %>%
   rename(soc_4 = broad_occ_soc)
 
-n_before_health3 <- nrow(agg2)
-postings_before_health3 <- sum(agg2$total_postings_firm, na.rm = TRUE)
+# n_before_health3 <- nrow(agg2)
+postings_before_health3 <- sum(agg2$total_postings, na.rm = TRUE)
 
 agg2 <- agg2 %>%
   anti_join(
@@ -476,12 +436,12 @@ agg2 <- agg2 %>%
     by = c("state", "soc_4")
   ) 
 
-# Obs dropped
-n_drop_health3 <- n_before_health3 - nrow(agg2)
-save_stat(n_drop_health3, "n_drop_health3")
+# # Obs dropped
+# n_drop_health3 <- n_before_health3 - nrow(agg2)
+# save_stat(n_drop_health3, "n_drop_health3")
 
 # Postings dropped 
-postings_drop_health3 <- postings_before_health3 - sum(agg2$total_postings_firm,
+postings_drop_health3 <- postings_before_health3 - sum(agg2$total_postings,
                                                        na.rm = TRUE)
 save_stat(postings_drop_health3, "postings_drop_health3")
 
@@ -502,18 +462,18 @@ states_full <- agg2 %>%
   filter(ever_full) %>%
   pull(var = state, name = state_name)
 
-n_before_full <- nrow(agg2)
-postings_before_full <- sum(agg2$total_postings_firm)
+# n_before_full <- nrow(agg2)
+postings_before_full <- sum(agg2$total_postings)
 
 agg2 <- agg2 %>%
   filter(!state %in% states_full)
 
-# Obs dropped
-n_drop_full <- n_before_full - nrow(agg2)
-save_stat(n_drop_full, "n_drop_full")
+# # Obs dropped
+# n_drop_full <- n_before_full - nrow(agg2)
+# save_stat(n_drop_full, "n_drop_full")
 
 # Postings dropped 
-postings_drop_full <- postings_before_full - sum(agg2$total_postings_firm)
+postings_drop_full <- postings_before_full - sum(agg2$total_postings)
 save_stat(postings_drop_full, "postings_drop_full")
 
 rm(list = ls(pattern = "^n_|postings_|states_"))
@@ -535,6 +495,46 @@ agg2 <- agg2 %>%
     -starts_with("eff_other")
   )
 gc()
+
+
+# ----------------- AGGREGATE TO FIRM-OCC-STATE-YEAR LEVEL ---------------------
+# NOTE: Need this level of aggregation if the new dataset is given to me at the
+# firm-naics-occ-state-year level. Currently, I believe this may be irrelevant... 
+# I also worry that the NAICS may no longer be unique at the firm-naics-occ-
+# state-year level once I receive the new aggregation from Cody. 
+
+agg2 <- agg2 %>% # overwriting agg2 to save memory in cluster run
+  group_by(company, soc_4, state, year) %>%
+  summarise(
+    company_name = first(company_name),
+    soc_4_name = first(soc_4_name),
+    state_name = first(state_name), 
+    
+    any_educ_firm = sum(any_educ, na.rm = TRUE),
+    bachelor_firm = sum(bachelor, na.rm = TRUE),
+    master_firm = sum(master, na.rm = TRUE),
+    doctorate_firm = sum(doctorate, na.rm = TRUE),
+    
+    any_exp_firm = sum(any_exp, na.rm = TRUE),
+    
+    ave_exp_num = sum(ave_exp * total_postings, na.rm = TRUE),
+    ave_exp_den = sum(total_postings[!is.na(ave_exp)], na.rm = TRUE),
+    ave_exp_firm = na_if(ave_exp_num / ave_exp_den, NaN),
+    
+    fulltime_firm = sum(fulltime, na.rm = TRUE),
+    parttime_firm = sum(parttime, na.rm = TRUE),
+    flextime_firm = sum(flextime, na.rm = TRUE),
+    
+    total_postings_firm = sum(total_postings, na.rm = TRUE),
+    
+    eff_inc1_year = first(eff_inc1_year),
+    
+    .groups = "drop"
+  ) %>% 
+  relocate(company_name, .after = company) %>%
+  relocate(soc_4_name, .after = soc_4) %>%
+  relocate(state_name, .after = state)
+
 
 # --- Create share variables ---  
 agg2 <- agg2 %>%
