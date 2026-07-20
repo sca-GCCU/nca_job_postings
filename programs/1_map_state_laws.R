@@ -18,8 +18,16 @@
 rm(list = ls())
 gc()
 
-setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
-#setwd("/home/scanast/nca_job_postings") # for cluster run
+#setwd("C:/Users/scana/OneDrive/Documents/research/projects/nca_job_postings")
+setwd("/home/scanast/nca_job_postings") # for cluster run
+
+# install.packages(
+#   "sf",
+#   configure.args = c(
+#     "--with-sqlite3-lib=/software/slurm/spackages/linux-rocky8-x86_64/gcc-12.3.0/sqlite-3.43.2-brfrunmqjf77zexoe7umsc3wv5hcb5op/lib"
+#   )
+# )
+# install.packages("usmap")
 
 library(dplyr)
 library(ggplot2)
@@ -58,8 +66,8 @@ state_nca_laws <- state_nca_laws %>%
     other = !is.na(date_other) & date_other <= date_ub
   )
 
-  # Check WY ban is outside of range
-  # NOTE: Not an issue now, but I will eventually treat this as a nearly full ban.
+# Check WY ban is outside of range
+# NOTE: Not an issue now, but I will eventually treat this as a nearly full ban.
 state_nca_laws %>% filter(other)
 
 # Code up variables for different policy types
