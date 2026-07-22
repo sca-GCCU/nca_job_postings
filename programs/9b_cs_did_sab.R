@@ -658,12 +658,13 @@ gc()
 # NOTE: This part of the code is not working because it results in a singular 
 # regression matrix in the pre-treatment time period. 
 
-# Convert soc_4 from a character to a factor 
-df_soc <- df_soc %>%
-  mutate(
-    soc_4 = factor(soc_4)
-  )
-
+# # Convert soc_4 from a character to a factor
+# df_soc <- df_soc %>%
+#   mutate(
+#     soc_4_factor = factor(soc_4)
+#   )
+# nlevels(df_soc$soc_4_factor)
+# # With: xformla = ~factor(soc_4)
 
 # --- Total Postings --- 
 cs_tot_post_cond <- att_gt(
@@ -671,7 +672,7 @@ cs_tot_post_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE, # makes this repeated cross-sections
   data = df_soc,
   control_group = "nevertreated",
@@ -732,7 +733,7 @@ cs_any_exp_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
@@ -793,7 +794,7 @@ cs_share_exp_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
@@ -854,7 +855,7 @@ cs_ave_exp_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
@@ -915,7 +916,7 @@ cs_bachelor_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
@@ -976,7 +977,7 @@ cs_bachelor_share_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
@@ -1040,7 +1041,7 @@ cs_fulltime_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
@@ -1101,7 +1102,7 @@ cs_fulltime_share_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
@@ -1165,7 +1166,7 @@ cs_parttime_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
@@ -1226,7 +1227,7 @@ cs_parttime_share_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~soc_4,
+  xformla = ~ factor(soc_4),
   panel = FALSE,
   data = df_soc,
   control_group = "nevertreated",
