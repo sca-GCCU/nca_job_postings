@@ -158,7 +158,7 @@ table_sumstat_outcomes <- sumtab_out_final %>%
 
 writeLines(table_sumstat_outcomes, "output/tables/table_sumstat_outcomes_agg2_ab.tex")
 
-rm(sumtab_out, sumtab_out_main, sumtab_controls_final, obs_row_out)
+rm(sumtab_out, sumtab_out_main, sumtab_out_final, obs_row_out)
 gc()
 
 # -------------------------- BALANCE TABLE -------------------------------------
@@ -269,4 +269,6 @@ writeLines(
   "output/tables/table_balance_controls_agg2_ab.tex"
 )
 
+rm(sumtab_controls, sumtab_controls_main, sumtab_controls_final, obs_row_controls)
+gc()
 
