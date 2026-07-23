@@ -31,6 +31,8 @@ library(dplyr)
 library(lubridate)
 library(stringr)
 library(ggplot2)
+library(knitr)
+library(kableExtra)
 
 set.seed(87) # for reproducibility with bootstrap SEs 
 
@@ -65,6 +67,7 @@ cs_tot_post <- att_gt(
   cores = n_cores
 )
 summary(cs_tot_post)
+
 csdid_cohort_tot_post <- ggdid(
   cs_tot_post, 
   xlab = "Year", 
@@ -101,7 +104,44 @@ ggsave(
   units = "in"
 )
 
-rm(cs_tot_post, csdid_cohort_tot_post, es_tot_post, csdid_es_tot_post)
+# NOTE: Could later combine this little table with tables of other results.
+simple_tot_post <- aggte(cs_tot_post, type = "simple")
+
+tib_tot_post <- tibble(
+  `Estimate` = simple_tot_post$overall.att,
+  `Std. Error` = simple_tot_post$overall.se,
+  `95% CI` = sprintf(
+    "[%.3f, %.3f]",
+    simple_tot_post$overall.att - 1.96*simple_tot_post$overall.se,
+    simple_tot_post$overall.att + 1.96*simple_tot_post$overall.se
+  )
+)
+
+tab_tot_post <- kable(
+  tib_tot_post,
+  format = "latex",
+  booktabs = TRUE,
+  digits = 3,
+  align = c("ccc"),
+  caption = "Overall Effect - Total Postings",
+  label = "csdid_tab_tot_post_fab"
+) %>%
+  kable_styling(latex_options = c("hold_position")) %>%
+  footnote(
+    general_title = "",
+    fixed_small_size = TRUE,
+    general = "\\\\footnotesize \\\\textit{Notes:} This table reports the overall effect of NCA bans on total postings across all treated states.",
+    threeparttable = TRUE,
+    escape = FALSE
+  ) 
+
+writeLines(
+  tab_tot_post,
+  "output/tables/csdid_tab_tot_post_fab.tex"
+)
+
+rm(cs_tot_post, csdid_cohort_tot_post, es_tot_post, csdid_es_tot_post,
+   tib_tot_post, tab_tot_post, simple_tot_post)
 gc()
 
 
@@ -661,7 +701,7 @@ cs_tot_post_cond <- att_gt(
   tname = "year",
   idname = "panel_id",
   gname = "cohort",
-  xformla = ~ factor(soc_4),
+  xformla = ~ frac_college,
   panel = FALSE, # makes this repeated cross-sections
   data = df_firm,
   control_group = "nevertreated",
