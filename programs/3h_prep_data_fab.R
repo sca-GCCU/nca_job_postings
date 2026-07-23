@@ -4,7 +4,7 @@
 #
 # R Script: "3h_prep_data_fab.R" 
 # by: Sebastian C. Anastasi
-# Date of this version: July 16, 2026
+# Date of this version: July 23, 2026
 #
 # Description: Generates the firm-state-year level analysis data to be used 
 # to evaluate states' staggered NCA bans. Also creates a crude state-year level
