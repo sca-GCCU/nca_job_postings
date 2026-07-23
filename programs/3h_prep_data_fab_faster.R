@@ -6,7 +6,7 @@
 # by: Sebastian C. Anastasi
 # Date of this version: July 16, 2026
 #
-# Description: Generates the firm-occ-state-year level analysis data to be used 
+# Description: Generates the firm-state-year level analysis data to be used 
 # to evaluate states' staggered NCA bans. Also creates a crude state-year level
 # dataset for plotting raw means and treatment rollout. 
 #
@@ -55,7 +55,7 @@ cat("data.table threads:", data.table::getDTthreads(), "\n")
 
 # ------------------------------ LOAD RAW DATA ---------------------------------
 agg2 <- fread(
-  "data/raw-data/sample_anastasi_agg2_v2.csv",
+  "data/raw-data/sample_anastasi_agg2_v2.csv", # change in cluster 
   nThread = dt_threads
 )
 
@@ -516,12 +516,7 @@ agg2 <- agg2 %>%
 gc()
 
 
-# ----------------- AGGREGATE TO FIRM-OCC-STATE-YEAR LEVEL ---------------------
-# NOTE: Need this level of aggregation if the new dataset is given to me at the
-# firm-naics-occ-state-year level. Currently, I believe this may be irrelevant... 
-# I also worry that the NAICS may no longer be unique at the firm-naics-occ-
-# state-year level once I receive the new aggregation from Cody. 
-
+# -------------------- AGGREGATE TO FIRM-STATE-YEAR LEVEL ----------------------
 # Convert without making a full copy
 setDT(agg2)
 
@@ -539,7 +534,6 @@ agg2 <- agg2[
   ,
   .(
     company_name = first(company_name),
-    soc_4_name    = first(soc_4_name),
     state_name    = first(state_name),
     
     any_educ_firm = sum(any_educ, na.rm = TRUE),
@@ -560,7 +554,7 @@ agg2 <- agg2[
     
     eff_inc1_year = first(eff_inc1_year)
   ),
-  by = .(company, soc_4, state, year)
+  by = .(company, state, year)
 ]
 
 agg2[
@@ -577,14 +571,12 @@ setcolorder(
   agg2,
   c(
     "company", "company_name",
-    "soc_4", "soc_4_name",
     "state", "state_name",
     "year",
     setdiff(
       names(agg2),
       c(
         "company", "company_name",
-        "soc_4", "soc_4_name",
         "state", "state_name",
         "year"
       )
@@ -622,7 +614,7 @@ agg2[
 agg2[
   ,
   panel_id := .GRP,
-  by = .(company, state, soc_4)
+  by = .(company, state)
 ]
 
 
@@ -649,7 +641,7 @@ gc()
 # the real variables since the base year is 2024. 
 
 
-# ----------------- SAVE FIRM-OCC-STATE-YEAR AGGREGATION -----------------------
+# --------------------- SAVE FIRM-STATE-YEAR AGGREGATION -----------------------
 fwrite(
   agg2,
   "data/analysis-data/agg2_fab_analysis.csv",

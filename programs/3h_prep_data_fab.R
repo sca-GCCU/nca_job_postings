@@ -6,7 +6,7 @@
 # by: Sebastian C. Anastasi
 # Date of this version: July 16, 2026
 #
-# Description: Generates the firm-occ-state-year level analysis data to be used 
+# Description: Generates the firm-state-year level analysis data to be used 
 # to evaluate states' staggered NCA bans. Also creates a crude state-year level
 # dataset for plotting raw means and treatment rollout. 
 #
@@ -497,17 +497,21 @@ agg2 <- agg2 %>%
 gc()
 
 
-# ----------------- AGGREGATE TO FIRM-OCC-STATE-YEAR LEVEL ---------------------
-# NOTE: Need this level of aggregation if the new dataset is given to me at the
-# firm-naics-occ-state-year level. Currently, I believe this may be irrelevant... 
-# I also worry that the NAICS may no longer be unique at the firm-naics-occ-
-# state-year level once I receive the new aggregation from Cody. 
+# -------------------- AGGREGATE TO FIRM-STATE-YEAR LEVEL ----------------------
+# # NAICS not unique at firm-state-year level
+# nonunique_naics <- agg2 %>% 
+#   group_by(company, state, year) %>%
+#   summarise(
+#     n_naics = n_distinct(naics4),
+#     .groups = "drop"
+#   ) %>%
+#   filter(n_naics > 1) %>%
+#   nrow()
 
 agg2 <- agg2 %>% # overwriting agg2 to save memory in cluster run
-  group_by(company, soc_4, state, year) %>%
+  group_by(company, state, year) %>%
   summarise(
     company_name = first(company_name),
-    soc_4_name = first(soc_4_name),
     state_name = first(state_name), 
     
     any_educ_firm = sum(any_educ, na.rm = TRUE),
@@ -532,7 +536,6 @@ agg2 <- agg2 %>% # overwriting agg2 to save memory in cluster run
     .groups = "drop"
   ) %>% 
   relocate(company_name, .after = company) %>%
-  relocate(soc_4_name, .after = soc_4) %>%
   relocate(state_name, .after = state)
 
 
@@ -562,7 +565,7 @@ agg2 <- agg2 %>%
 # --- Create panel ID (for company-by-state-by-soc combos) ---  
 agg2 <- agg2 %>% 
   mutate(
-    panel_id = as.integer(interaction(company, state, soc_4, drop = TRUE))
+    panel_id = as.integer(interaction(company, state, drop = TRUE))
   )
 
 
@@ -596,7 +599,7 @@ gc()
 # the real variables since the base year is 2024. 
 
 
-# ----------------- SAVE FIRM-OCC-STATE-YEAR AGGREGATION -----------------------
+# --------------------- SAVE FIRM-STATE-YEAR AGGREGATION -----------------------
 write_csv(agg2, "data/analysis-data/agg2_fab_analysis.csv") # fab = firm all ban
 
 
